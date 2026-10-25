@@ -262,3 +262,15 @@ body[data-ws=studio] .brand,body[data-ws=minimal] .brand{white-space:nowrap}body
 .cwprev.small{align-self:start}.cwpub h3{margin:0 0 10px}
 .pcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.pcard .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 @media(max-width:1000px){.cw3{grid-template-columns:1fr}.cw4{grid-template-columns:1fr}.cws li:not(.on){display:none}}
+
+/* chart wizard: live step keeps the real chart window and toolbar visible between the side panels */
+#cw.live{background:transparent;pointer-events:none}
+#cw.live .cwh,#cw.live .cwf,#cw.live .cw3>aside{pointer-events:auto}
+#cw.live .cwh{height:calc(var(--toph,48px) + var(--wt,34px));box-sizing:border-box}
+#cw.live .cwb{padding:0;overflow:hidden}
+#cw.live .cw3{gap:0;grid-template-columns:260px minmax(0,1fr) 300px}
+#cw.live .cw3>aside{border-radius:0;border-width:0 1px}#cw.live .cw3>main{background:transparent;border:0;pointer-events:none}
+#cw .cwsz{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}#cw .cwsz input{width:78px;padding:4px 6px;font:inherit;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+#cw .cwsz select{padding:4px 6px;font:inherit;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.cwty img{aspect-ratio:auto}
+body.cwlive #body{padding:0 300px 0 260px;box-sizing:border-box}

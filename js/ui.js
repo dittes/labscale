@@ -201,8 +201,8 @@ function graphProps(){
   if(cart||matLike){h+=sec('Overlays',(g.curves.length?g.curves.map((c,i)=>`<span class="tag">${esc(c.label||'curve')}<button data-act="rmCurve" data-i="${i}">✕</button></span>`).join('')+'<button data-act="clrCurves">Clear fit curves</button>':'<span class="note">Fit curves, peak markers and bands from analyses appear here.</span>')+
     (g.marks.length?`<div class="r"><span class="note">${g.marks.length} peak markers</span><button data-act="clrMarks">Clear</button></div>`:'')+
     `<div class="r two"><select id="refAx"><option value="y">Horizontal line at Y =</option><option value="x">Vertical line at X =</option></select><input type="number" step="any" id="refV"><button data-act="addRef">Add</button></div>`+
-    (g.refs.map((r,i)=>`<span class="tag">${r.axis}=${Mx.fmt(r.v,5)}<button data-act="rmRef" data-i="${i}">✕</button></span>`).join(''))+
-    (g.notes.map((n,i)=>`<span class="tag">“${esc(n.text)}”<button data-act="rmNote" data-i="${i}">✕</button></span>`).join('')||'<div class="note">Use the “T Note” tool above the graph to add text.</div>'))}
+    (g.refs.map((r,i)=>`<span class="tag">${r.axis}=${Mx.fmt(r.v,5)}<button data-act="editRef" data-i="${i}" title="Edit value">✎</button><button data-act="rmRef" data-i="${i}">✕</button></span>`).join(''))+
+    (g.notes.map((n,i)=>`<span class="tag">“${esc(n.text)}”<button data-act="editNote" data-i="${i}" title="Edit text">✎</button><button data-act="rmNote" data-i="${i}">✕</button></span>`).join('')||'<div class="note">Use the “T Note” tool above the graph to add text.</div>'))}
   h+=sec('Data & export',`<div class="note">Sheet: ${esc(sh.name)}</div><div class="r"><button data-act="toSheet">Go to sheet</button><button data-act="pdf">PDF</button><button data-act="svg">SVG</button><button data-act="print">Print</button></div><div class="r"><button data-act="copyFmt">Copy format</button><button data-act="pasteFmt">Paste format</button></div>${g.series.length>1&&cart?'<button data-act="split">Split series into stacked panels</button>':''}`);
   return h+'</div>'}
 function initProps(){
@@ -222,7 +222,7 @@ function initProps(){
       case'addSeries':{const y=+$('#addSer').value;if(y<0)return;g.series.push({y,x:g.series[0]?.x??null,e:null,z:null,color:PALETTE[g.series.length%PALETTE.length],symbol:SYMBOLS[g.series.length%6],size:6,lw:2,dash:'',axis:'L',label:''});if(g.legend==='none')g.legend='tr';break}
       case'rmCurve':g.curves.splice(i,1);break;case'clrCurves':g.curves=[];break;case'clrMarks':g.marks=[];break;
       case'addRef':{const v=parseFloat($('#refV').value);if(Number.isNaN(v))return;g.refs.push({axis:$('#refAx').value,v});break}
-      case'rmRef':g.refs.splice(i,1);break;case'rmNote':g.notes.splice(i,1);break;case'toSheet':openWin('sheet',g.sheetId);return;
+      case'editRef':{const nv=prompt('Reference line value:',g.refs[i].v);if(nv===null)return;const v=parseFloat(nv);if(!Number.isNaN(v))g.refs[i].v=v;break}case'editNote':{const nv=prompt('Text:',g.notes[i].text);if(nv===null)return;if(nv.trim())g.notes[i].text=nv;break}case'rmRef':g.refs.splice(i,1);break;case'rmNote':g.notes.splice(i,1);break;case'toSheet':openWin('sheet',g.sheetId);return;
       case'pdf':exportPDF([g],g.name+'.pdf');return;case'svg':download(g.name+'.svg',graphToSVG(g));return;case'print':printGraphs([g]);return;case'copyFmt':copyFormat(g);return;case'pasteFmt':pasteFormat(g);break;case'split':splitPanels(g);return;
       case'rmChild':g.children.splice(i,1);break;case'addChild':{const v=+$('#addChild').value;if(!v)return;g.children.push(v);break}}
     dirty();redrawGraph(true)});

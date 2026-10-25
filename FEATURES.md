@@ -161,3 +161,12 @@ File ▸ Chart wizard… (or “Open the chart wizard” in the import assistant
 2. **Check & describe:** editable preview table; delimiter, decimal, header-row and skip options; rename columns, set units, choose each column’s role (X, Y, ignore); empty cells and potential outliers are highlighted, with an option to leave outliers out of the chart.
 3. **Visualize:** live thumbnails of the data as ~24 chart types (more on request) next to a large preview. *Refine* (titles, axes, Y columns, scale, line width, grid), *Annotate* (text notes at data coordinates, reference lines, description and source line), *Layout* (output size presets, built-in styles, light/dark background, font size, legend position).
 4. **Publish:** PNG (1–3×), copy image, SVG, PDF, EPS, responsive web page (.html), embed / SVG code to paste into a web page, PowerPoint slide, data as CSV, open in the workspace for further editing, or share the whole project as one file.
+
+## Round 19: editable graph elements, live wizard
+- **Everything on a graph stays editable:** text notes are now text shapes (select, drag, restyle, double-click to edit text, Delete); old notes convert automatically. Reference lines can be edited by double-click (empty value deletes) or with ✎ in Properties; legacy notes in horizontal bar charts have ✎ as well.
+- **Chart wizard, step 3 is live:** the real chart window with the full toolbar and tool strip (Pan, Zoom, ROI, Tools ▸ Draw shapes, View, Format, Export) is used for refining and annotating, so every change is seen immediately in full quality. Chart-type thumbnails are rendered at higher resolution.
+- **Export size:** default 1920 × 1080 px, with presets (4K, HD, social, square, blog, compact) and custom width/height in the Layout tab and in Publish. Text keeps its proportions at any size.
+
+## Round 20: automatic wizard, tidy axes
+- The chart wizard now opens by itself after every file import (data with at least one numeric column; matrices keep the import assistant). A checkbox in the wizard footer, “Open after every import”, turns this off.
+- **Axis labels never overlap:** when tick labels would collide, in any chart and any size, labels are thinned to every 2nd, 3rd… (preferring round values such as 2018, 2020 over 2017.5, 2018.5); the skipped ticks stay as small marks.

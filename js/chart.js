@@ -353,7 +353,7 @@ class Chart{
     cv.addEventListener('mousedown',e=>{if(!this.g)return;const[x,y]=this.pos(e);
       if(this.kind==='3d'){drag={t:'rot',x,y,az:this.g.az??-50,el:this.g.el??25};return}
       if(this.kind!=='cart'&&this.kind!=='heat')return;
-      if(this.mode==='note'&&this.inPlot(x,y)){const t=prompt('Annotation text:');if(t){const hz=this.hz,xv=hz?this.VA.unmap(y):this.ax.unmap(x),yv=hz?this.HA.unmap(x):this.ay.unmap(y);this.g.notes=this.g.notes||[];this.g.notes.push({x:xv,y:yv,text:t});this.render();this.onNote&&this.onNote()}return}
+      if(this.mode==='note'&&this.inPlot(x,y)){const t=prompt('Annotation text:');if(t){const hz=this.hz,xv=hz?this.VA.unmap(y):this.ax.unmap(x),yv=hz?this.HA.unmap(x):this.ay.unmap(y);if(hz){this.g.notes=this.g.notes||[];this.g.notes.push({x:xv,y:yv,text:t})}else{this.g.shapes=this.g.shapes||[];this.g.shapes.push({t:'text',x0:xv,y0:yv,x1:xv,y1:yv,text:t,fs:this.g.fs||12});this.g.selShape=this.g.shapes.length-1;this.g.selSet=[this.g.selShape]}this.render();this.onNote&&this.onNote()}return}
       if(this.mode==='zoom'&&this.inPlot(x,y)){this.rb={x0:x,y0:y,x1:x,y1:y};drag={t:'zoom'};return}
       if((this.mode==='roi'||this.mode==='brush')&&this.inPlot(x,y)&&this.kind==='cart'){this.rb={x0:x,y0:y,x1:x,y1:y};drag={t:this.mode};return}
       if(this.mode==='cursor'&&this.inPlot(x,y)&&this.kind==='cart'){this.cursorClick&&this.cursorClick(x,y);return}

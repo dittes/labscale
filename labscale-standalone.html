@@ -269,6 +269,18 @@ body[data-ws=studio] .brand,body[data-ws=minimal] .brand{white-space:nowrap}body
 .cwprev.small{align-self:start}.cwpub h3{margin:0 0 10px}
 .pcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.pcard .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 @media(max-width:1000px){.cw3{grid-template-columns:1fr}.cw4{grid-template-columns:1fr}.cws li:not(.on){display:none}}
+
+/* chart wizard: live step keeps the real chart window and toolbar visible between the side panels */
+#cw.live{background:transparent;pointer-events:none}
+#cw.live .cwh,#cw.live .cwf,#cw.live .cw3>aside{pointer-events:auto}
+#cw.live .cwh{height:calc(var(--toph,48px) + var(--wt,34px));box-sizing:border-box}
+#cw.live .cwb{padding:0;overflow:hidden}
+#cw.live .cw3{gap:0;grid-template-columns:260px minmax(0,1fr) 300px}
+#cw.live .cw3>aside{border-radius:0;border-width:0 1px}#cw.live .cw3>main{background:transparent;border:0;pointer-events:none}
+#cw .cwsz{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}#cw .cwsz input{width:78px;padding:4px 6px;font:inherit;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+#cw .cwsz select{padding:4px 6px;font:inherit;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.cwty img{aspect-ratio:auto}
+body.cwlive #body{padding:0 300px 0 260px;box-sizing:border-box}
 </style>
 </head>
 <body data-ws="studio">
@@ -1583,7 +1595,7 @@ class Chart{
     cv.addEventListener('mousedown',e=>{if(!this.g)return;const[x,y]=this.pos(e);
       if(this.kind==='3d'){drag={t:'rot',x,y,az:this.g.az??-50,el:this.g.el??25};return}
       if(this.kind!=='cart'&&this.kind!=='heat')return;
-      if(this.mode==='note'&&this.inPlot(x,y)){const t=prompt('Annotation text:');if(t){const hz=this.hz,xv=hz?this.VA.unmap(y):this.ax.unmap(x),yv=hz?this.HA.unmap(x):this.ay.unmap(y);this.g.notes=this.g.notes||[];this.g.notes.push({x:xv,y:yv,text:t});this.render();this.onNote&&this.onNote()}return}
+      if(this.mode==='note'&&this.inPlot(x,y)){const t=prompt('Annotation text:');if(t){const hz=this.hz,xv=hz?this.VA.unmap(y):this.ax.unmap(x),yv=hz?this.HA.unmap(x):this.ay.unmap(y);if(hz){this.g.notes=this.g.notes||[];this.g.notes.push({x:xv,y:yv,text:t})}else{this.g.shapes=this.g.shapes||[];this.g.shapes.push({t:'text',x0:xv,y0:yv,x1:xv,y1:yv,text:t,fs:this.g.fs||12});this.g.selShape=this.g.shapes.length-1;this.g.selSet=[this.g.selShape]}this.render();this.onNote&&this.onNote()}return}
       if(this.mode==='zoom'&&this.inPlot(x,y)){this.rb={x0:x,y0:y,x1:x,y1:y};drag={t:'zoom'};return}
       if((this.mode==='roi'||this.mode==='brush')&&this.inPlot(x,y)&&this.kind==='cart'){this.rb={x0:x,y0:y,x1:x,y1:y};drag={t:this.mode};return}
       if(this.mode==='cursor'&&this.inPlot(x,y)&&this.kind==='cart'){this.cursorClick&&this.cursorClick(x,y);return}
@@ -2255,8 +2267,8 @@ function graphProps(){
   if(cart||matLike){h+=sec('Overlays',(g.curves.length?g.curves.map((c,i)=>`<span class="tag">${esc(c.label||'curve')}<button data-act="rmCurve" data-i="${i}">✕</button></span>`).join('')+'<button data-act="clrCurves">Clear fit curves</button>':'<span class="note">Fit curves, peak markers and bands from analyses appear here.</span>')+
     (g.marks.length?`<div class="r"><span class="note">${g.marks.length} peak markers</span><button data-act="clrMarks">Clear</button></div>`:'')+
     `<div class="r two"><select id="refAx"><option value="y">Horizontal line at Y =</option><option value="x">Vertical line at X =</option></select><input type="number" step="any" id="refV"><button data-act="addRef">Add</button></div>`+
-    (g.refs.map((r,i)=>`<span class="tag">${r.axis}=${Mx.fmt(r.v,5)}<button data-act="rmRef" data-i="${i}">✕</button></span>`).join(''))+
-    (g.notes.map((n,i)=>`<span class="tag">“${esc(n.text)}”<button data-act="rmNote" data-i="${i}">✕</button></span>`).join('')||'<div class="note">Use the “T Note” tool above the graph to add text.</div>'))}
+    (g.refs.map((r,i)=>`<span class="tag">${r.axis}=${Mx.fmt(r.v,5)}<button data-act="editRef" data-i="${i}" title="Edit value">✎</button><button data-act="rmRef" data-i="${i}">✕</button></span>`).join(''))+
+    (g.notes.map((n,i)=>`<span class="tag">“${esc(n.text)}”<button data-act="editNote" data-i="${i}" title="Edit text">✎</button><button data-act="rmNote" data-i="${i}">✕</button></span>`).join('')||'<div class="note">Use the “T Note” tool above the graph to add text.</div>'))}
   h+=sec('Data & export',`<div class="note">Sheet: ${esc(sh.name)}</div><div class="r"><button data-act="toSheet">Go to sheet</button><button data-act="pdf">PDF</button><button data-act="svg">SVG</button><button data-act="print">Print</button></div><div class="r"><button data-act="copyFmt">Copy format</button><button data-act="pasteFmt">Paste format</button></div>${g.series.length>1&&cart?'<button data-act="split">Split series into stacked panels</button>':''}`);
   return h+'</div>'}
 function initProps(){
@@ -2276,7 +2288,7 @@ function initProps(){
       case'addSeries':{const y=+$('#addSer').value;if(y<0)return;g.series.push({y,x:g.series[0]?.x??null,e:null,z:null,color:PALETTE[g.series.length%PALETTE.length],symbol:SYMBOLS[g.series.length%6],size:6,lw:2,dash:'',axis:'L',label:''});if(g.legend==='none')g.legend='tr';break}
       case'rmCurve':g.curves.splice(i,1);break;case'clrCurves':g.curves=[];break;case'clrMarks':g.marks=[];break;
       case'addRef':{const v=parseFloat($('#refV').value);if(Number.isNaN(v))return;g.refs.push({axis:$('#refAx').value,v});break}
-      case'rmRef':g.refs.splice(i,1);break;case'rmNote':g.notes.splice(i,1);break;case'toSheet':openWin('sheet',g.sheetId);return;
+      case'editRef':{const nv=prompt('Reference line value:',g.refs[i].v);if(nv===null)return;const v=parseFloat(nv);if(!Number.isNaN(v))g.refs[i].v=v;break}case'editNote':{const nv=prompt('Text:',g.notes[i].text);if(nv===null)return;if(nv.trim())g.notes[i].text=nv;break}case'rmRef':g.refs.splice(i,1);break;case'rmNote':g.notes.splice(i,1);break;case'toSheet':openWin('sheet',g.sheetId);return;
       case'pdf':exportPDF([g],g.name+'.pdf');return;case'svg':download(g.name+'.svg',graphToSVG(g));return;case'print':printGraphs([g]);return;case'copyFmt':copyFormat(g);return;case'pasteFmt':pasteFormat(g);break;case'split':splitPanels(g);return;
       case'rmChild':g.children.splice(i,1);break;case'addChild':{const v=+$('#addChild').value;if(!v)return;g.children.push(v);break}}
     dirty();redrawGraph(true)});
@@ -5198,6 +5210,48 @@ input.renm{font:inherit;color:var(--ink);background:var(--panel);border:1px soli
 #nprev hr.pb{border:0;border-top:2px dashed var(--line);margin:22px 0 14px;height:0;overflow:visible;position:relative}#nprev hr.pb::after{content:'page break';position:absolute;top:-9px;right:0;background:var(--panel);padding:0 6px;font-size:11px;color:var(--mut)}#ntools .sp2{width:1px;height:18px;background:var(--line);margin:0 4px}`;document.head.append(st)})();
 initExplorerDnD();initLayoutPages();initReportPages();
 </script>
+<script>// ===== Every element on a graph stays editable =====
+// Old-style notes (g.notes) become text shapes, which can be selected, moved, restyled and edited by double-click.
+(function(){
+  const od=Chart.prototype.draw;
+  Chart.prototype.draw=function(...a){const g=this.g;
+    if(g&&g.notes&&g.notes.length&&g.type!=='bar'){g.shapes=g.shapes||[];g.notes.forEach(n=>g.shapes.push({t:'text',x0:n.x,y0:n.y,x1:n.x,y1:n.y,text:n.text,fs:g.fs||12}));g.notes=[]}
+    return od.apply(this,a)};
+  // double-click a reference line to change its value (empty = delete)
+  const cv=document.getElementById('cv');if(!cv)return;
+  cv.addEventListener('dblclick',e=>{const g=typeof curGraphObj==='function'?curGraphObj():null;if(!g||!g.refs||!g.refs.length||!chart.ax||chart.kind!=='cart')return;
+    const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,hz=chart.hz;
+    const i=g.refs.findIndex(q=>{if(q.axis==='x'){const p=hz?chart.VA.map(q.v):chart.HA.map(q.v);return hz?Math.abs(y-p)<6:Math.abs(x-p)<6}const p=hz?chart.HA.map(q.v):chart.VA.map(q.v);return hz?Math.abs(x-p)<6:Math.abs(y-p)<6});
+    if(i<0)return;e.stopImmediatePropagation();const q=g.refs[i],t=prompt(`Reference line (${q.axis} =). New value, or leave empty to delete:`,q.v);if(t===null)return;
+    histHint='Edit reference line';snap();histHint=null;if(t.trim()==='')g.refs.splice(i,1);else{const v=parseFloat(t);if(!Number.isNaN(v))q.v=v}dirty();chart.render();if(typeof renderProps==='function')renderProps()},true);
+})();
+</script>
+<script>// ===== Axis tick labels never overlap: thin them out and leave space instead =====
+let axFs=12,axFf='system-ui,sans-serif';
+(function(){
+  const mctx=document.createElement('canvas').getContext('2d');
+  const od=Chart.prototype.draw;Chart.prototype.draw=function(c,W,H,pal,live){const g=this.g;axFs=(g&&g.fs)||12;axFf=(g&&g.font)||'system-ui,sans-serif';return od.apply(this,arguments)};
+  const om=mkAxis;
+  mkAxis=function(lo,hi,scale,p0,p1,cats,date,brk){
+    const ax=om.apply(this,arguments);
+    try{
+      const horiz=p1>p0,len=Math.abs(p1-p0),lab=ax.ticks.filter(t=>t.label&&!t.minor).sort((a,b)=>ax.map(a.v)-ax.map(b.v));
+      if(lab.length<2||!(len>0))return ax;
+      mctx.font=`${axFs}px ${axFf}`;
+      const need=horiz?Math.max(...lab.map(t=>mctx.measureText(String(t.label)).width))*1.08+14:axFs*1.7;
+      const gap=len/(lab.length-1);
+      let k=Math.max(1,Math.ceil(need/gap));
+      const pos=lab.map(t=>ax.map(t.v));let tight=false;for(let i=1;i<pos.length;i++)if(Math.abs(pos[i]-pos[i-1])<need)tight=true;
+      if(!tight)return ax;
+      if(k<2)k=2;
+      let off=0;
+      if(!cats&&!date){let best=1e9;for(let o=0;o<k;o++){let s=0;for(let i=o;i<lab.length;i+=k)s+=String(lab[i].label).length;s=s/Math.ceil((lab.length-o)/k);if(s<best-1e-9){best=s;off=o}}}
+      const keep=new Set();for(let i=off;i<lab.length;i+=k)keep.add(lab[i]);
+      lab.forEach(t=>{if(!keep.has(t)){t.label='';t.minor=true}});
+    }catch(e){}
+    return ax};
+})();
+</script>
 <script>// ===== Results log: resizable + toggle arrow; Import assistant (suggests next steps after a file is imported) =====
 (function(){
   const res=document.getElementById('results'),btn=document.getElementById('rHide');if(!res||!btn)return;
@@ -5328,17 +5382,19 @@ function cvdPreview(mode){
 </script>
 <script>// ===== Chart wizard: 1 Upload -> 2 Check & describe -> 3 Visualize (type, refine, annotate, layout) -> 4 Publish =====
 let cw=null;
-const CW_SIZES=[['','Default for this chart type'],['1200x630','Social media 1200 × 630'],['1080x1080','Square 1080 × 1080'],['1280x720','Slide 16:9 1280 × 720'],['800x500','Blog 800 × 500'],['600x400','Compact 600 × 400']];
+const CW_SIZES=[['1920x1080','Full HD 1920 × 1080 (default)'],['3840x2160','4K 3840 × 2160'],['1280x720','HD 1280 × 720'],['1200x630','Social media 1200 × 630'],['1080x1080','Square 1080 × 1080'],['800x500','Blog 800 × 500'],['600x400','Compact 600 × 400']];
 const CW_KEEP=['title','subtitle','desc','xl','yl','notes','refs','ys','xs','fs','font','legend','gridx','gridy','outSize','cwDark','cwSrc','lwAll'];
 const cwStepNames=['Upload','Check & describe','Visualize','Publish'];
 const cwQ=s=>cw.el.querySelector(s);
 const cwPal=()=>cw.g&&cw.g.cwDark?DARK:LIGHT;
 
-(function(){const gs=graphSize;graphSize=function(g){return g&&g.outSize?g.outSize:gs(g)}})();
+// outSize is the export size in pixels; charts are laid out at ~1000 logical units wide so text keeps its proportions at any size
+(function(){const gs=graphSize;graphSize=function(g){return g&&g.outSize?[1000,Math.round(1000*g.outSize[1]/g.outSize[0])]:gs(g)}})();
+const cwPxScale=g=>g.outSize?g.outSize[0]/1000:1;
 
 function cwStart(sheet){
   if(cw)return;
-  cw={step:sheet?2:1,sh:sheet||null,own:!sheet,name:sheet?sheet.name:'',text:null,opts:{sep:'auto',skip:0,header:'auto',decimal:'auto',dates:true,naTokens:true,thousands:'',comment:'#',custom:''},x:-1,ys:[],type:'line',g:null,tab:'refine',tpl:-1,committed:false,mask:false};
+  cw={step:sheet?2:1,sh:sheet||null,own:!sheet,name:sheet?sheet.name:'',text:null,opts:{sep:'auto',skip:0,header:'auto',decimal:'auto',dates:true,naTokens:true,thousands:'',comment:'#',custom:''},x:-1,ys:[],type:'line',g:null,gid:0,tab:'refine',tpl:-1,committed:false,mask:false};
   const el=cw.el=document.createElement('div');el.id='cw';document.body.append(el);
   el.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();cwClose()}});
   if(sheet){cw.des=sheet.cols.map(c=>c.des);cwInitCols()}
@@ -5347,12 +5403,15 @@ function cwClose(force){
   if(!cw)return;if(!force&&cw.step>=2&&!cw.committed&&cw.own&&!confirm('Close the chart wizard? The uploaded data and chart will be discarded.'))return;
   if(!cw.own&&cw.des&&cw.sh)cw.sh.cols.forEach((c,i)=>{if(cw.des[i]!==undefined)c.des=cw.des[i]});
   if(cw.own&&!cw.committed&&cw.sh){const i=P.sheets.indexOf(cw.sh);if(i>=0)P.sheets.splice(i,1)}
-  if(cw.el)cw.el.remove();cw=null}
+  cwLeaveLive();if(!cw.committed&&cw.gid){P.graphs=P.graphs.filter(x=>x.id!==cw.gid)}
+  if(cw.el)cw.el.remove();document.body.classList.remove('cwlive');cw=null}
 function cwRender(){
   const s=cw.step,el=cw.el;
-  el.innerHTML=`<div class="cwh"><b class="cwt">Chart wizard</b><ol class="cws">${cwStepNames.map((n,i)=>`<li class="${i+1===s?'on':i+1<s?'done':''}" ${i+1<s?`data-go="${i+1}"`:''}><span>${i+1<s?'✓':i+1}</span>${n}</li>`).join('')}</ol><span class="sp"></span><button id="cwX" title="Close (Esc)">✕</button></div><div class="cwb" id="cwB"></div><div class="cwf"><button id="cwBack" ${s===1||(s===2&&!cw.own)?'disabled':''}>← Back</button><span class="sp"></span><span class="note" id="cwMsg"></span>${s<4?`<button class="p" id="cwNext">${s===3?'Continue to publish →':'Next →'}</button>`:`<button class="p" id="cwDone">Open in workspace</button>`}</div>`;
+  el.innerHTML=`<div class="cwh"><b class="cwt">Chart wizard</b><ol class="cws">${cwStepNames.map((n,i)=>`<li class="${i+1===s?'on':i+1<s?'done':''}" ${i+1<s?`data-go="${i+1}"`:''}><span>${i+1<s?'✓':i+1}</span>${n}</li>`).join('')}</ol><span class="sp"></span><button id="cwX" title="Close (Esc)">✕</button></div><div class="cwb" id="cwB"></div><div class="cwf"><button id="cwBack" ${s===1||(s===2&&!cw.own)?'disabled':''}>← Back</button><span class="sp"></span><span class="note" id="cwMsg"></span><label class="inl" title="Open this wizard whenever a file is imported"><input type="checkbox" id="cwAuto" ${(()=>{try{return localStorage.getItem('la_daw_off')==='1'?'':'checked'}catch(e){return'checked'}})()}> Open after every import</label>${s<4?`<button class="p" id="cwNext">${s===3?'Continue to publish →':'Next →'}</button>`:`<button class="p" id="cwDone">Open in workspace</button>`}</div>`;
+  el.onchange=e=>{if(e.target.id==='cwAuto'){try{localStorage.setItem('la_daw_off',e.target.checked?'0':'1')}catch(x){}}};
   el.onclick=e=>{const t=e.target;if(t.closest('#cwX'))return cwClose();const go=t.closest('[data-go]');if(go){cw.step=+go.dataset.go;return cwRender()}
     if(t.closest('#cwBack')){cw.step--;return cwRender()}if(t.closest('#cwNext'))return cwNext();if(t.closest('#cwDone'))return cwFinish()};
+  el.classList.toggle('live',s===3);document.body.classList.toggle('cwlive',s===3);
   [cwStep1,cwStep2,cwStep3,cwStep4][s-1](cwQ('#cwB'))}
 function cwNext(){
   if(cw.step===1&&!cw.sh)return cwMsg('Add some data first');
@@ -5429,36 +5488,57 @@ function cwSummary(){
   const el=cwQ('#cwSum');if(!el)return;
   el.innerHTML=`<b>${N}</b> rows × <b>${sh.cols.length}</b> columns${cw.info?` · delimiter “${esc(cw.info.sep)}”, decimal “${esc(cw.info.decimal)}”`:''}${na?` · <span class="warnt">${na} empty cell${na>1?'s':''}</span>`:''}. ${out.size?`<span class="warnt">${cells} potential outlier${cells>1?'s':''} in ${out.size} row${out.size>1?'s':''}</span> (highlighted) <label class="inl"><input type="checkbox" id="cwMask" ${cw.mask?'checked':''}> leave them out of the chart</label>`:'<span class="okt">No outliers detected.</span>'} Click a cell to edit it, rename columns, and set each column’s role.`}
 
-// ---------- step 3: visualize ----------
+// ---------- step 3: visualize (the real chart window and toolbar of the app stay live in the middle) ----------
 function cwWith(fn){const pa=P.act,gs=gsel,cs=cur;P.act={t:'sheet',id:cw.sh.id};gsel={c0:cw.ys[0]??0,r0:0,c1:cw.ys[0]??0,r1:0,extra:new Set(cw.ys)};
   try{return fn()}finally{P.act=pa;gsel=gs;cur=cs}}
 function cwBuild(type){
   const old=cw.g;let g=null;window.PLOT_DRY=true;const nid=P.nid,ao=window.alert;window.alert=()=>{};
   try{cwWith(()=>{g=plotCmd(type)})}catch(e){g=null}finally{window.PLOT_DRY=false;window.alert=ao;P.nid=nid}
-  if(!g)return false;g.id=0;if(old)CW_KEEP.forEach(k=>{if(old[k]!==undefined)g[k]=old[k]});
+  if(!g)return false;if(!cw.gid)cw.gid=uid();g.id=cw.gid;if(old)CW_KEEP.forEach(k=>{if(old[k]!==undefined)g[k]=old[k]});
+  if(!g.outSize)g.outSize=[1920,1080];if(old&&old.shapes)g.shapes=old.shapes;
   if(cw.tpl>=0)applyBuiltin(g,BUILTIN_TPL[cw.tpl]);if(old&&old.lwAll)g.series.forEach(s=>s.lw=old.lwAll);
   cw.g=g;cw.type=type;return true}
+function cwAttach(){const g=cw.g;if(!g)return;g.id=cw.gid;g.sheetId=cw.sh.id;if(!g.name||/^[A-Z].* \d+$/.test(g.name))g.name=g.title||'Wizard chart';const i=P.graphs.findIndex(x=>x.id===g.id);if(i<0)P.graphs.push(g);else P.graphs[i]=g}
+function cwEnterLive(){
+  const b=document.getElementById('body'),res=document.getElementById('results');
+  if(!cw.saveUI)cw.saveUI={open:P.open.map(w=>({...w})),act:P.act&&{...P.act},noexp:b.classList.contains('noexp'),noprops:b.classList.contains('noprops'),min:res.classList.contains('min'),pad:document.body.style.getPropertyValue('--cwL')};
+  b.classList.add('noexp','noprops');res.classList.add('min');cwAttach();openWin('graph',cw.gid)}
+function cwLeaveLive(){
+  const u=cw.saveUI;if(!u)return;const b=document.getElementById('body'),res=document.getElementById('results');
+  b.classList.toggle('noexp',u.noexp);b.classList.toggle('noprops',u.noprops);res.classList.toggle('min',u.min);
+  P.open=u.open.filter(w=>winObj(w.t,w.id)&&!(w.t==='graph'&&w.id===cw.gid&&!cw.committed));P.act=u.act&&winObj(u.act.t,u.act.id)?u.act:P.open[0]||null;cw.saveUI=null;if(typeof showWin==='function')showWin()}
+function cwRedraw(){if(cw.step===3){cwAttach();redrawGraph()}else cwDrawPreview()}
+function cwSwitch(type){if(!cwBuild(type))return false;cwAttach();openWin('graph',cw.gid);return true}
+function cwThumb(type){
+  let g=null;window.PLOT_DRY=true;const nid=P.nid,ao=window.alert;window.alert=()=>{};try{g=plotCmd(type)}catch(e){g=null}finally{window.PLOT_DRY=false;window.alert=ao;P.nid=nid}if(!g)return null;
+  const eo=Chart.prototype.empty;let empty=false;Chart.prototype.empty=function(){empty=true};let url=null;
+  try{const[W,H]=graphSize({...g,outSize:null}),cv=document.createElement('canvas'),px=520,k=px/W;cv.width=px;cv.height=Math.round(H*k);const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);c.scale(k,k);drawGraphTo(c,g,W,H,LIGHT);if(!empty)url=cv.toDataURL('image/png')}catch(e){url=null}finally{Chart.prototype.empty=eo}
+  return url}
 function cwStep3(b){
   if(!cw.g||cw.g.type!==cw.type)if(!cwBuild(cw.type)){const ok=['line','scatter','column','hist','box'].some(t=>cwBuild(t));if(!ok){cw.step=2;cwRender();return cwMsg('This data cannot be charted. Check column roles.')}}
+  cwEnterLive();
   b.innerHTML=`<div class="cw3"><aside class="cwg"><div class="cwgh">Chart type</div><div class="cwgrid" id="cwGrid"></div><button id="cwMore" class="lnk">Show more chart types</button></aside>
-  <main class="cwp"><div class="cwprev"><canvas id="cwCv"></canvas></div></main>
+  <main class="cwp"></main>
   <aside class="cwc"><div class="seg" id="cwSeg">${[['refine','Refine'],['annotate','Annotate'],['layout','Layout']].map(([k,l])=>`<button data-t="${k}" class="${cw.tab===k?'on':''}">${l}</button>`).join('')}</div><div id="cwCtl"></div></aside></div>`;
-  cwDrawPreview();cwControls();cwGallery(false);
+  cwControls();cwGallery(false);
   b.querySelector('#cwSeg').onclick=e=>{const t=e.target.closest('[data-t]');if(!t)return;cw.tab=t.dataset.t;b.querySelectorAll('#cwSeg button').forEach(x=>x.classList.toggle('on',x===t));cwControls()};
   b.querySelector('#cwMore').onclick=e=>{e.target.remove();cwGallery(true)};
-  b.querySelector('#cwGrid').onclick=e=>{const t=e.target.closest('[data-type]');if(!t)return;if(cwBuild(t.dataset.type)){cwQ('#cwGrid').querySelectorAll('.cwty').forEach(x=>x.classList.toggle('on',x===t));cwDrawPreview();cwControls()}else cwMsg('That chart type cannot show this data')}}
+  b.querySelector('#cwGrid').onclick=e=>{const t=e.target.closest('[data-type]');if(!t)return;if(cwSwitch(t.dataset.type)){cwQ('#cwGrid').querySelectorAll('.cwty').forEach(x=>x.classList.toggle('on',x===t));cwControls()}else cwMsg('That chart type cannot show this data')}}
 let cwGalTok=0;
 function cwGallery(all){
   const grid=cwQ('#cwGrid');if(!grid)return;const tok=++cwGalTok;if(!all)grid.innerHTML='';
-  let list=all?Object.keys(GTYPES).filter(t=>!PREVIEW_FIRST.includes(t)):PREVIEW_FIRST.filter(t=>GTYPES[t]);
+  const list=all?Object.keys(GTYPES).filter(t=>!PREVIEW_FIRST.includes(t)):PREVIEW_FIRST.filter(t=>GTYPES[t]);
   const step=()=>{if(tok!==cwGalTok||!cw||!document.body.contains(grid))return;const t=list.shift();if(!t)return;
-    const url=cwWith(()=>previewThumb(t));
+    const url=cwWith(()=>cwThumb(t));
     if(url){const d=document.createElement('button');d.className='cwty'+(t===cw.type?' on':'');d.dataset.type=t;d.title=GTYPES[t];d.innerHTML=`<img src="${url}" alt=""><span>${esc(GTYPES[t])}</span>`;grid.append(d)}setTimeout(step,0)};
   step()}
 function cwDrawPreview(){
   const cv=cwQ('#cwCv');if(!cv||!cw.g)return;const g=cw.g,[W,H]=graphSize(g),dpr=Math.min(2,window.devicePixelRatio||1);
-  cv.width=W*dpr;cv.height=H*dpr;cv.style.aspectRatio=`${W}/${H}`;const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+  cv.width=W*dpr*1.6;cv.height=H*dpr*1.6;cv.style.aspectRatio=`${W}/${H}`;const c=cv.getContext('2d');c.setTransform(dpr*1.6,0,0,dpr*1.6,0,0);
   try{drawGraphTo(c,g,W,H,cwPal())}catch(e){c.fillStyle='#c00';c.fillText('Could not draw: '+e.message,20,30)}}
+function cwSizeFields(g){const cur=g.outSize||[1920,1080],key=cur.join('x'),has=CW_SIZES.some(([v])=>v===key);
+  return`<div class="f"><label>Export size (pixels)</label><select id="cwSz">${CW_SIZES.map(([v,l])=>`<option value="${v}" ${key===v?'selected':''}>${l}</option>`).join('')}<option value="custom" ${has?'':'selected'}>Custom…</option></select></div>
+  <div class="two"><div class="f"><label>Width</label><input type="number" id="cwW" min="200" max="8000" value="${cur[0]}"></div><div class="f"><label>Height</label><input type="number" id="cwH" min="150" max="8000" value="${cur[1]}"></div></div>`}
 function cwControls(){
   const box=cwQ('#cwCtl');if(!box)return;const g=cw.g,sh=cw.sh;
   const T=(k,l,ph='')=>`<div class="f"><label>${l}</label><input type="text" data-k="${k}" value="${esc(g[k]||'')}" placeholder="${esc(ph)}"></div>`;
@@ -5469,52 +5549,59 @@ function cwControls(){
     <div class="f"><label>Y columns</label><div class="chk">${num.filter(i=>i!==cw.x).map(i=>`<label><input type="checkbox" data-y="${i}" ${cw.ys.includes(i)?'checked':''}> ${esc(sh.cols[i].name||L(i))}</label>`).join('')}</div></div>
     <div class="f"><label>Y scale</label><select data-k="ys"><option value="linear">Linear</option><option value="log">Logarithmic</option></select></div>
     <div class="f"><label>Line width</label><input type="range" min="1" max="6" step=".5" id="cwLw" value="${g.lwAll||g.series[0]?.lw||2}"></div>
-    <div class="f c"><input type="checkbox" data-k="gridy" ${g.gridy?'checked':''}><label>Horizontal grid</label></div><div class="f c"><input type="checkbox" data-k="gridx" ${g.gridx?'checked':''}><label>Vertical grid</label></div>`;
+    <div class="f c"><input type="checkbox" data-k="gridy" ${g.gridy?'checked':''}><label>Horizontal grid</label></div><div class="f c"><input type="checkbox" data-k="gridx" ${g.gridx?'checked':''}><label>Vertical grid</label></div>
+    <p class="note">More options are in the toolbar above the chart (Tools, View, Format). Click a series for colour and symbols.</p>`;
     const ys=box.querySelector('[data-k=ys]');if(ys)ys.value=g.ys||'linear'}
   else if(cw.tab==='annotate'){
-    box.innerHTML=`<div class="f"><label>Text note</label><input type="text" id="nT" placeholder="e.g. Peak in 2022"></div><div class="two"><div class="f"><label>at X</label><input type="text" id="nX"></div><div class="f"><label>at Y</label><input type="text" id="nY"></div></div><button id="nAdd">Add note</button>
+    box.innerHTML=`<p class="note" style="margin-top:0">Add text, arrows, lines and shapes with the toolbar above the chart (<b>Tools ▸ Draw shapes</b>) or here. Click an element to select it, drag to move, <b>double-click</b> text to edit it, Delete removes it.</p>
+    <div class="row2"><button id="aShape">Add text / shape ▾</button></div>
     <div class="f" style="margin-top:12px"><label>Reference line</label></div><div class="two"><select id="rA"><option value="y">Horizontal (y =)</option><option value="x">Vertical (x =)</option></select><input type="text" id="rV" placeholder="value"></div><button id="rAdd">Add line</button>
-    <div class="f" style="margin-top:12px"><label>Description below the chart</label><textarea rows="3" data-k="desc" placeholder="Explain what the reader should see">${esc(g.desc||'')}</textarea></div>${T('cwSrc','Source','Data: …')}
-    <div class="cwlist">${(g.notes||[]).map((n,i)=>`<span class="tag">${esc(n.text)}<button data-rn="${i}">✕</button></span>`).join('')}${(g.refs||[]).map((r,i)=>`<span class="tag">${r.axis}=${Mx.fmt(r.v,5)}<button data-rr="${i}">✕</button></span>`).join('')}</div><p class="note">Tip: later, in the workspace, you can drag notes and draw arrows and shapes.</p>`}
+    <div class="f" style="margin-top:12px"><label>Description below the chart</label><textarea rows="3" data-k="desc" placeholder="Explain what the reader should see">${esc((g.desc||'').replace(/\n?Source: .*$/,''))}</textarea></div>${T('cwSrc','Source','Data: …')}
+    <div class="cwlist">${(g.refs||[]).map((r,i)=>`<span class="tag">${r.axis}=${Mx.fmt(r.v,5)}<button data-er="${i}" title="Edit">✎</button><button data-rr="${i}" title="Remove">✕</button></span>`).join('')}</div>`}
   else{
-    box.innerHTML=`<div class="f"><label>Size</label><select id="cwSz">${CW_SIZES.map(([v,l])=>`<option value="${v}" ${(g.outSize?g.outSize.join('x'):'')===v?'selected':''}>${l}</option>`).join('')}</select></div>
+    box.innerHTML=`${cwSizeFields(g)}<p class="note" style="margin-top:-4px">Sets the size of exported images. The view above always fits your window.</p>
     <div class="f"><label>Style</label><select id="cwTpl"><option value="-1">Default</option>${BUILTIN_TPL.map((t,i)=>`<option value="${i}" ${cw.tpl===i?'selected':''}>${esc(t.name)}: ${esc(t.desc)}</option>`).join('')}</select></div>
     <div class="f"><label>Background</label><select id="cwBg"><option value="0">Light</option><option value="1" ${g.cwDark?'selected':''}>Dark</option></select></div>
     <div class="f"><label>Font size</label><input type="range" min="9" max="24" id="cwFs" value="${g.fs||12}"></div>
     <div class="f"><label>Legend</label><select data-k="legend">${[['none','Hidden'],['tr','Top right'],['tl','Top left'],['br','Bottom right'],['bl','Bottom left']].map(([v,l])=>`<option value="${v}" ${g.legend===v?'selected':''}>${l}</option>`).join('')}</select></div>`}
   cwBind(box)}
+function cwSetSize(w,h){w=Math.max(200,Math.min(8000,Math.round(w)));h=Math.max(150,Math.min(8000,Math.round(h)));if(!(w>0&&h>0))return;cw.g.outSize=[w,h]}
 function cwBind(box){
-  const redo=()=>{cwDrawPreview()};
-  box.oninput=e=>{const t=e.target,k=t.dataset.k;if(k){const g=cw.g;g[k]=t.type==='checkbox'?t.checked:t.value;if(k==='cwSrc'||k==='desc')cwSyncSrc();redo();return}
-    if(t.id==='cwLw'){cw.g.lwAll=+t.value;cw.g.series.forEach(s=>s.lw=+t.value);redo()}if(t.id==='cwFs'){cw.g.fs=+t.value;redo()}};
+  box.oninput=e=>{const t=e.target,k=t.dataset.k;if(k){const g=cw.g;g[k]=t.type==='checkbox'?t.checked:t.value;if(k==='cwSrc'||k==='desc')cwSyncSrc();cwRedraw();return}
+    if(t.id==='cwLw'){cw.g.lwAll=+t.value;cw.g.series.forEach(s=>s.lw=+t.value);cwRedraw()}if(t.id==='cwFs'){cw.g.fs=+t.value;cwRedraw()}
+    if(t.id==='cwW'||t.id==='cwH'){cwSetSize(+box.querySelector('#cwW').value,+box.querySelector('#cwH').value);const s=box.querySelector('#cwSz');if(s)s.value=CW_SIZES.some(([v])=>v===cw.g.outSize.join('x'))?cw.g.outSize.join('x'):'custom'}};
   box.onchange=e=>{const t=e.target;
     if(t.id==='cwX'){cw.x=+t.value;cw.ys=cw.ys.filter(j=>j!==cw.x);if(!cw.ys.length){const f=cw.sh.cols.findIndex((c,i)=>i!==cw.x&&c.d.some(v=>typeof v==='number'));if(f>=0)cw.ys=[f]}cwApplyRoles();cwRebuild();return}
     if(t.dataset.y!==undefined){const i=+t.dataset.y;cw.ys=cw.ys.filter(j=>j!==i);if(t.checked)cw.ys.push(i);cw.ys.sort((a,b)=>a-b);if(!cw.ys.length){t.checked=true;cw.ys=[i]}cwApplyRoles();cwRebuild();return}
-    if(t.id==='cwSz'){cw.g.outSize=t.value?t.value.split('x').map(Number):null;redo()}
-    if(t.id==='cwTpl'){cw.tpl=+t.value;if(cw.tpl>=0)applyBuiltin(cw.g,BUILTIN_TPL[cw.tpl]);else cwBuild(cw.type);cwControls();redo()}
-    if(t.id==='cwBg'){cw.g.cwDark=t.value==='1';redo()}
-    if(t.dataset.k==='ys'||t.dataset.k==='legend'||t.dataset.k==='gridx'||t.dataset.k==='gridy'){cw.g[t.dataset.k]=t.type==='checkbox'?t.checked:t.value;redo()}};
+    if(t.id==='cwSz'&&t.value!=='custom'){const[w,h]=t.value.split('x').map(Number);cwSetSize(w,h);box.querySelector('#cwW').value=w;box.querySelector('#cwH').value=h}
+    if(t.id==='cwTpl'){cw.tpl=+t.value;if(cw.tpl>=0)applyBuiltin(cw.g,BUILTIN_TPL[cw.tpl]);else cwBuild(cw.type);cwControls();cwRedraw();if(cw.step===3)openWin('graph',cw.gid)}
+    if(t.id==='cwBg'){cw.g.cwDark=t.value==='1';cwRedraw()}
+    if(t.dataset.k==='ys'||t.dataset.k==='legend'||t.dataset.k==='gridx'||t.dataset.k==='gridy'){cw.g[t.dataset.k]=t.type==='checkbox'?t.checked:t.value;cwRedraw()}};
   box.onclick=e=>{const g=cw.g,t=e.target;
-    if(t.id==='nAdd'){const tx=box.querySelector('#nT').value.trim(),x=box.querySelector('#nX').value,y=parseFloat(box.querySelector('#nY').value);let xv=parseFloat(x);if(cw.x>=0&&cw.sh.cols[cw.x].fmt==='date'&&Number.isNaN(xv))xv=Date.parse(x);if(!tx||Number.isNaN(xv)||Number.isNaN(y))return cwMsg('Enter the note text and numeric X and Y positions');(g.notes=g.notes||[]).push({x:xv,y,text:tx});cwControls();cwDrawPreview()}
-    if(t.id==='rAdd'){const v=parseFloat(box.querySelector('#rV').value);if(Number.isNaN(v))return cwMsg('Enter a numeric value');(g.refs=g.refs||[]).push({axis:box.querySelector('#rA').value,v});cwControls();cwDrawPreview()}
-    if(t.dataset.rn!==undefined){g.notes.splice(+t.dataset.rn,1);cwControls();cwDrawPreview()}if(t.dataset.rr!==undefined){g.refs.splice(+t.dataset.rr,1);cwControls();cwDrawPreview()}}}
+    if(t.id==='aShape'){const r=t.getBoundingClientRect();popMenu(shapeMenuItems(),r.left,r.bottom+4)}
+    if(t.id==='rAdd'){const v=parseFloat(box.querySelector('#rV').value);if(Number.isNaN(v))return cwMsg('Enter a numeric value');(g.refs=g.refs||[]).push({axis:box.querySelector('#rA').value,v});cwControls();cwRedraw()}
+    if(t.dataset.er!==undefined){const q=g.refs[+t.dataset.er],nv=prompt('Reference line value:',q.v);if(nv!==null&&!Number.isNaN(parseFloat(nv))){q.v=parseFloat(nv);cwControls();cwRedraw()}}
+    if(t.dataset.rr!==undefined){g.refs.splice(+t.dataset.rr,1);cwControls();cwRedraw()}}}
 function cwSyncSrc(){const g=cw.g;g.desc=(g.desc||'').replace(/\n?Source: .*$/,'');if(g.cwSrc&&g.cwSrc.trim()){g.desc=(g.desc?g.desc+'\n':'')+'Source: '+g.cwSrc.replace(/^Source:\s*/i,'').trim()}}
-function cwRebuild(){if(!cwBuild(cw.type)){cw.g=null;cwBuild('line')||cwBuild('scatter')}cwDrawPreview();cwControls();cwGallery(false)}
+function cwRebuild(){if(!cwSwitch(cw.type)){cw.g=null;(cwBuild('line')||cwBuild('scatter'))&&cwSwitch(cw.type)}cwControls();cwGallery(false)}
 
 // ---------- step 4: publish ----------
 function cwName(){return(cw.g.title||cw.name||'chart').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase()||'chart'}
-function cwCanvas(scale){const g=cw.g,[W,H]=graphSize(g),cv=document.createElement('canvas');cv.width=W*scale;cv.height=H*scale;const c=cv.getContext('2d');c.scale(scale,scale);drawGraphTo(c,g,W,H,cwPal());return cv}
+function cwCanvas(mult){const g=cw.g,[W,H]=graphSize(g),k=cwPxScale(g)*(mult||1),cv=document.createElement('canvas');cv.width=g.outSize?Math.round(g.outSize[0]*(mult||1)):Math.round(W*k);cv.height=g.outSize?Math.round(g.outSize[1]*(mult||1)):Math.round(H*k);const c=cv.getContext('2d');c.scale(cv.width/W,cv.height/H);drawGraphTo(c,g,W,H,cwPal());return cv}
 function cwSVGText(){const g=cw.g,[W,H]=graphSize(g),c=new SVGCtx();drawGraphTo(c,g,W,H,cwPal());return c.toSVG(W,H)}
+function cwPDFBlob(){return graphsToPDF([cw.g])}
 function cwStep4(b){
   b.innerHTML=`<div class="cw4"><div class="cwprev small"><canvas id="cwCv"></canvas></div><div class="cwpub">
   <h3>Publish & export</h3>
-  <div class="pcard"><b>Image</b><div class="note">For reports, slides and social media.</div><div class="row"><select id="pS"><option value="1">1× (${graphSize(cw.g).join(' × ')})</option><option value="2" selected>2× retina</option><option value="3">3× print</option></select><button data-p="png">Download PNG</button><button data-p="copy">Copy image</button></div></div>
+  <div class="pcard"><b>Image</b><div class="note">For reports, slides and social media. Edit the pixel size below.</div><div class="cwsz"><select id="cwSz">${CW_SIZES.map(([v,l])=>`<option value="${v}" ${(cw.g.outSize||[]).join('x')===v?'selected':''}>${l}</option>`).join('')}<option value="custom" ${CW_SIZES.some(([v])=>v===(cw.g.outSize||[]).join('x'))?'':'selected'}>Custom…</option></select><input type="number" id="cwW" min="200" max="8000" value="${cw.g.outSize[0]}"> × <input type="number" id="cwH" min="150" max="8000" value="${cw.g.outSize[1]}"> px</div><div class="row"><select id="pS"><option value="1" selected>Normal</option><option value="2">2× (high resolution)</option></select><button data-p="png">Download PNG</button><button data-p="copy">Copy image</button></div></div>
   <div class="pcard"><b>Vector & print</b><div class="note">Sharp at any size; editable in vector editors.</div><div class="row"><button data-p="svg">SVG</button><button data-p="pdf">PDF</button><button data-p="eps">EPS</button></div></div>
   <div class="pcard"><b>Web</b><div class="note">Self-contained, responsive, no server needed.</div><div class="row"><button data-p="html">Download web page (.html)</button><button data-p="embed">Copy embed code</button><button data-p="svgcode">Copy SVG code</button></div></div>
   <div class="pcard"><b>Office</b><div class="row"><button data-p="pptx">PowerPoint slide (.pptx)</button><button data-p="csv">Data as CSV</button></div></div>
   <div class="pcard"><b>Project</b><div class="note">Keep editing with the full toolset: annotations, fits, statistics, layouts.</div><div class="row"><button data-p="open" class="p">Open in workspace</button><button data-p="share">Share whole project (.html)</button></div></div>
   </div></div>`;
   cwDrawPreview();
+  const pub=b.querySelector('.cwpub');pub.oninput=e=>{const t=e.target;if(t.id==='cwW'||t.id==='cwH'){cwSetSize(+pub.querySelector('#cwW').value,+pub.querySelector('#cwH').value);cwDrawPreview()}};
+  pub.onchange=e=>{const t=e.target;if(t.id==='cwSz'&&t.value!=='custom'){const[w,h]=t.value.split('x').map(Number);cwSetSize(w,h);pub.querySelector('#cwW').value=w;pub.querySelector('#cwH').value=h;cwDrawPreview()}};
   b.querySelector('.cwpub').onclick=async e=>{const p=e.target.closest('[data-p]')?.dataset.p;if(!p)return;const nm=cwName();
     try{
       if(p==='png')cwCanvas(+b.querySelector('#pS').value).toBlob(bl=>{download(nm+'.png',bl);cwMsg('PNG saved')});
@@ -5534,15 +5621,20 @@ function cwStep4(b){
     }catch(err){alert('That did not work: '+err.message)}}}
 function cwCommit(){
   if(cw.committed)return cw.g;
-  if(cw.own){const i=P.sheets.indexOf(cw.sh);if(i>=0)P.sheets.splice(i,1);histHint='Chart wizard';snap();histHint=null;P.sheets.push(cw.sh)}else{histHint='Chart wizard';snap();histHint=null}
-  const g=cw.g;g.id=uid();g.name=g.title||`${GTYPES[g.type]||g.type} ${g.id}`;g.sheetId=cw.sh.id;P.graphs.push(g);cw.committed=true;dirty();if(typeof renderExplorer==='function')renderExplorer();return g}
-function cwFinish(){const g=cwCommit();cwClose(true);openWin('graph',g.id);flash('Chart added to your project')}
+  const g=cw.g;P.graphs=P.graphs.filter(x=>x.id!==cw.gid);
+  if(cw.own){const i=P.sheets.indexOf(cw.sh);if(i>=0)P.sheets.splice(i,1)}
+  histHint='Chart wizard';snap();histHint=null;
+  if(cw.own)P.sheets.push(cw.sh);g.id=cw.gid;g.name=g.title||`${GTYPES[g.type]||g.type} ${g.id}`;g.sheetId=cw.sh.id;P.graphs.push(g);cw.committed=true;dirty();return g}
+function cwFinish(){const g=cwCommit();cwClose(true);openWin('graph',g.id);if(typeof renderExplorer==='function')renderExplorer();flash('Chart added to your project')}
 
 (function(){
   RIB.File.push(['Chart wizard',[['Chart wizard…','✦',()=>cwStart()],['Chart wizard for current sheet','✦',()=>{const s=curSheet();if(!s||s.isMatrix)return flash('Open a regular worksheet first');cwStart(s)}]]]);
   const adv=dawAdvice;dawAdvice=function(sh){const r=adv(sh);if(!sh.isMatrix&&r.p.num.length)r.out.unshift({group:'Guided',title:'Open the chart wizard',sub:'Check the data, compare chart types, annotate and publish',fn:()=>cwStart(sh)});
     const order=['Guided','Understand','Clean up','Visualise','Analyse','Not sure?'];r.out.sort((a,b)=>order.indexOf(a.group)-order.indexOf(b.group));return r};
-  const da=dawAfter;dawAfter=function(){if(window.cwSuppress||cw){dawMade=[];dawArmed=0;return}return da.apply(this,arguments)};
+  const da=dawAfter;dawAfter=function(){if(window.cwSuppress||cw){dawMade=[];dawArmed=0;return}
+    const sh=dawMade[dawMade.length-1];let off=false;try{off=localStorage.getItem('la_daw_off')==='1'}catch(e){}
+    if(sh&&!off&&!sh.isMatrix&&dawProfile(sh).num.length){dawMade=[];dawArmed=0;clearTimeout(dawPending);dawPending=null;setTimeout(()=>cwStart(sh),150);return}
+    return da.apply(this,arguments)};
 })();
 </script>
 </body>
