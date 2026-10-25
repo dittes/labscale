@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LabScale</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body data-ws="studio">
+<div id="app">
+  <header id="top">
+    <div class="brand"><img src="favicon.svg" width="22" height="22" alt="" style="vertical-align:-5px;margin-right:7px;border-radius:5px">Lab<b>Scale</b></div>
+    <nav id="rtabs"></nav>
+    <div class="sp"></div>
+    <button id="bUndo" title="Undo (Ctrl+Z)">↶</button>
+    <button id="bRedo" title="Redo (Ctrl+Shift+Z)">↷</button>
+    <button id="bExp" title="Toggle project explorer">☰</button>
+    <button id="bProps" title="Toggle properties panel">▤</button>
+    <button id="bRes" title="Toggle results log">Σ</button>
+  </header>
+  <div id="ribbon"></div>
+  <div id="body">
+    <aside id="explorer"></aside>
+    <section id="center">
+      <div id="wintabs"></div>
+      <div id="winbody">
+        <div id="sheetWin" class="win">
+          <div id="fbar"><span id="fcell">A1</span><span class="fxl">ƒx</span><input id="fx" type="text" spellcheck="false" placeholder="Value or =formula (e.g. =SUM(A1:A10)*2)"></div>
+          <div id="grid" tabindex="0"><table id="gt"></table><input id="ed" hidden></div>
+          <div id="cmdbar"><span>Command</span><input id="cmd" type="text" placeholder="e.g.  C = sin(A)*B + 1     (columns by letter; i = row number)  — press Enter" spellcheck="false"><span id="selinfo" class="note"></span></div>
+        </div>
+        <div id="graphWin" class="win" hidden>
+          <div id="gtools">
+            <button data-mode="pan" class="on" title="Drag to pan, wheel to zoom, double-click to reset">✥ Pan</button>
+            <button data-mode="zoom" title="Drag a rectangle to zoom">⛶ Zoom box</button>
+            <button data-mode="note" title="Click on the plot to add a text annotation">T Note</button>
+            <button data-mode="roi" title="Drag across the graph to define a region used by gadgets and analyses">▭ ROI</button>
+            <button data-mode="brush" title="Drag a rectangle to select points (mask, subset, delete)">⬚ Brush</button>
+            <button data-mode="cursor" title="Click near points to place two data cursors">✛ Cursor</button>
+            <button data-mode="shape" title="Draw annotation shapes (choose the shape on the right)">✎ Draw</button>
+            <select id="gShape" title="Annotation tool"><option value="pointer">Select / move</option><option value="line">Line</option><option value="arrow">Arrow</option><option value="rect">Rectangle</option><option value="ellipse">Ellipse</option><option value="text">Text</option></select>
+            <button id="gImg" title="Insert an image into the graph">▣ Image</button>
+            <button data-mode="movept" title="Drag a data point to edit its worksheet values">⇱ Move pt</button>
+            <button data-mode="drawpt" title="Click to add a data point to the first series">✚ Add pt</button>
+            <button id="gPrev" title="Show previous Y column">◀</button><button id="gNext" title="Show next Y column">▶</button>
+            <button id="gGad" title="Show the gadgets panel">⚙ Gadgets</button>
+            <button id="gReset">⟲ Reset view</button>
+            <button id="gPng">⤓ PNG</button>
+            <button id="gCopy">⧉ Copy</button>
+            <button id="gPdf">⤓ PDF</button>
+            <button id="gSvg">⤓ SVG</button>
+            <button id="gPrint">⎙ Print</button>
+            <button id="gFmtC" title="Copy this graph's styling">Copy format</button>
+            <button id="gFmtP" title="Apply the copied styling to this graph">Paste format</button>
+          </div>
+          <div id="gwrap"><canvas id="cv"></canvas><div id="tip"></div></div>
+        </div>
+        <div id="layoutWin" class="win" hidden><div id="ltools"></div><div id="lwrap"><canvas id="lcv"></canvas></div></div>
+        <div id="noteWin" class="win" hidden><div id="ntools"></div><div id="nbody"><textarea id="ntext" spellcheck="false"></textarea><div id="nprev"></div></div></div>
+        <div id="empty" class="win" hidden><p>Open a sheet or graph from the project explorer.</p></div>
+      </div>
+    </section>
+    <aside id="props"></aside>
+  </div>
+  <section id="results"><div class="rh"><b>Results Log</b><span class="sp"></span><button id="rClear">Clear</button><button id="rExport">Export report</button><button id="rHide">▾</button></div><div id="rlist"></div></section>
+</div>
+<input id="imgIn" type="file" accept="image/*" hidden>
+<input id="fileIn" type="file" accept=".csv,.txt,.tsv,.dat,.xlsx,.xls,.json,.html,.htm,.xml" hidden>
+<script>window.__SKEL=document.body.innerHTML.replace(/<script[\s\S]*$/i,'')</script>
+<script src="js/math.js"></script>
+<script src="js/analysis.js"></script>
+<script src="js/analysis2.js"></script>
+<script src="js/analysis3.js"></script>
+<script src="js/chart.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/svg.js"></script>
+<script src="js/samples.js"></script>
+<script src="js/app.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/gadgets.js"></script>
+<script src="js/funcs.js"></script>
+<script src="js/graphx.js"></script>
+<script src="js/analysis4.js"></script>
+<script src="js/analysis5.js"></script>
+<script src="js/props2.js"></script>
+<script src="js/sheet2.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/export2.js"></script>
+<script src="js/connectors.js"></script>
+<script src="js/tools1.js"></script>
+<script src="js/matrix.js"></script>
+<script src="js/image.js"></script>
+<script src="js/report.js"></script>
+<script src="js/office.js"></script>
+<script src="js/gallery.js"></script>
+<script src="js/gallery2.js"></script>
+<script src="js/gallery3.js"></script>
+<script src="js/gallery4.js"></script>
+<script src="js/analysis6.js"></script>
+<script src="js/ux.js"></script>
+<script src="js/workflow2.js"></script>
+<script src="js/legal.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/analysis7.js"></script>
+<script src="js/analysis8.js"></script>
+<script src="js/sheetedit.js"></script>
+<script src="js/graphbar.js"></script>
+<script src="js/shapes2.js"></script>
+<script src="js/gfeatures.js"></script>
+<script src="js/graphedit.js"></script>
+<script src="js/plotpreview.js"></script>
+<script src="js/workspace.js"></script>
+<script src="js/search.js"></script>
+<script src="js/organize.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+'use strict';
+// UX layer: welcome screen, help & shortcuts, collapsible results, better ribbon icons.
+Object.assign(AIC,{spc:'UCL',capability:'Cpk',gagerr:'R&R',tolint:'TI',doedesign:'DOE+',doeanalyze:'DOE✓',dtree:'Tree'});
+if(RIB.Quality){RIB.Quality[0]=analysisItems('Quality')}if(RIB.Multivariate)RIB.Multivariate[0]=analysisItems('Multivariate');
+
+// ---- welcome screen ----
+function renderWelcome(){const e=document.getElementById('empty');if(!e||e.hidden)return;
+  const hasData=P.sheets.length||P.graphs.length;
+  e.innerHTML=`<div class="wl"><h2>${hasData?'Pick something to work on':'Welcome to LabScale'}</h2><p class="note">${hasData?'Open a sheet or graph from the explorer, or start something new.':'Import data or try a sample to begin. Everything runs in your browser; nothing is uploaded.'}</p>
+  <div class="wcards">${[['+','New worksheet','Type or paste data','new'],['⇥','Import a file','CSV, Excel, JSON, HTML tables','imp'],['⚗','Load sample data','Spectra, kinetics, dose-response…','smp'],['⌘','Search commands','Find any analysis or chart (Ctrl+K)','pal'],['UCL','Control chart','SPC, capability, gage R&R','spc'],['?','Help and shortcuts','Press ? at any time','help']].map(([i,t,s,a])=>`<button class="wc" data-w="${a}"><span class="wi">${esc(i)}</span><b>${esc(t)}</b><span class="note">${esc(s)}</span></button>`).join('')}</div>
+  <p class="note" style="margin-top:18px">Tip: choose a workspace layout (Classic ribbon, Studio, Minimal) in Settings ⚙.</p></div>`;
+  e.onclick=ev=>{const b=ev.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;({new:()=>COLOP.newsheet(),imp:()=>COLOP.importFile(),smp:()=>COLOP.samples(),pal:()=>openPalette(),spc:()=>{if(!curSheet())return flash('Load or create data first');openAnalysis('spc')},help:()=>helpDialog()})[a]()}}
+(()=>{const old=showWin;showWin=function(){old();if(!P.act)renderWelcome()}})();
+
+// ---- help dialog ----
+const SHORTCUTS=[['Ctrl/⌘ + K','Search every command, analysis and chart'],['Ctrl/⌘ + Z · Shift + Z','Undo · redo'],['?  or  F1','This help'],['Tab (Studio, Minimal)','Hide or show all panels'],['Esc','Close a menu or dialog'],['Drag a title bar','Move dialogs and the gadgets panel'],['Wheel · drag on a graph','Zoom · pan'],['Double-click a graph','Reset the view'],['Ctrl/⌘ + C / V in the grid','Copy / paste cells'],['Shift + click','Select a cell range'],['Enter · Tab in the grid','Move down · right']];
+function helpDialog(){if(document.getElementById('helpDlg'))return;const d=document.createElement('dialog');d.className='dlg';d.id='helpDlg';d.style.maxWidth='620px';
+  d.innerHTML=`<form method="dialog"><h3>Help and shortcuts</h3><div class="fl" style="max-height:62vh"><table class="rt" style="width:100%"><tbody>${SHORTCUTS.map(([k,t])=>`<tr><td style="text-align:left;white-space:nowrap"><b>${esc(k)}</b></td><td style="text-align:left">${esc(t)}</td></tr>`).join('')}</tbody></table>
+  <h4 style="margin:10px 0 2px">Quick workflows</h4><ul style="margin:0;padding-left:18px;line-height:1.7"><li><b>Plot:</b> select columns in the sheet → Plot tab → choose a chart. Every chart exports to PDF, SVG, EPS and PNG.</li><li><b>Analyse:</b> open the Statistics, Fitting, Signal, Multivariate or Quality tab, pick a tool, fill in the dialog. Results update when data changes.</li><li><b>Explore a graph:</b> draw a region with the ROI tool, then use Gadgets for quick fit, peaks, statistics and more.</li><li><b>Report:</b> Results log → Export report (PDF, HTML, Word, Markdown, text) or build a Report note.</li><li><b>Share:</b> File → Share (.html) creates a single file containing your project.</li></ul></div><div class="fb"><button value="x">Close</button></div></form>`;
+  document.body.append(d);d.addEventListener('close',()=>d.remove());d.showModal()}
+COLOP.help=helpDialog;
+document.addEventListener('keydown',e=>{if((e.key==='?'||e.key==='F1')&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||'')&&!document.querySelector('dialog[open]')){e.preventDefault();helpDialog()}});
+
+// ---- collapsible results ----
+document.getElementById('rlist').addEventListener('click',e=>{const kb=e.target.closest('.kebab[data-rk]');if(kb){e.stopPropagation();const card=kb.closest('.rc'),q=sel=>card.querySelector(sel),act=sel=>()=>{const b=q(sel);if(b)b.click()},items=[];if(q('[data-recalc]'))items.push(['Recalculate now','',act('[data-recalc]'),null,'⟳'],['Run on every sheet','',act('[data-batch]')],['Repeat for every Y column','',act('[data-ally]')],['Edit settings…','',act('[data-dup]'),null,'✎'],['—']);items.push(['Copy as text','',act('[data-rcopy]'),null,'⧉']);const r=kb.getBoundingClientRect();popMenu(items,r.left-120,r.bottom+2,kb);return}const h=e.target.closest('.rc .h'),b=e.target.closest('button,input,label');if(!h||b)return;h.parentElement.classList.toggle('fold')});
+const st=document.createElement('style');st.textContent=`#empty:not([hidden]){display:block;overflow:auto;height:100%;min-height:0}.wl{max-width:760px;margin:6vh auto;padding:0 20px;text-align:center}.wl h2{margin:0 0 6px;font-size:22px}.wcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:22px}
+.wc{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer;color:var(--ink)}.wc:hover{border-color:var(--acc);background:var(--acc2)}.wc .wi{font-size:22px;color:var(--acc);min-height:30px}
+#rlist .rc.fold>*:not(.h){display:none}#rlist .rc .h{cursor:pointer}#rlist .rc .h b::before{content:'▾ ';color:var(--mut)}#rlist .rc.fold .h b::before{content:'▸ '}`;document.head.append(st);
+if(!P.act)renderWelcome();
+// open straight into a sample: app.html?sample=spectrum
+(function(){const q=new URLSearchParams(location.search).get('sample');if(!q)return;const go=()=>{try{if(typeof SAMPLES==='undefined'||!SAMPLES[q])return;snap();const sh=loadSample(q);gsel={c0:1,r0:0,c1:1,r1:0,extra:new Set()};if(['groups','repeated','regression'].includes(q))gsel={c0:0,r0:0,c1:sh.cols.length-1,r1:0,extra:new Set()};if(q==='xyz')gsel={c0:0,r0:0,c1:0,r1:0,extra:new Set()};plotCmd(SAMPLE_PLOT[q]||'line');history.replaceState(null,'',location.pathname)}catch(e){console.error(e)}};setTimeout(go,400)})();

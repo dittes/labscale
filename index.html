@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LabScale – Analyse, fit and plot your data in the browser</title>
+<meta name="description" content="LabScale is a free analysis and graphing workbench that runs entirely in your browser: worksheets, 110+ chart types, 110+ statistical and signal analyses, curve fitting, SPC and DOE, publication-ready PDF, SVG and PowerPoint export. Your data never leaves your device.">
+<link rel="canonical" href="https://labscale.org/">
+<meta property="og:title" content="LabScale – raw data in, clean charts out">
+<meta property="og:description" content="Free data analysis and graphing workbench in your browser. No install, no upload.">
+<meta property="og:url" content="https://labscale.org/">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#fbfbf9;--bg2:#f2f3f0;--ink:#0e1424;--mut:#5d6679;--line:#e2e5ea;--cob:#2563eb;--cob2:#e3ecff;--card:#ffffff;--mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;--sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0a0e1a;--bg2:#10162a;--ink:#e9edf8;--mut:#9aa4bd;--line:#222b44;--cob:#5b9bff;--cob2:#1d2a42;--card:#0f1528;color-scheme:dark}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:8px;top:-60px;background:var(--cob);color:#fff;padding:8px 14px;border-radius:8px;z-index:100}.skip:focus{top:8px}
+:focus-visible{outline:2px solid var(--cob);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+/* header */
+header.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:650;font-size:20px;letter-spacing:-.01em}
+.logo img{display:block;border-radius:8px}
+.logo b{color:var(--cob);font-weight:650}
+nav.main{display:flex;gap:22px;margin-left:12px}nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--ink)}
+.sp{flex:1}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 20px;border-radius:9px;font:600 15px var(--sans);text-decoration:none;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.16)}
+.btn.pri{background:var(--cob);border-color:var(--cob);color:#fff}.btn.pri:hover{box-shadow:0 8px 26px rgba(37,99,235,.4)}
+@media (prefers-color-scheme:dark){.btn.pri{color:#0a0e1a}}
+.btn.sm{padding:7px 16px;font-size:14px}.btn.lg{padding:14px 30px;font-size:17px}
+/* hero */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line);min-height:min(88vh,760px)}
+#heroCv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,var(--bg) 0,color-mix(in srgb,var(--bg) 92%,transparent) 26%,color-mix(in srgb,var(--bg) 55%,transparent) 44%,transparent 62%)}
+.hero .wrap{position:relative;z-index:2;padding-top:clamp(56px,11vh,120px);padding-bottom:64px}
+.eyebrow{font:500 13px var(--mono);color:var(--cob);letter-spacing:.04em;margin:0 0 20px}
+h1{font-size:clamp(38px,5.6vw,68px);line-height:1.02;letter-spacing:-.035em;margin:0 0 22px;font-weight:700;max-width:640px}
+.lead{font-size:clamp(17px,1.6vw,20px);color:var(--mut);max-width:520px;margin:0 0 30px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.snippet{display:flex;align-items:center;gap:10px;max-width:520px;border:1px solid var(--line);background:color-mix(in srgb,var(--card) 90%,transparent);border-radius:10px;padding:6px 6px 6px 16px;font:14px var(--mono);color:var(--mut)}
+.snippet span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.snippet code{color:var(--ink)}
+.fine{font-size:14px;color:var(--mut);margin-top:16px}
+@media (max-width:860px){.hero .wrap{width:100%;padding-top:40px}.hero{min-height:0}.hero::after{display:none}.hero .wrap{padding-bottom:20px}#heroCv{position:relative;height:340px;border-top:1px solid var(--line)}.hero{display:flex;flex-direction:column}.hero .wrap{order:1}#heroCv{order:2}nav.main{display:none}}
+/* sections */
+section{padding:92px 0}section.alt{background:var(--bg2);border-block:1px solid var(--line)}
+h2{font-size:clamp(28px,3.6vw,42px);letter-spacing:-.025em;line-height:1.12;margin:0 0 14px;font-weight:700}
+.sub{color:var(--mut);font-size:18px;max-width:640px;margin:0 0 44px}
+.grid{display:grid;gap:18px}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+@media (max-width:980px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}@media (max-width:620px){.g4,.g3,.g2{grid-template-columns:1fr}section{padding:64px 0}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px}
+.card .ic{width:40px;height:40px;border-radius:10px;background:var(--cob2);color:var(--cob);display:grid;place-items:center;font:600 18px var(--mono);margin-bottom:16px}
+.card h3{margin:0 0 6px;font-size:18px;letter-spacing:-.01em}.card p{margin:0;color:var(--mut);font-size:15px}
+.card ul{margin:10px 0 0;padding-left:18px;color:var(--mut);font-size:14.5px}
+/* pipeline tabs */
+.tabs{display:flex;gap:6px;border:1px solid var(--line);border-radius:12px;padding:5px;background:var(--card);width:max-content;max-width:100%;overflow:auto;margin-bottom:22px}
+.tabs button{border:0;background:none;padding:9px 20px;border-radius:8px;font:600 15px var(--sans);color:var(--mut);cursor:pointer;white-space:nowrap}.tabs button[aria-selected=true]{background:var(--cob);color:#fff}@media (prefers-color-scheme:dark){.tabs button[aria-selected=true]{color:#0a0e1a}}
+.stage{display:grid;grid-template-columns:1fr 1.15fr;gap:22px;align-items:stretch}@media (max-width:860px){.stage{grid-template-columns:1fr}}
+.stage .txt{padding:8px 4px}.stage .txt h3{font-size:24px;letter-spacing:-.02em;margin:0 0 10px}.stage .txt p{color:var(--mut);margin:0 0 14px}.stage .txt ul{color:var(--mut);padding-left:20px;margin:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;font:13px/1.55 var(--mono)}
+.panel .bar{display:flex;gap:7px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg2);color:var(--mut)}.panel .bar i{width:10px;height:10px;border-radius:50%;background:var(--line)}.panel .bar span{margin-left:8px}
+.panel pre{margin:0;padding:16px 18px;overflow:auto;color:var(--ink)}.panel pre .b{color:var(--cob)}.panel pre .m{color:var(--mut)}
+.panel table{width:100%;border-collapse:collapse}.panel td,.panel th{padding:6px 14px;text-align:right;border-bottom:1px solid var(--line);font-weight:400}.panel th{color:var(--mut);background:var(--bg2)}.panel td:first-child,.panel th:first-child{text-align:left}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{font:13px var(--mono);border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;color:var(--mut)}
+.chipgroup h3{font-size:14px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--cob);margin:0 0 10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}.stats div{padding:28px 22px;border-right:1px solid var(--line)}.stats div:last-child{border:0}.stats b{display:block;font:700 40px var(--sans);letter-spacing:-.03em;color:var(--cob)}.stats span{color:var(--mut);font-size:14.5px}
+@media (max-width:760px){.stats{grid-template-columns:1fr 1fr}.stats div:nth-child(2){border-right:0}.stats div:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+details{border-bottom:1px solid var(--line);padding:18px 0}summary{cursor:pointer;font-weight:600;font-size:18px;list-style:none;display:flex;justify-content:space-between;gap:20px}summary::after{content:"+";font:400 24px var(--mono);color:var(--cob)}details[open] summary::after{content:"–"}details p{color:var(--mut);margin:12px 0 0;max-width:760px}
+.band{text-align:center;padding:96px 0}.band h2{margin-bottom:12px}.band p{color:var(--mut);margin:0 0 28px;font-size:18px}
+footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--mut);font-size:14px}footer .wrap{display:flex;gap:18px 32px;flex-wrap:wrap;align-items:center}footer a{text-decoration:none}footer a:hover{color:var(--ink);text-decoration:underline}footer small{display:block;flex-basis:100%;font-size:12.5px;line-height:1.5}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top"><div class="wrap">
+  <a class="logo" href="./" aria-label="LabScale home"><img src="favicon.svg" width="32" height="32" alt=""><span>Lab<b>Scale</b></span></a>
+  <nav class="main" aria-label="Main"><a href="#how">How it works</a><a href="#inside">What’s inside</a><a href="#charts">Charts</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a></nav>
+  <span class="sp"></span><a class="btn pri sm" href="app.html">Open</a>
+</div></header>
+<main id="main">
+<section class="hero" aria-labelledby="h1">
+  <canvas id="heroCv" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <h1 id="h1">Raw data in,<br>clean charts out.</h1>
+    <p class="lead">LabScale is a free workbench for analysing, fitting and plotting measurement data. Paste a column, get a graph. Run a test, get a report. Nothing to install and nothing leaves your device.</p>
+    <div class="cta"><a class="btn pri lg" href="app.html">Open</a></div>
+    <p class="sr">Animation: streams of zeros and ones move from the left and are transformed into line charts, bar charts, scatter plots with a regression line, heat maps and spectra with fitted peaks.</p>
+  </div>
+</section>
+
+<section id="how"><div class="wrap">
+  <h2>Four steps from file to figure</h2>
+  <p class="sub">The same workspace carries your data from import to a finished, publication-ready result.</p>
+  <div class="tabs" role="tablist" aria-label="Workflow"><button role="tab" aria-selected="true" data-t="0">1 · Import</button><button role="tab" aria-selected="false" data-t="1">2 · Analyse</button><button role="tab" aria-selected="false" data-t="2">3 · Plot</button><button role="tab" aria-selected="false" data-t="3">4 · Publish</button></div>
+  <div class="stage" id="stage" aria-live="polite"></div>
+</div></section>
+
+<section class="alt" id="inside"><div class="wrap">
+  <h2>Everything a lab notebook needs</h2>
+  <p class="sub">One tool instead of a spreadsheet, a statistics package, a curve fitter and a plotting program.</p>
+  <div class="grid g4">
+    <div class="card"><div class="ic">▦</div><h3>Worksheets</h3><p>Spreadsheet-style grids with formulas, fill, sort, filter, find and replace, column formats and dates. Insert and delete rows and columns, or use functions such as SUM, CORREL and COUNTIF.</p></div>
+    <div class="card"><div class="ic">∿</div><h3>110+ chart types</h3><p>From line, scatter and box plots to violin, Sankey, Piper, Smith, ternary, 3D surfaces, isosurfaces and clustered heat maps. Add trendlines, error bands, tables and maths text.</p></div>
+    <div class="card"><div class="ic">Σ</div><h3>110+ analyses</h3><p>Descriptive statistics, t-tests, ANOVA, non-parametric tests, regression, survival, PCA, clustering, time series, power analysis and a Stats Advisor that suggests the right test.</p></div>
+    <div class="card"><div class="ic">ƒ</div><h3>Curve fitting</h3><p>49 built-in models plus your own formulas: global fits with shared parameters, weights, bounds, confidence bands, peak finding, baselines and model comparison.</p></div>
+    <div class="card"><div class="ic">≋</div><h3>Signal processing</h3><p>Smoothing, FFT and inverse FFT, filters, wavelets, spectrograms, Hilbert transform, convolution and correlation. Preview your signal while you work.</p></div>
+    <div class="card"><div class="ic">◎</div><h3>Quality and DOE</h3><p>Control charts, process capability, gage R&amp;R, tolerance intervals, acceptance sampling, stability studies, factorial and response-surface designs.</p></div>
+    <div class="card"><div class="ic">▤</div><h3>Reports and layouts</h3><p>Every result is logged and updates when data change. Build layout pages, write report notes with live placeholders and export PDF, Word, HTML, Markdown or PowerPoint.</p></div>
+    <div class="card"><div class="ic">⌘</div><h3>Made for flow</h3><p>Global search, right-click menus, undo history, templates, drag-and-drop import with a smart import wizard, dark mode and three layouts from full ribbon to minimal.</p></div>
+  </div>
+</div></section>
+
+<section id="charts"><div class="wrap">
+  <h2>See the data before you decide</h2>
+  <p class="sub">Select columns and preview them as dozens of chart types at once, then keep the one that tells the story.</p>
+  <div class="grid g3">
+    <div class="chipgroup"><h3>Everyday</h3><div class="chips"><span class="chip">line</span><span class="chip">scatter</span><span class="chip">column</span><span class="chip">stacked</span><span class="chip">area</span><span class="chip">histogram</span><span class="chip">pie</span><span class="chip">box</span><span class="chip">violin</span><span class="chip">error band</span></div></div>
+    <div class="chipgroup"><h3>Statistics</h3><div class="chips"><span class="chip">Q-Q</span><span class="chip">Bland–Altman</span><span class="chip">forest</span><span class="chip">interaction</span><span class="chip">main effects</span><span class="chip">control chart</span><span class="chip">Pareto</span><span class="chip">ridgeline</span><span class="chip">dendrogram</span></div></div>
+    <div class="chipgroup"><h3>Science and engineering</h3><div class="chips"><span class="chip">Smith</span><span class="chip">ternary</span><span class="chip">Piper</span><span class="chip">Stiff</span><span class="chip">wind rose</span><span class="chip">polar</span><span class="chip">streamlines</span><span class="chip">spectrum</span><span class="chip">soil texture</span></div></div>
+    <div class="chipgroup"><h3>Surfaces and 3D</h3><div class="chips"><span class="chip">contour</span><span class="chip">heat map</span><span class="chip">3D surface</span><span class="chip">3D bars</span><span class="chip">isosurface</span><span class="chip">3D pie</span><span class="chip">waterfall</span></div></div>
+    <div class="chipgroup"><h3>Flows and networks</h3><div class="chips"><span class="chip">Sankey</span><span class="chip">alluvial</span><span class="chip">chord</span><span class="chip">network</span><span class="chip">sunburst</span><span class="chip">treemap</span><span class="chip">circle packing</span></div></div>
+    <div class="chipgroup"><h3>Maps and diagrams</h3><div class="chips"><span class="chip">world map</span><span class="chip">tile-grid map</span><span class="chip">Venn</span><span class="chip">Voronoi</span><span class="chip">fishbone</span><span class="chip">Manhattan</span></div></div>
+  </div>
+  <div class="stats" style="margin-top:56px"><div><b>110+</b><span>chart types</span></div><div><b>110+</b><span>analyses and tests</span></div><div><b>49</b><span>fitting models</span></div><div><b>0</b><span>bytes uploaded</span></div></div>
+</div></section>
+
+<section class="alt" id="privacy"><div class="wrap">
+  <div class="grid g2" style="align-items:center">
+    <div><h2>Your data stays on your device</h2><p class="sub" style="margin-bottom:22px">LabScale is a static web app. All calculations run in your browser, projects are saved in local storage, and there are no accounts, trackers or cookies.</p>
+      <ul style="color:var(--mut);padding-left:20px;margin:0 0 26px"><li>Works offline once loaded</li><li>Open formats: CSV, Excel, JSON, HTML tables, XML in; PDF, SVG, EPS, PNG, XLSX, DOCX, PPTX out</li><li>Optional components such as the Excel reader load only after you agree</li></ul><a class="btn pri" href="app.html">Open</a></div>
+    <div class="panel"><div class="bar"><i></i><i></i><i></i><span>network activity</span></div><pre><span class="m">// while you analyse</span>
+uploads         <span class="b">0 bytes</span>
+tracking        <span class="b">none</span>
+cookies         <span class="b">none</span>
+account         <span class="b">not needed</span>
+data location   <span class="b">your browser</span></pre></div>
+  </div>
+</div></section>
+
+<section id="faq"><div class="wrap" style="max-width:860px">
+  <h2>Questions</h2>
+  <details><summary>Is LabScale really free?</summary><p>Yes. There is no sign-up and no paywall. Open the app and start working.</p></details>
+  <details><summary>Does my data get uploaded?</summary><p>No. Files you open, tables you type and results you compute stay in your browser. Only optional helpers, such as the Excel reader, are downloaded, and only after you confirm.</p></details>
+  <details><summary>Which files can I import?</summary><p>CSV, TXT and TSV with an import wizard that detects separators, decimal commas, headers, units and dates; Excel workbooks; JSON; HTML tables and XML. You can also paste straight from a spreadsheet.</p></details>
+  <details><summary>Can I use my figures in a paper or presentation?</summary><p>Yes. Graphs export as vector PDF, SVG and EPS or as PNG, JPG, TIFF and WebP; reports export as PDF, Word, HTML and Markdown, and all graphs can go into a PowerPoint file.</p></details>
+  <details><summary>How do I choose the right statistical test?</summary><p>The Stats Advisor looks at your columns, checks assumptions such as normality and equal variances, and recommends tests. Every result shows the numbers behind it.</p></details>
+  
+</div></section>
+
+<section class="alt band"><div class="wrap"><h2>Ready when your data is.</h2><p>Open the workbench and drop in a file.</p><a class="btn pri lg" href="app.html">Open</a></div></section>
+</main>
+<footer><div class="wrap"><a href="imprint.html#imprint">Imprint</a><a href="imprint.html#privacy">Privacy</a></div></footer>
+
+<script>
+/* ---------- tabs ---------- */
+(()=>{const S=[
+ {h:'Bring your data in',p:'Drop a file, paste from a spreadsheet or type into the worksheet. The import wizard recognises separators, decimal commas, units and dates.',l:['CSV, Excel, JSON, HTML tables, XML','Header, unit and comment rows','Missing values and encodings handled'],
+  panel:`<div class="bar"><i></i><i></i><i></i><span>spectrum.csv</span></div><pre><span class="m">time,signal,temp</span>
+0.0,  4.81, 21.4
+0.5,  5.02, 21.4
+1.0,  7.93, 21.5
+1.5, 13.60, 21.5
+2.0, 21.87, 21.6
+<span class="m">…</span>
+<span class="b">→ 3 columns × 1,204 rows · date column detected</span></pre>`},
+ {h:'Run the analysis',p:'Pick a test, a fit or a signal tool from the menu. Results appear as a card you can keep, copy or export, and they update when the data change.',l:['Tests, regression, survival, PCA, clustering','Fits with confidence bands and AICc','SPC, gage R&R, DOE, power analysis'],
+  panel:`<div class="bar"><i></i><i></i><i></i><span>One-way ANOVA</span></div><table><tr><th>Source</th><th>df</th><th>F</th><th>p</th></tr><tr><td>Between</td><td>3</td><td>12.41</td><td>&lt; 0.0001</td></tr><tr><td>Within</td><td>36</td><td></td><td></td></tr></table><pre><span class="m">Tukey HSD</span>  A–C  <span class="b">p = 0.0003</span>   A–D  <span class="b">p &lt; 0.0001</span></pre>`},
+ {h:'Turn numbers into a graph',p:'Select columns and let the preview gallery show how they look as many chart types. Style with templates, a legend editor, captions, trendlines and annotations.',l:['Preview dozens of chart types at once','Right-click and double-click to edit in place','Colour, size and symbol by column'],
+  panel:`<div class="bar"><i></i><i></i><i></i><span>Response vs. dose</span></div><pre>  1.0 ┤                       <span class="b">·····</span>
+      │                 <span class="b">··</span>·
+  0.5 ┤            <span class="b">··</span>·
+      │        <span class="b">·</span>·
+  0.0 ┼<span class="b">·····</span>─┬────┬────┬────┬
+      0.1   1    10   100  <span class="m">dose (µM)</span>
+<span class="b">IC50 = 8.4 µM · R² = 0.998</span></pre>`},
+ {h:'Publish without redrawing',p:'Export vector graphics for papers, slides for talks and complete reports with captions. Layout pages combine several graphs into one figure.',l:['PDF, SVG, EPS, PNG, JPG, TIFF, WebP','PowerPoint, Word, HTML, Markdown reports','Print and share as a single HTML file'],
+  panel:`<div class="bar"><i></i><i></i><i></i><span>Export</span></div><pre><span class="b">figure-1.pdf</span>        vector, fonts embedded
+<span class="b">figure-1.svg</span>        editable in any vector editor
+<span class="b">figures.pptx</span>        one slide per graph
+<span class="b">report.docx</span>         results, tables, captions
+<span class="b">project.html</span>        everything in one file</pre>`}];
+ const stage=document.getElementById('stage'),btns=[...document.querySelectorAll('.tabs button')];
+ const show=i=>{const s=S[i];stage.innerHTML=`<div class="txt"><h3>${s.h}</h3><p>${s.p}</p><ul>${s.l.map(x=>`<li>${x}</li>`).join('')}</ul></div><div class="panel">${s.panel}</div>`;btns.forEach((b,k)=>b.setAttribute('aria-selected',k===i))};
+ btns.forEach((b,i)=>b.addEventListener('click',()=>{show(i);clearInterval(timer)}));show(0);let n=0;const timer=setInterval(()=>{n=(n+1)%4;show(n)},7000);})();
+/* ---------- hero animation: bits become charts ---------- */
+(()=>{let fixed=null;const cv=document.getElementById('heroCv'),ctx=cv.getContext('2d'),reduce0=matchMedia('(prefers-reduced-motion:reduce)').matches,fixedQ=new URLSearchParams(location.search).get('scene');fixed=fixedQ!=null?+fixedQ:null;const reduce=reduce0||fixed!=null;
+ const RAMP=' .·:-=+*#%@',css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+ let W=0,H=0,cols=0,rows=0,cw=7,lh=15,fs=12,gc=0,spd=[],pha=[],COB='29,63,209',INK='14,20,36',dark=false,t0=performance.now(),vis=true,tex=0;
+ const hash=(a,b)=>{let h=(a*374761393+b*668265263)|0;h=(h^(h>>>13))*1274126177|0;return((h^(h>>>16))>>>0)/4294967296};
+ const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)};
+ const hex2rgb=h=>{h=h.replace('#','');if(h.length===3)h=[...h].map(c=>c+c).join('');return`${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)}`};
+ function colors(){COB=hex2rgb(css('--cob')||'#1d3fd1');INK=hex2rgb(css('--ink')||'#0e1424');dark=matchMedia('(prefers-color-scheme:dark)').matches}
+ function setup(){const r=cv.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);fs=W<700?10.5:12;ctx.font=`${fs}px ui-monospace,Menlo,Consolas,monospace`;cw=ctx.measureText('0').width;lh=fs*1.34;cols=Math.floor(W/cw);rows=Math.floor(H/lh);gc=Math.floor(cols*(W<860?.3:.5))+Math.floor(cols*.075);
+  spd=[];pha=[];for(let r=0;r<rows;r++){spd.push(5+hash(r,7)*17);pha.push(hash(r,11)*500)}colors()}
+ /* chart scenes: intensity 0..1 at normalised chart coords (u,v), v=0 bottom; cell sizes for line thickness */
+ const NS=5,names=['line chart  ·  y = f(x)','bar chart  ·  mean ± SD','scatter  ·  linear fit  R² = 0.98','heat map  ·  2-D density','spectrum  ·  3 peaks fitted'];
+ const pts=Array.from({length:46},(_,i)=>{const u=.06+.88*hash(i,3);return[u,.15+.62*u+(hash(i,5)-.5)*.2]});
+ const peaks=[[.22,.28,.035],[.5,.62,.04],[.76,.4,.03]];
+ function field(k,u,v,cx,cy,t){const px=1/Math.max(1,bw),py=1/Math.max(1,bh);let a=0;
+  const axis=(u<.012||v<.02)?.45:0;
+  if(k===0){const y=.5+.26*Math.sin(2.1*Math.PI*u+t*.6)+.09*Math.sin(5.3*Math.PI*u-t*.9),d=(v-y)/py;a=Math.exp(-d*d/.9)+(v<y?.16*(((cx+cy)&1)?1:.35)*(1-v/Math.max(y,.01)*.3):0);const y2=.35+.2*Math.sin(1.6*Math.PI*u+1.4+t*.5),d2=(v-y2)/py;a=Math.max(a,.65*Math.exp(-d2*d2/.9))}
+  else if(k===1){const n=12,i=Math.floor(u*n),f=u*n-i;if(f<.14||f>.86||u>.98)a=0;else{const hgt=.16+.7*(.5+.5*Math.sin(i*1.7+t*.4)*Math.cos(i*.6))*(.5+.5*hash(i,2));a=v<hgt?(((cx+cy)&1)?.95:.8):0;const cap=Math.abs(v-hgt-.07)/py;if(f>.4&&f<.6&&Math.abs(v-hgt)<.07)a=.7;if(cap<.7&&f>.3&&f<.7)a=Math.max(a,.8)}}
+  else if(k===2){let s=0;for(const p of pts){const dx=(u-p[0])/px,dy=(v-(p[1]+.04*Math.sin(t*.7+p[0]*9)))/py;s=Math.max(s,Math.exp(-(dx*dx+dy*dy)/1.1))}const ly=.13+.64*u,d=(v-ly)/py;a=Math.max(s,.75*Math.exp(-d*d/.8))}
+  else if(k===3){const z=Math.sin(5*u+t*.5)*Math.cos(4*v-t*.4)+.7*Math.exp(-((u-.6)**2+(v-.45)**2)*14)*Math.sin(t*.8+2);a=.5+.5*z;a=Math.max(0,Math.min(1,a));const q=Math.abs((a*7)%1-.5);if(q<.12)a=Math.min(1,a+.35)}
+  else{let y=.06;for(const p of peaks)y+=p[1]*Math.exp(-((u-p[0])**2)/(2*p[2]*p[2]));y+=.02*Math.sin(60*u+t);const d=(v-y)/py;a=Math.exp(-d*d/.9)+(v<y?.14*(((cx+cy)&1)?1:.3):0)}
+  return Math.max(a,axis*(k===3?0:1))}
+ let bw=60,bh=20,bx=0,by=0;
+ function frame(now){const t=fixed!=null?4+fixed*6.5:Math.max(0,(now-t0)/1000),sceneT=fixed!=null?fixed+.5:t/6.5,si=Math.floor(sceneT)%NS,sn=(si+1)%NS,mixw=smooth((sceneT%1-.82)/.18);
+  ctx.clearRect(0,0,W,H);ctx.font=`${fs}px ui-monospace,Menlo,Consolas,monospace`;ctx.textBaseline='alphabetic';
+  bx=gc+1;bw=Math.max(10,cols-bx-Math.floor(cols*.04));by=Math.floor(rows*.2);bh=Math.max(8,rows-by-Math.floor(rows*.12));
+  const morphW=Math.max(6,Math.floor(cols*.1));let lastA=-1;
+  for(let r=0;r<rows;r++){const y=(r+1)*lh-3,sp=spd[r],ph=pha[r],pk=((t*sp*.9+ph*3)%(cols+40))-14,en=pk>gc&&pk<gc+26?1-(pk-gc)/26:0;
+   for(let c=0;c<cols;c++){if(c===gc)continue;let ch,al,cobalt=false;
+    if(c<gc){const bit=hash(r,Math.floor(c-t*sp+ph))>.5?'1':'0';let a0=.07+.09*hash(r,3);const dp=pk-c;if(dp>=0&&dp<11){a0+=.5*(1-dp/11);cobalt=true}ch=bit;al=a0*(dark?1.4:1)}
+    else{const u=(c-bx)/bw,v=1-(r-by)/bh;if(u<0||u>1||v<0||v>1)continue;let f=field(si,u,v,c,r,t);if(mixw>0)f=f*(1-mixw)+field(sn,u,v,c,r,t)*mixw;f=Math.min(1,f+en*.55*Math.exp(-(c-gc)/34)*(f>.04?1:0));if(f<=.05)continue;ch=RAMP[Math.min(RAMP.length-1,Math.floor(f*(RAMP.length-1)+.5))];al=.34+.66*f;cobalt=true}
+    if(ch===' ')continue;const q=Math.round(al*40)/40+(cobalt?1:0)*2;if(q!==lastA){ctx.fillStyle=`rgba(${cobalt?COB:INK},${Math.min(1,al).toFixed(2)})`;lastA=q}
+    ctx.fillText(ch,c*cw,y)}}
+  /* gate */
+  ctx.fillStyle=`rgba(${COB},.9)`;ctx.fillRect(Math.round(gc*cw),0,2,H);
+  const gl='LabScale',gw=ctx.measureText(gl).width+18,gx=Math.round(gc*cw)+1;ctx.fillStyle=css('--bg')||'#fff';ctx.fillRect(gx-gw/2,4*lh-fs-4,gw,fs+10);ctx.strokeStyle=`rgba(${COB},.9)`;ctx.lineWidth=2;ctx.strokeRect(gx-gw/2,4*lh-fs-3,gw,fs+9);ctx.fillStyle=`rgb(${COB})`;ctx.textAlign='center';ctx.fillText(gl,gx,4*lh-1);ctx.textAlign='left';
+  /* scene caption (typed) */
+  const cap='> '+names[mixw>.5?sn:si],ty=Math.min(cap.length,Math.floor(((sceneT%1)*6.5)/.045)+(reduce?99:0));ctx.fillStyle=`rgba(${COB},.95)`;ctx.fillText(cap.slice(0,ty)+((now/400|0)%2&&ty<cap.length?'▌':''),bx*cw,(by-1)*lh);
+  if(!reduce&&vis)req=requestAnimationFrame(frame)}
+ 
+ let req=0;const start=()=>{cancelAnimationFrame(req);t0=performance.now()-(reduce?2.4e3:0);req=requestAnimationFrame(frame)};
+ const ro=new ResizeObserver(()=>{setup();if(reduce)start()});ro.observe(cv);setup();start();
+ new IntersectionObserver(es=>{vis=es[0].isIntersecting;if(vis&&!reduce)start()}).observe(cv);
+ matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{colors();if(reduce)start()});
+})();
+</script>
+</body>
+</html>

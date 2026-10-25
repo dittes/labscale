@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lab Analysis – Studio workspace (concept)</title>
+<style>
+:root{--bg:#1e1f22;--p1:#26282c;--p2:#2d3035;--ln:#3a3d43;--ink:#e6e7ea;--mut:#9aa0a8;--acc:#4f9dff;--ok:#5ec28a}
+*{box-sizing:border-box}body{margin:0;height:100vh;display:grid;grid-template-rows:30px 40px 1fr 24px;background:var(--bg);color:var(--ink);font:12px/1.4 -apple-system,Segoe UI,sans-serif;overflow:hidden}
+.menu{display:flex;align-items:center;gap:14px;padding:0 12px;background:var(--p1);border-bottom:1px solid var(--ln)}.menu b{color:var(--acc)}.menu span{color:var(--mut);cursor:default}.menu span:hover{color:var(--ink)}
+.menu .sp{flex:1}.menu select{background:var(--p2);color:var(--ink);border:1px solid var(--ln);border-radius:5px;padding:2px 6px}
+.opts{display:flex;align-items:center;gap:10px;padding:0 12px;background:var(--p2);border-bottom:1px solid var(--ln)}.opts label{color:var(--mut)}.opts .g{display:flex;gap:6px;align-items:center;padding-right:10px;border-right:1px solid var(--ln)}
+.opts input,.opts select{background:var(--bg);color:var(--ink);border:1px solid var(--ln);border-radius:4px;padding:3px 6px;width:80px}.opts .chip{background:var(--bg);border:1px solid var(--ln);border-radius:4px;padding:3px 8px;cursor:pointer}.opts .chip.on{border-color:var(--acc);color:var(--acc)}
+.main{display:grid;grid-template-columns:44px 1fr 300px;min-height:0}body.focus .main{grid-template-columns:44px 1fr 0}body.focus .dock{display:none}
+.tools{background:var(--p1);border-right:1px solid var(--ln);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:4px}
+.t{width:34px;height:34px;border-radius:6px;display:grid;place-items:center;font-size:16px;color:var(--mut);cursor:pointer;position:relative}.t:hover{background:var(--p2);color:var(--ink)}.t.on{background:var(--acc);color:#fff}.t i{position:absolute;right:2px;bottom:2px;font-size:7px;font-style:normal}
+.t .tip{display:none;position:absolute;left:40px;top:6px;background:#000;color:#fff;padding:3px 7px;border-radius:4px;white-space:nowrap;z-index:9;font-size:11px}.t:hover .tip{display:block}.hr{width:24px;border-top:1px solid var(--ln);margin:3px 0}
+.stage{display:flex;flex-direction:column;min-width:0;min-height:0}.tabs{display:flex;background:var(--p1);border-bottom:1px solid var(--ln)}.tab{padding:6px 14px;color:var(--mut);border-right:1px solid var(--ln);cursor:pointer}.tab.on{background:var(--bg);color:var(--ink);box-shadow:inset 0 -2px var(--acc)}
+.canvas{flex:1;display:grid;place-items:center;background:repeating-conic-gradient(#232428 0 25%,#27292d 0 50%) 0 0/20px 20px;min-height:0;position:relative}
+.page{background:#fff;width:min(620px,86%);aspect-ratio:4/3;box-shadow:0 6px 30px #0008;position:relative}.page canvas{width:100%;height:100%;display:block}
+.float{position:absolute;left:14px;top:14px;background:var(--p1);border:1px solid var(--ln);border-radius:8px;padding:6px;display:flex;gap:4px}.float .t{width:28px;height:28px;font-size:13px}
+.hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:var(--mut);background:#0007;padding:3px 10px;border-radius:12px}
+.dock{background:var(--p1);border-left:1px solid var(--ln);overflow:auto}.pn{border-bottom:1px solid var(--ln)}.pn h4{margin:0;padding:6px 10px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);display:flex;justify-content:space-between;cursor:pointer;background:var(--p2)}.pn .bd{padding:8px 10px;display:grid;gap:6px}.pn.c .bd{display:none}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}.row input,.row select{background:var(--bg);color:var(--ink);border:1px solid var(--ln);border-radius:4px;padding:2px 6px;width:110px}
+.ly{display:flex;align-items:center;gap:8px;padding:3px 4px;border-radius:4px}.ly:hover{background:var(--p2)}.sw{width:10px;height:10px;border-radius:2px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}td,th{border:1px solid var(--ln);padding:2px 6px;text-align:right}th{color:var(--mut);font-weight:500}
+.st{display:flex;gap:18px;align-items:center;padding:0 12px;background:var(--p1);border-top:1px solid var(--ln);color:var(--mut)}.pal{position:absolute;top:50px;left:50%;transform:translateX(-50%);width:420px;background:var(--p1);border:1px solid var(--ln);border-radius:10px;padding:8px;z-index:20;display:none;box-shadow:0 20px 50px #000a}.pal.on{display:block}.pal input{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--acc);border-radius:6px;padding:7px}.pal div.i{padding:5px 8px;border-radius:4px;color:var(--mut)}.pal div.i:first-of-type{background:var(--p2);color:var(--ink)}
+</style></head><body>
+<div class="menu"><b>Lab Analysis</b><span>File</span><span>Edit</span><span>Data</span><span>Plot</span><span>Analysis</span><span>Image</span><span>Window</span><span>Help</span><span class="sp"></span><span id="pk">⌘K Search anything</span>
+<select id="ws"><option>Workspace: Studio</option><option>Workspace: Classic ribbon</option><option>Workspace: Minimal</option></select></div>
+<div class="opts" id="opts"></div>
+<div class="main">
+ <div class="tools" id="tools"></div>
+ <div class="stage"><div class="tabs"><div class="tab on">Graph1 – Dose response</div><div class="tab">Book1 – Data</div><div class="tab">Report – Fit summary</div></div>
+  <div class="canvas"><div class="page"><canvas id="cv" width="620" height="465"></canvas></div>
+   <div class="float" title="Context toolbar for the selected object"><div class="t">B</div><div class="t">∿</div><div class="t">▤</div><div class="t">⎘</div><div class="t">🗑</div></div>
+   <div class="hint">Tab: hide panels · Space: pan · Scroll: zoom · ⌘K: command search</div>
+   <div class="pal" id="pal"><input placeholder="Type a command, analysis or chart type…"><div class="i">Nonlinear curve fit…</div><div class="i">Violin plot</div><div class="i">Export graph as PDF…</div><div class="i">Sankey diagram</div></div></div></div>
+ <div class="dock">
+  <div class="pn"><h4>Properties <span>–</span></h4><div class="bd" id="props"></div></div>
+  <div class="pn"><h4>Objects <span>–</span></h4><div class="bd"><div class="ly"><span class="sw" style="background:#4f9dff"></span>Series A (fit)</div><div class="ly"><span class="sw" style="background:#e5734b"></span>Series B</div><div class="ly"><span class="sw" style="background:#888"></span>Axes · Legend · Title</div></div></div>
+  <div class="pn"><h4>Data <span>–</span></h4><div class="bd"><table><tr><th>X</th><th>A</th><th>B</th></tr><tr><td>0.1</td><td>2.1</td><td>1.8</td></tr><tr><td>0.3</td><td>5.4</td><td>4.9</td></tr><tr><td>1.0</td><td>14.2</td><td>12.0</td></tr></table></div></div>
+  <div class="pn c"><h4>Results <span>+</span></h4><div class="bd">EC50 = 0.84 ± 0.05</div></div>
+  <div class="pn c"><h4>History <span>+</span></h4><div class="bd">Fit · Smooth · Import</div></div></div>
+</div>
+<div class="st"><span>Graph1</span><span>Zoom 100%</span><span>A4 landscape</span><span style="color:var(--ok)">● Autosaved</span></div>
+<script>
+const T=[['↖','Select','select'],['✋','Pan / zoom','pan'],['▭','Region of interest','roi'],['⊹','Data cursor','cur'],['—','sep'],['∿','Quick fit','fit'],['⛰','Quick peaks','peak'],['∫','Integrate','int'],['—','sep'],['T','Text','text'],['◯','Shapes','shape'],['✎','Draw / annotate','draw'],['—','sep'],['▦','Image / matrix tools','img']];
+const OPT={select:['<div class=g><label>Target</label><select><option>Series</option></select></div><div class=g><label>Colour</label><input value="#4f9dff"><label>Width</label><input value="2"></div><div class=g><span class="chip on">Symbols</span><span class=chip>Line</span><span class=chip>Error bars</span></div>'],fit:['<div class=g><label>Model</label><select><option>Sigmoidal (4PL)</option></select></div><div class=g><label>Confidence</label><span class="chip on">Band</span><span class=chip>Residuals</span></div><div class=g><span class=chip>Run fit</span><span class=chip>Send to report</span></div>'],roi:['<div class=g><label>X from</label><input value="0.1"><label>to</label><input value="1.0"></div><div class=g><span class=chip>Statistics</span><span class=chip>Mask</span><span class=chip>Crop</span></div>'],text:['<div class=g><label>Font</label><select><option>Helvetica</option></select><label>Size</label><input value="14"></div>'],img:['<div class=g><span class=chip>Grayscale</span><span class=chip>Blur</span><span class=chip>Threshold</span><span class=chip>Profile</span></div>']};
+const tl=document.getElementById('tools'),op=document.getElementById('opts'),pr=document.getElementById('props');
+T.forEach(([i,n,k])=>{if(i==='—'){tl.insertAdjacentHTML('beforeend','<div class=hr></div>');return}const d=document.createElement('div');d.className='t'+(k==='select'?' on':'');d.innerHTML=i+'<span class=tip>'+n+'</span>';d.onclick=()=>{tl.querySelectorAll('.t').forEach(x=>x.classList.remove('on'));d.classList.add('on');setOpt(k,n)};tl.append(d)});
+function setOpt(k,n){op.innerHTML='<div class=g><b>'+n+'</b></div>'+(OPT[k]||['<div class=g><label>No options yet</label></div>'])[0];pr.innerHTML='<div class=row>Title<input value="Dose response"></div><div class=row>X axis<select><option>Log</option></select></div><div class=row>Palette<select><option>Colour-blind safe</option></select></div><div class=row>Export<select><option>PDF</option><option>SVG</option><option>PNG</option></select></div>'}
+setOpt('select','Select');
+const c=document.getElementById('cv').getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,620,465);c.strokeStyle='#222';c.lineWidth=1.4;c.strokeRect(70,40,500,350);c.fillStyle='#222';c.font='13px sans-serif';c.fillText('Dose response',280,28);c.fillText('log concentration',280,430);
+c.strokeStyle='#4f9dff';c.lineWidth=2.5;c.beginPath();for(let i=0;i<=100;i++){const x=70+i*5,y=380-330/(1+Math.exp(-(i-50)/9));i?c.lineTo(x,y):c.moveTo(x,y)}c.stroke();
+c.fillStyle='#e5734b';for(let i=0;i<=10;i++){const x=70+i*50,y=380-330/(1+Math.exp(-(i*10-52)/9))+Math.sin(i*3)*9;c.beginPath();c.arc(x,y,4.5,0,7);c.fill()}
+document.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();document.body.classList.toggle('focus')}if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();pal.classList.toggle('on')}});
+document.querySelectorAll('.pn h4').forEach(h=>h.onclick=()=>{h.parentNode.classList.toggle('c');h.lastChild.textContent=h.parentNode.classList.contains('c')?'+':'–'});
+document.getElementById('pk').onclick=()=>pal.classList.toggle('on');
+document.getElementById('ws').onchange=e=>document.body.classList.toggle('focus',e.target.selectedIndex===2);
+</script></body></html>
