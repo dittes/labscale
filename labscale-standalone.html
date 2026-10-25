@@ -93,7 +93,9 @@ aside{background:var(--panel);overflow:auto;min-width:0}
 .pp .tag button{border:0;background:none;padding:0;color:var(--mut)}
 /* results */
 #results{border-top:1px solid var(--line);background:var(--panel);height:240px;display:flex;flex-direction:column;min-height:0}
-#results.min{height:30px}#results.min #rlist{display:none}
+#results{position:relative}#results.min{height:30px!important}#results.min #rlist{display:none}
+#rGrip{position:absolute;left:0;right:0;top:-3px;height:7px;cursor:ns-resize;z-index:5}#rGrip:hover,#rGrip.drag{background:var(--acc);opacity:.35}#results.min #rGrip{display:none}
+#rHide{transition:none}
 #results .rh{display:flex;gap:6px;align-items:center;padding:4px 10px;background:var(--panel2);border-bottom:1px solid var(--line)}
 #rlist{flex:1;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
 .rc{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--panel2)}
@@ -207,6 +209,66 @@ body[data-ws=studio] .brand,body[data-ws=minimal] .brand{white-space:nowrap}body
 #ribbon,#rtabs,#bExp,#bProps,#bRes,#bHist{display:none!important}
 .kebab{border:0;background:var(--acc2);color:var(--acc);font:700 14px/1 system-ui;cursor:pointer;padding:2px 6px 5px;border-radius:5px;margin-left:2px;vertical-align:middle}.kebab:hover{background:var(--acc);color:#fff}
 #rlist .rc .h [data-recalc],#rlist .rc .h [data-batch],#rlist .rc .h [data-ally],#rlist .rc .h [data-dup],#rlist .rc .h [data-rcopy]{display:none}
+
+/* import assistant */
+#daw{position:fixed;right:16px;bottom:16px;width:340px;max-height:70vh;overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:60;font-size:13px}
+#daw .dh{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--panel2);border-bottom:1px solid var(--line);position:sticky;top:0}
+#daw .dh b{flex:1}#daw .dh button{border:0;background:none;color:var(--mut);cursor:pointer;font-size:15px}
+#daw .ds{padding:8px 12px;color:var(--mut);line-height:1.5}
+#daw .dg{padding:4px 12px 2px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+#daw .da{display:block;width:calc(100% - 16px);margin:3px 8px;text-align:left;padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);cursor:pointer}
+#daw .da:hover{border-color:var(--acc);background:var(--acc2)}#daw .da small{display:block;color:var(--mut);margin-top:1px}
+#daw .da.warn{border-color:var(--warn)}
+#daw .df{padding:8px 12px;border-top:1px solid var(--line);color:var(--mut);display:flex;gap:6px;align-items:center}
+
+.ex .fold{display:flex;align-items:center;gap:5px}.ex .fold .fchev{width:10px;font-size:10px;text-align:center}.ex .fold .ficon{flex:none;color:var(--acc)}.ex .fold .fn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* chart wizard */
+#cw{position:fixed;inset:0;z-index:70;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;font-size:13px}
+#cw .sp{flex:1}#cw button{font:inherit}
+.cwh{display:flex;align-items:center;gap:18px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+.cwt{font-size:15px}.cws{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.cws li{display:flex;align-items:center;gap:7px;padding:5px 12px 5px 6px;border-radius:20px;color:var(--mut)}
+.cws li span{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);font-size:12px}
+.cws li.on{color:var(--ink);font-weight:600;background:var(--acc2)}.cws li.on span{background:var(--acc);border-color:var(--acc);color:#fff}
+.cws li.done{cursor:pointer;color:var(--ink)}.cws li.done span{background:var(--ok);border-color:var(--ok);color:#fff}
+.cwh #cwX{border:0;background:none;font-size:18px;color:var(--mut);cursor:pointer}
+.cwb{flex:1;min-height:0;overflow:auto;padding:18px}
+.cwf{display:flex;align-items:center;gap:10px;padding:10px 18px;background:var(--panel);border-top:1px solid var(--line)}
+.cwf button:disabled{opacity:.4;cursor:default}
+.cw1{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.cwdrop{border:2px dashed var(--line);border-radius:12px;padding:34px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;background:var(--panel)}
+.cwdrop.dz{border-color:var(--acc);background:var(--acc2)}.cwdrop .big{font-size:34px;color:var(--acc)}
+.cwor{text-align:center;color:var(--mut);display:flex;align-items:center;gap:10px}.cwor:before,.cwor:after{content:"";flex:1;border-top:1px solid var(--line)}
+.cw1 textarea{width:100%;font:12px ui-monospace,Menlo,monospace;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);box-sizing:border-box}
+.cwsamples{display:flex;flex-wrap:wrap;gap:6px}
+.cwopt{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;align-items:center}.cwopt label{display:flex;gap:6px;align-items:center;color:var(--mut)}
+.cwsum{margin-bottom:10px;line-height:1.6}.warnt{color:var(--warn);font-weight:600}.okt{color:var(--ok)}.inl{margin-left:8px;display:inline-flex;gap:4px;align-items:center}
+.cwtab{overflow:auto;max-height:calc(100vh - 250px);border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.cwtab table{border-collapse:collapse;min-width:100%}.cwtab th{position:sticky;top:0;background:var(--panel2);padding:6px;text-align:left;vertical-align:top;min-width:120px;z-index:1}
+.cwtab th input,.cwtab th select{display:block;width:100%;box-sizing:border-box;margin-bottom:3px;font:inherit;padding:3px 5px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink)}
+.cwtab th .hn{font-weight:600}.cwtab th .hu{color:var(--mut)}
+.cwtab td{padding:3px 8px;border-top:1px solid var(--line);white-space:nowrap}.cwtab td.num{text-align:right;font-variant-numeric:tabular-nums}.cwtab td.rn,.cwtab th.rn{min-width:0;color:var(--mut);text-align:right;background:var(--panel2)}
+.cwtab td.na{background:repeating-linear-gradient(45deg,transparent 0 4px,rgba(128,128,128,.18) 4px 5px)}.cwtab td.out{background:rgba(251,146,60,.25);box-shadow:inset 0 0 0 1px var(--warn)}
+.cwtab td:focus{outline:2px solid var(--acc);outline-offset:-2px}
+.cw3{display:grid;grid-template-columns:260px minmax(0,1fr) 300px;gap:14px;height:100%;min-height:0}
+.cw3 aside,.cw3 main{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:0;overflow:auto}
+.cwg{padding:10px}.cwgh{font-weight:600;margin-bottom:8px}.cwgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cwty{border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);padding:4px;cursor:pointer;display:flex;flex-direction:column;gap:3px;font-size:11px}
+.cwty img{width:100%;border-radius:4px;background:#fff}.cwty:hover{border-color:var(--acc)}.cwty.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc2)}
+.cwg .lnk{margin:10px 0 0;border:0;background:none;color:var(--acc);cursor:pointer}
+.cwp{display:grid;place-items:center;padding:14px}.cwprev{width:100%;min-width:0;display:grid;place-items:center}.cwprev canvas{width:100%;height:auto}
+.cwprev canvas{max-width:100%;max-height:calc(100vh - 220px);background:#fff;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.15)}
+.cwc{padding:10px}.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:12px}
+.seg button{flex:1;border:0;background:var(--panel);color:var(--ink);padding:7px;cursor:pointer}.seg button.on{background:var(--acc);color:#fff}
+.cwc .f{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}.cwc .f.c{flex-direction:row;align-items:center;gap:6px}
+.cwc .f label{color:var(--mut);font-size:12px}.cwc input[type=text],.cwc select,.cwc textarea{font:inherit;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);width:100%;box-sizing:border-box}
+.cwc .chk{display:flex;flex-direction:column;gap:3px;max-height:120px;overflow:auto}.cwc .chk label{color:var(--ink);display:flex;gap:6px}
+.cwc .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cwlist{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.cw4{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;max-width:1200px;margin:0 auto}
+.cwprev.small{align-self:start}.cwpub h3{margin:0 0 10px}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.pcard .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+@media(max-width:1000px){.cw3{grid-template-columns:1fr}.cw4{grid-template-columns:1fr}.cws li:not(.on){display:none}}
 </style>
 </head>
 <body data-ws="studio">
@@ -5004,7 +5066,7 @@ function moveToFolderOf(t,id,folder){const o=winObj(t,id);if(!o||(o.folder||'')=
 function folderBlock(items,t,sub,itFn){const closed=P.foldClosed||{};
   let h=items.filter(o=>!o.folder).map(o=>itFn(t,o,sub(o))).join('');
   foldersOf(t).forEach(f=>{const its=items.filter(o=>o.folder===f),k=t+'|'+f;
-    h+=`<div class="fold" data-fold="${esc(k)}" data-t="${t}" data-f="${esc(f)}" title="Double-click to rename · right-click for options">${closed[k]?'▸':'▾'} <span class="fn">${esc(f)}</span> <span class="note">${its.length}</span></div>`+(closed[k]?'':its.map(o=>itFn(t,o,sub(o)).replace('class="it','class="it indent')).join(''))});return h}
+    h+=`<div class="fold" data-fold="${esc(k)}" data-t="${t}" data-f="${esc(f)}" title="Double-click to rename · right-click for options"><span class="fchev">${closed[k]?'▸':'▾'}</span><svg class="ficon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">${closed[k]?'<path d="M1.5 3.5a1 1 0 0 1 1-1h3.2l1.5 1.7h6.3a1 1 0 0 1 1 1v6.8a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1z" fill="currentColor" opacity=".85"/>':'<path d="M1.5 3.5a1 1 0 0 1 1-1h3.2l1.5 1.7h6.3a1 1 0 0 1 1 1v1H4.2L1.5 12.5z" fill="currentColor" opacity=".55"/><path d="M4.2 6.2h11l-2.4 6.3a1 1 0 0 1-.9.6H2.5a1 1 0 0 1-1-1.1z" fill="currentColor" opacity=".9"/>'}</svg><span class="fn">${esc(f)}</span> <span class="note">${its.length}</span></div>`+(closed[k]?'':its.map(o=>itFn(t,o,sub(o)).replace('class="it','class="it indent')).join(''))});return h}
 
 // ---------- tabs and explorer ----------
 function renderTabs(){$('#wintabs').innerHTML=P.open.map(w=>{const o=winObj(w.t,w.id);if(!o)return'';const on=P.act&&P.act.t===w.t&&P.act.id===w.id;return`<div class="wt ${on?'on':''}" data-t="${w.t}" data-id="${w.id}" title="Double-click to rename"><span>${WINICON[w.t]}</span><span class="tn">${esc(o.name)}</span><button data-close="1" title="Close">×</button></div>`}).join('')}
@@ -5135,6 +5197,353 @@ input.renm{font:inherit;color:var(--ink);background:var(--panel);border:1px soli
 #lpages{display:flex;align-items:center;gap:4px;padding:5px 8px;border-top:1px solid var(--line);background:var(--panel2);flex-wrap:wrap}#lpages .pgt{padding:3px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);cursor:pointer;font-size:12.5px;user-select:none}#lpages .pgt.on{background:var(--acc);border-color:var(--acc);color:#fff}#lpages .pgadd{border:1px dashed var(--line);background:none;border-radius:6px;padding:3px 10px;color:var(--acc);cursor:pointer}#lpages .pgadd:hover{background:var(--acc2)}#lpages .sp{flex:1}
 #nprev hr.pb{border:0;border-top:2px dashed var(--line);margin:22px 0 14px;height:0;overflow:visible;position:relative}#nprev hr.pb::after{content:'page break';position:absolute;top:-9px;right:0;background:var(--panel);padding:0 6px;font-size:11px;color:var(--mut)}#ntools .sp2{width:1px;height:18px;background:var(--line);margin:0 4px}`;document.head.append(st)})();
 initExplorerDnD();initLayoutPages();initReportPages();
+</script>
+<script>// ===== Results log: resizable + toggle arrow; Import assistant (suggests next steps after a file is imported) =====
+(function(){
+  const res=document.getElementById('results'),btn=document.getElementById('rHide');if(!res||!btn)return;
+  const KEY='la_res_h',clampH=h=>Math.max(80,Math.min(Math.round(window.innerHeight*.8),h));
+  let h=240;try{h=clampH(+localStorage.getItem(KEY)||240)}catch(e){}
+  const redraw=()=>{if(typeof redrawGraph==='function')redrawGraph()};
+  const apply=()=>{res.style.height=h+'px'};
+  const sync=()=>{const m=res.classList.contains('min');btn.textContent=m?'▴':'▾';btn.title=m?'Expand results log':'Collapse results log';if(!m)apply();else res.style.height='';setTimeout(redraw,30)};
+  btn.addEventListener('click',e=>{e.stopImmediatePropagation();res.classList.toggle('min')},true);
+  const grip=document.createElement('div');grip.id='rGrip';grip.title='Drag to resize';res.prepend(grip);
+  grip.addEventListener('pointerdown',e=>{e.preventDefault();const y0=e.clientY,h0=res.getBoundingClientRect().height;grip.setPointerCapture(e.pointerId);grip.classList.add('drag');
+    const mv=ev=>{h=clampH(h0+(y0-ev.clientY));apply()},up=()=>{grip.classList.remove('drag');grip.removeEventListener('pointermove',mv);grip.removeEventListener('pointerup',up);try{localStorage.setItem(KEY,String(h))}catch(x){}redraw()};
+    grip.addEventListener('pointermove',mv);grip.addEventListener('pointerup',up)});
+  new MutationObserver(sync).observe(res,{attributes:true,attributeFilter:['class']});sync();
+})();
+
+let dawArmed=0,dawMade=[];
+function dawProfile(sh){
+  const N=NR(sh),num=[],txt=[],date=[];
+  sh.cols.forEach((c,i)=>{const vals=c.d.slice(0,N).filter(v=>v!=null&&v!==''&&!(typeof v==='number'&&Number.isNaN(v)));
+    if(c.fmt==='date')date.push(i);else if(vals.length&&vals.every(v=>typeof v==='number'))num.push(i);else if(vals.length)txt.push(i)});
+  let miss=0,missRows=[],dup=0;const seen=new Set();
+  for(let r=0;r<N;r++){let m=false;sh.cols.forEach(c=>{const v=c.d[r];if(v==null||v===''||(typeof v==='number'&&Number.isNaN(v))){miss++;m=true}});if(m)missRows.push(r);
+    const k=sh.cols.map(c=>String(c.d[r])).join('\u0001');if(seen.has(k))dup++;else seen.add(k)}
+  let mono=false;const xi=date.length?date[0]:num[0];
+  if(xi!=null){const d=sh.cols[xi].d;let up=true,dn=true;for(let r=1;r<N;r++){if(!(d[r]>d[r-1]))up=false;if(!(d[r]<d[r-1]))dn=false}mono=N>2&&(up||dn)}
+  return{N,num,txt,date,miss,missRows,dup,mono,xi}}
+function dawSel(cs){gsel={c0:cs[0],r0:0,c1:cs[0],r1:0,extra:new Set(cs)};cur={r:0,c:cs[0]};if(typeof paintSel==='function')paintSel()}
+function dawRun(id,sh,over){const def=A.defs[id];if(!def)return flash('Analysis not available');const v=defaultsFor(def,sh);Object.assign(v,over);runAnalysis(id,v,sh)}
+function dawAdvice(sh){
+  const p=dawProfile(sh),nm=i=>sh.cols[i].name||L(i),out=[];
+  const act=(group,title,sub,fn,warn)=>out.push({group,title,sub,fn,warn});
+  if(sh.isMatrix){
+    act('Visualise','Heatmap','Show the matrix as a colour map',()=>plotCmd('heat'));
+    act('Visualise','3D surface','Rotate the matrix as a surface',()=>plotCmd('surf3d'));
+    act('Visualise','Contour plot','Lines of equal value',()=>plotCmd('contour'));
+    return{p,out}}
+  if(p.missRows.length)act('Clean up',`Remove ${p.missRows.length} row${p.missRows.length>1?'s':''} with missing values`,`${p.miss} empty cell${p.miss>1?'s':''} found`,()=>{openWin('sheet',sh.id);deleteRows(p.missRows)},true);
+  if(p.dup)act('Clean up',`Remove ${p.dup} duplicate row${p.dup>1?'s':''}`,'Identical rows are kept once',()=>{openWin('sheet',sh.id);removeDuplicateRows()},true);
+  const ys=p.xi!=null&&(p.mono||p.date.length)?p.num.filter(i=>i!==p.xi):p.num;
+  if(p.xi!=null&&p.mono&&ys.length){
+    act('Visualise',`Plot ${ys.slice(0,3).map(nm).join(', ')}${ys.length>3?'…':''} vs ${nm(p.xi)}`,'Line plot, first column as X',()=>{sh.cols[p.xi].des='X';openWin('sheet',sh.id);dawSel(ys.slice(0,6));plotCmd('line')});
+    act('Visualise','Scatter plot with symbols','Points only, good for measurements',()=>{sh.cols[p.xi].des='X';openWin('sheet',sh.id);dawSel(ys.slice(0,6));plotCmd('scatter')})}
+  else if(p.num.length>=2){
+    act('Visualise',`Scatter: ${nm(p.num[1])} vs ${nm(p.num[0])}`,'See whether two columns are related',()=>{sh.cols[p.num[0]].des='X';openWin('sheet',sh.id);dawSel([p.num[1]]);plotCmd('scatter')})}
+  if(p.num.length)act('Visualise',`Histogram of ${nm(p.num[0])}`,'Distribution of the values',()=>{openWin('sheet',sh.id);dawSel([p.num[0]]);plotCmd('hist')});
+  if(p.num.length>=2)act('Visualise','Box chart of all numeric columns','Compare spread and outliers',()=>{openWin('sheet',sh.id);dawSel(p.num.slice(0,12));plotCmd('box')});
+  if(p.num.length>=3)act('Visualise','Scatter matrix','Every column against every other',()=>{openWin('sheet',sh.id);dawSel(p.num.slice(0,8));plotCmd('scatmat')});
+  if(p.num.length)act('Analyse','Descriptive statistics','Mean, SD, median, quartiles…',()=>{openWin('sheet',sh.id);dawRun('descr',sh,{cols:p.num})});
+  if(p.num.length)act('Analyse',`Normality test (${nm(p.num[0])})`,'Is the data roughly Gaussian?',()=>{openWin('sheet',sh.id);dawRun('normal',sh,{y:p.num[0]})});
+  if(p.num.length>=2)act('Analyse','Correlation matrix','How strongly do columns move together?',()=>{openWin('sheet',sh.id);dawRun('corr',sh,{cols:p.num})});
+  if(p.num.length>=2)act('Analyse',`Linear regression: ${nm(p.num[1])} on ${nm(p.num[0])}`,'Fit a straight line with statistics',()=>{openWin('sheet',sh.id);dawRun('linreg',sh,{x:p.num[0],y:p.num[1]})});
+  if(p.num.length>=3)act('Analyse','Principal component analysis','Find the main directions of variation',()=>{openWin('sheet',sh.id);dawRun('pca',sh,{cols:p.num})});
+  if(typeof statsAdvisor==='function')act('Not sure?','Open the Stats advisor','Answer a few questions to find the right test',()=>{openWin('sheet',sh.id);statsAdvisor()});
+  return{p,out}}
+function dawClose(){const e=document.getElementById('daw');if(e)e.remove()}
+function dawShow(sh){
+  sh=sh||curSheet();if(!sh)return flash('Import or open a sheet first');dawClose();
+  const{p,out}=dawAdvice(sh),el=document.createElement('div');el.id='daw';
+  const parts=[`${p.N} rows × ${sh.cols.length} columns`];if(p.num.length)parts.push(`${p.num.length} numeric`);if(p.date.length)parts.push(`${p.date.length} date`);if(p.txt.length)parts.push(`${p.txt.length} text`);
+  const notes=[];if(sh.isMatrix)notes.push('Looks like a matrix (grid of values).');else{if(p.mono)notes.push(`“${esc(sh.cols[p.xi].name||L(p.xi))}” increases steadily and looks like an X axis.`);if(!p.miss&&!p.dup)notes.push('No missing values or duplicate rows.')}
+  let html=`<div class="dh"><b>What would you like to do with “${esc(sh.name)}”?</b><button id="dawX" title="Close">✕</button></div><div class="ds">${parts.join(' · ')}<br>${notes.join(' ')}</div>`,last='';
+  out.forEach((o,i)=>{if(o.group!==last){html+=`<div class="dg">${o.group}</div>`;last=o.group}html+=`<button class="da${o.warn?' warn':''}" data-i="${i}">${esc(o.title)}<small>${esc(o.sub)}</small></button>`});
+  let off=false;try{off=localStorage.getItem('la_daw_off')==='1'}catch(e){}
+  html+=`<div class="df"><input type="checkbox" id="dawOff" ${off?'checked':''}><label for="dawOff">Don’t suggest after import (reopen via File ▸ Data assistant)</label></div>`;
+  el.innerHTML=html;document.body.append(el);
+  el.onclick=e=>{if(e.target.closest('#dawX'))return dawClose();const b=e.target.closest('.da');if(!b)return;const o=out[+b.dataset.i];
+    try{o.fn()}catch(err){alert('Could not do that: '+err.message)}
+    if(o.group==='Clean up')setTimeout(()=>dawShow(sh),50);else dawClose()};
+  el.querySelector('#dawOff').onchange=e=>{try{localStorage.setItem('la_daw_off',e.target.checked?'1':'0')}catch(x){}}}
+(function(){
+  const mk=mkSheet;mkSheet=function(){const sh=mk.apply(this,arguments);if(dawArmed)dawMade.push(sh);return sh};
+  const imp=importFile;importFile=async function(file){dawMade=[];dawArmed=1;try{await imp.apply(this,arguments)}finally{dawArmed=0}dawAfter()};
+  const iw=importWizard;importWizard=function(file){dawMade=[];dawArmed=1;setTimeout(()=>{dawArmed=0},10*60*1000);return iw.apply(this,arguments)};
+  const op=openWin;openWin=function(t,id){op.apply(this,arguments);if(dawArmed&&t==='sheet'&&dawPending==null&&dawMade.some(q=>q.id===id))dawPending=setTimeout(dawAfter,60)};
+  RIB.File.push(['Assistant',[['Data assistant','✨',()=>dawShow()]]]);
+})();
+let dawPending=null;
+function dawAfter(){clearTimeout(dawPending);dawPending=null;const sh=dawMade[dawMade.length-1];dawMade=[];dawArmed=0;if(!sh)return;
+  try{if(localStorage.getItem('la_daw_off')==='1')return}catch(e){}
+  setTimeout(()=>dawShow(sh),150)}
+</script>
+<script>// ===== Insight tools: data profile, outlier masking, colour-vision preview =====
+function profStats(sh,ci){
+  const c=sh.cols[ci],N=NR(sh),vals=[];let miss=0;const uniq=new Set();
+  for(let r=0;r<N;r++){const v=c.d[r];if(v==null||v===''||(typeof v==='number'&&Number.isNaN(v))){miss++;continue}uniq.add(v);if(typeof v==='number')vals.push(v)}
+  const o={name:c.name||L(ci),unit:c.unit,n:N-miss,miss,uniq:uniq.size,numeric:vals.length>0&&vals.length===N-miss,date:c.fmt==='date'};
+  if(o.numeric){const s=vals.slice().sort((a,b)=>a-b),q=p=>{const i=(s.length-1)*p,f=Math.floor(i);return s[f]+(s[Math.min(f+1,s.length-1)]-s[f])*(i-f)};
+    const mean=s.reduce((a,b)=>a+b,0)/s.length,sd=Math.sqrt(s.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(1,s.length-1)),q1=q(.25),q3=q(.75),iqr=q3-q1;
+    Object.assign(o,{min:s[0],max:s[s.length-1],mean,sd,med:q(.5),q1,q3,out:s.filter(v=>v<q1-1.5*iqr||v>q3+1.5*iqr).length});
+    const nb=Math.min(20,Math.max(5,Math.round(Math.sqrt(s.length)))),lo=s[0],hi=s[s.length-1],w=(hi-lo)/nb||1,bins=new Array(nb).fill(0);s.forEach(v=>bins[Math.min(nb-1,Math.floor((v-lo)/w))]++);o.bins=bins}
+  return o}
+function profSpark(bins){const m=Math.max(...bins),w=100/bins.length;return`<svg viewBox="0 0 100 28" width="100" height="28" preserveAspectRatio="none">${bins.map((b,i)=>`<rect x="${i*w+.5}" y="${28-b/m*26}" width="${w-1}" height="${b/m*26}" fill="currentColor" opacity=".75"/>`).join('')}</svg>`}
+function dataProfileDialog(){
+  const sh=curSheet();if(!sh)return alert('Open a sheet first.');if(sh.isMatrix)return flash('Not available on matrix sheets');
+  const f=v=>v==null||!Number.isFinite(v)?'':(Math.abs(v)>=1e5||(v!==0&&Math.abs(v)<1e-3)?v.toExponential(2):String(+v.toPrecision(4))),N=NR(sh);
+  const rows=sh.cols.map((_,i)=>profStats(sh,i)).map(o=>`<tr><td><b>${esc(o.name)}</b>${o.unit?` <span class="note">(${esc(o.unit)})</span>`:''}</td><td>${o.date?'date':o.numeric?'number':'text'}</td><td>${o.n}</td><td${o.miss?' style="color:var(--warn)"':''}>${o.miss||''}</td><td>${o.uniq}</td>${o.numeric?`<td>${f(o.min)}</td><td>${f(o.mean)}</td><td>${f(o.med)}</td><td>${f(o.max)}</td><td>${f(o.sd)}</td><td${o.out?' style="color:var(--warn)"':''}>${o.out||''}</td><td style="color:var(--acc)">${profSpark(o.bins)}</td>`:'<td colspan="7" class="note">—</td>'}</tr>`).join('');
+  const d=document.createElement('dialog');d.className='dlg';d.style.maxWidth='980px';
+  d.innerHTML=`<form method="dialog"><h3>Data profile — ${esc(sh.name)}</h3><div class="fl" style="max-height:66vh;overflow:auto"><div class="note" style="margin-bottom:6px">${N} rows × ${sh.cols.length} columns. Outliers use the 1.5 × IQR rule.</div><table class="rt"><tr><th>Column</th><th>Type</th><th>Valid</th><th>Missing</th><th>Unique</th><th>Min</th><th>Mean</th><th>Median</th><th>Max</th><th>SD</th><th>Outliers</th><th>Distribution</th></tr>${rows}</table></div><div class="fb"><button value="x">Close</button></div></form>`;
+  document.body.append(d);d.addEventListener('close',()=>d.remove());d.showModal()}
+function maskOutliersDialog(){
+  const sh=curSheet();if(!sh||sh.isMatrix)return alert('Open a worksheet first.');
+  dialog({title:'Mask outliers',ok:'Mask',sheet:sh,hint:'Rows with an outlier in any chosen column are masked: hidden from plots and analyses, but kept in the sheet. Unmask via Data ▸ Mask.',fields:[{t:'cols',k:'cols',label:'Columns',def:selectedCols()},{t:'sel',k:'m',label:'Rule',def:'iqr',opts:[['iqr','Tukey fences (1.5 × IQR)'],['iqr3','Far-out fences (3 × IQR)'],['z3','|z| > 3'],['mad','Modified z-score > 3.5 (MAD)']]}],
+    onOk:a=>{const cs=[].concat(a.cols).filter(i=>sh.cols[i]);const N=NR(sh),bad=new Set();
+      cs.forEach(ci=>{const idx=[],v=[];for(let r=0;r<N;r++){const x=sh.cols[ci].d[r];if(typeof x==='number'&&Number.isFinite(x)){idx.push(r);v.push(x)}}if(v.length<4)return;
+        const s=v.slice().sort((p,q)=>p-q),q=p=>{const i=(s.length-1)*p,f=Math.floor(i);return s[f]+(s[Math.min(f+1,s.length-1)]-s[f])*(i-f)};
+        let test;if(a.m==='z3'){const m=v.reduce((p,q)=>p+q,0)/v.length,sd=Math.sqrt(v.reduce((p,q)=>p+(q-m)**2,0)/(v.length-1));test=x=>sd>0&&Math.abs(x-m)/sd>3}
+        else if(a.m==='mad'){const md=q(.5),dev=v.map(x=>Math.abs(x-md)).sort((p,q)=>p-q),mad=dev[Math.floor(dev.length/2)];test=x=>mad>0&&.6745*Math.abs(x-md)/mad>3.5}
+        else{const k=a.m==='iqr3'?3:1.5,q1=q(.25),q3=q(.75);test=x=>x<q1-k*(q3-q1)||x>q3+k*(q3-q1)}
+        idx.forEach((r,j)=>{if(test(v[j]))bad.add(r)})});
+      if(!bad.size)return flash('No outliers found');histHint='Mask outliers';snap();histHint=null;sh.mask=sh.mask||[];bad.forEach(r=>sh.mask[r]=true);dirty();renderGrid();redrawGraph(true);flash(`${bad.size} row${bad.size>1?'s':''} masked`)}})}
+// colour-vision preview (display only; exports are unchanged)
+const CVD_MATRIX={deut:'0.367 0.861 -0.228 0 0  0.280 0.673 0.047 0 0  -0.012 0.043 0.969 0 0  0 0 0 1 0',prot:'0.152 1.053 -0.205 0 0  0.115 0.786 0.099 0 0  -0.004 -0.048 1.052 0 0  0 0 0 1 0',trit:'1.256 -0.077 -0.179 0 0  -0.078 0.931 0.148 0 0  0.005 0.691 0.304 0 0  0 0 0 1 0'};
+function cvdPreview(mode){
+  const cv=document.getElementById('cv');if(!cv)return;
+  if(!document.getElementById('cvdDefs')){const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.id='cvdDefs';s.setAttribute('width','0');s.setAttribute('height','0');s.style.position='absolute';
+    s.innerHTML=Object.entries(CVD_MATRIX).map(([k,m])=>`<filter id="cvd-${k}"><feColorMatrix type="matrix" values="${m}"/></filter>`).join('');document.body.append(s)}
+  cv.style.filter=mode==='gray'?'grayscale(1)':CVD_MATRIX[mode]?`url(#cvd-${mode})`:'';
+  if(mode)flash({deut:'Preview: red-green (deuteranopia)',prot:'Preview: red-green (protanopia)',trit:'Preview: blue-yellow (tritanopia)',gray:'Preview: grayscale print'}[mode]+' — display only');else flash('Colour preview off')}
+(function(){
+  RIB.Column.push(['Insight',[['Data profile','▥',dataProfileDialog],['Mask outliers…','⊘',maskOutliersDialog]]]);
+  RIB.Plot.push(['Colour-vision check',[['Preview: red-green (deuteranopia)','◐',()=>cvdPreview('deut')],['Preview: red-green (protanopia)','◑',()=>cvdPreview('prot')],['Preview: blue-yellow (tritanopia)','◒',()=>cvdPreview('trit')],['Preview: grayscale print','◍',()=>cvdPreview('gray')],['Preview off','○',()=>cvdPreview('')]]]);
+  // offer the profile from the import assistant
+  const adv=dawAdvice;dawAdvice=function(sh){const r=adv(sh);if(!sh.isMatrix)r.out.unshift({group:'Understand',title:'Data profile',sub:'Types, missing values, ranges and distributions per column',fn:()=>{openWin('sheet',sh.id);dataProfileDialog()}});
+    if(!sh.isMatrix&&r.p.num.length)r.out.push({group:'Clean up',title:'Mask outliers…',sub:'Hide extreme values from plots and analyses',fn:()=>{openWin('sheet',sh.id);maskOutliersDialog()}});
+    r.out.sort((a,b)=>['Understand','Clean up','Visualise','Analyse','Not sure?'].indexOf(a.group)-['Understand','Clean up','Visualise','Analyse','Not sure?'].indexOf(b.group));return r};
+})();
+</script>
+<script>// ===== Chart wizard: 1 Upload -> 2 Check & describe -> 3 Visualize (type, refine, annotate, layout) -> 4 Publish =====
+let cw=null;
+const CW_SIZES=[['','Default for this chart type'],['1200x630','Social media 1200 × 630'],['1080x1080','Square 1080 × 1080'],['1280x720','Slide 16:9 1280 × 720'],['800x500','Blog 800 × 500'],['600x400','Compact 600 × 400']];
+const CW_KEEP=['title','subtitle','desc','xl','yl','notes','refs','ys','xs','fs','font','legend','gridx','gridy','outSize','cwDark','cwSrc','lwAll'];
+const cwStepNames=['Upload','Check & describe','Visualize','Publish'];
+const cwQ=s=>cw.el.querySelector(s);
+const cwPal=()=>cw.g&&cw.g.cwDark?DARK:LIGHT;
+
+(function(){const gs=graphSize;graphSize=function(g){return g&&g.outSize?g.outSize:gs(g)}})();
+
+function cwStart(sheet){
+  if(cw)return;
+  cw={step:sheet?2:1,sh:sheet||null,own:!sheet,name:sheet?sheet.name:'',text:null,opts:{sep:'auto',skip:0,header:'auto',decimal:'auto',dates:true,naTokens:true,thousands:'',comment:'#',custom:''},x:-1,ys:[],type:'line',g:null,tab:'refine',tpl:-1,committed:false,mask:false};
+  const el=cw.el=document.createElement('div');el.id='cw';document.body.append(el);
+  el.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();cwClose()}});
+  if(sheet){cw.des=sheet.cols.map(c=>c.des);cwInitCols()}
+  cwRender()}
+function cwClose(force){
+  if(!cw)return;if(!force&&cw.step>=2&&!cw.committed&&cw.own&&!confirm('Close the chart wizard? The uploaded data and chart will be discarded.'))return;
+  if(!cw.own&&cw.des&&cw.sh)cw.sh.cols.forEach((c,i)=>{if(cw.des[i]!==undefined)c.des=cw.des[i]});
+  if(cw.own&&!cw.committed&&cw.sh){const i=P.sheets.indexOf(cw.sh);if(i>=0)P.sheets.splice(i,1)}
+  if(cw.el)cw.el.remove();cw=null}
+function cwRender(){
+  const s=cw.step,el=cw.el;
+  el.innerHTML=`<div class="cwh"><b class="cwt">Chart wizard</b><ol class="cws">${cwStepNames.map((n,i)=>`<li class="${i+1===s?'on':i+1<s?'done':''}" ${i+1<s?`data-go="${i+1}"`:''}><span>${i+1<s?'✓':i+1}</span>${n}</li>`).join('')}</ol><span class="sp"></span><button id="cwX" title="Close (Esc)">✕</button></div><div class="cwb" id="cwB"></div><div class="cwf"><button id="cwBack" ${s===1||(s===2&&!cw.own)?'disabled':''}>← Back</button><span class="sp"></span><span class="note" id="cwMsg"></span>${s<4?`<button class="p" id="cwNext">${s===3?'Continue to publish →':'Next →'}</button>`:`<button class="p" id="cwDone">Open in workspace</button>`}</div>`;
+  el.onclick=e=>{const t=e.target;if(t.closest('#cwX'))return cwClose();const go=t.closest('[data-go]');if(go){cw.step=+go.dataset.go;return cwRender()}
+    if(t.closest('#cwBack')){cw.step--;return cwRender()}if(t.closest('#cwNext'))return cwNext();if(t.closest('#cwDone'))return cwFinish()};
+  [cwStep1,cwStep2,cwStep3,cwStep4][s-1](cwQ('#cwB'))}
+function cwNext(){
+  if(cw.step===1&&!cw.sh)return cwMsg('Add some data first');
+  if(cw.step===2){if(!cw.ys.length)return cwMsg('Pick at least one column with the role “Y” (values)');}
+  cw.step++;cwRender()}
+function cwMsg(t){const m=cwQ('#cwMsg');if(m){m.textContent=t;clearTimeout(m._t);m._t=setTimeout(()=>m.textContent='',3500)}}
+
+// ---------- step 1: upload ----------
+function cwStep1(b){
+  const smp=typeof SAMPLES!=='undefined'?Object.entries(SAMPLES).slice(0,8):[];
+  b.innerHTML=`<div class="cw1"><div class="cwdrop" id="cwDrop"><div class="big">⇪</div><b>Drop a data file here</b><div class="note">CSV, TSV, TXT, Excel, JSON, HTML tables or XML</div><button class="p" id="cwPick">Choose file…</button></div>
+  <div class="cwor">or paste your data</div><textarea id="cwPaste" rows="6" spellcheck="false" placeholder="Paste rows copied from a spreadsheet, or type CSV.&#10;Year,Sales,Costs&#10;2021,120,90&#10;2022,150,100"></textarea><div><button id="cwUse">Use pasted data</button></div>
+  <div class="cwor">or start with an example</div><div class="cwsamples">${smp.map(([k,v])=>`<button data-s="${k}">${esc(v.label)}</button>`).join('')}</div>${cw.sh?`<p class="note">Loaded: <b>${esc(cw.name)}</b> (${NR(cw.sh)} rows × ${cw.sh.cols.length} columns). Click Next, or load something else.</p>`:''}</div>
+  <input type="file" id="cwFile" hidden accept=".csv,.tsv,.txt,.dat,.prn,.asc,.xlsx,.xls,.json,.html,.htm,.xml">`;
+  const drop=b.querySelector('#cwDrop');
+  drop.ondragover=e=>{e.preventDefault();e.stopPropagation();drop.classList.add('dz')};drop.ondragleave=()=>drop.classList.remove('dz');
+  drop.ondrop=e=>{e.preventDefault();e.stopPropagation();drop.classList.remove('dz');if(e.dataTransfer.files[0])cwFile(e.dataTransfer.files[0])};
+  b.querySelector('#cwPick').onclick=()=>b.querySelector('#cwFile').click();b.querySelector('#cwFile').onchange=e=>{if(e.target.files[0])cwFile(e.target.files[0])};
+  b.querySelector('#cwUse').onclick=()=>{const t=b.querySelector('#cwPaste').value;if(!t.trim())return cwMsg('Paste some data first');cwText(t,'Pasted data')};
+  b.querySelector('.cwsamples').onclick=e=>{const k=e.target.closest('[data-s]');if(!k)return;const s=SAMPLES[k.dataset.s].make();cwSetSheet(mkSheetDetached(s.name,s.cols,s.isMatrix?{isMatrix:true,xv:s.xv,yv:s.yv}:{}),s.name)}}
+function mkSheetDetached(name,cols,extra){const n=P.sheets.length,sh=mkSheet(name,cols,extra);P.sheets.length=n;return sh}
+function cwDropOld(){if(cw.own&&cw.sh){const i=P.sheets.indexOf(cw.sh);if(i>=0)P.sheets.splice(i,1)}}
+function cwSetSheet(sh,name){cwDropOld();cw.sh=sh;cw.own=true;cw.name=name;P.sheets.push(sh);cwInitCols();cw.step=2;cwRender()}
+async function cwFile(file){
+  const nm=file.name.replace(/\.[^.]+$/,'');
+  if(/\.(csv|tsv|txt|dat|prn|asc)$/i.test(file.name)||!/\.[a-z0-9]+$/i.test(file.name)){const buf=await file.arrayBuffer(),u=new Uint8Array(buf);let enc='utf-8';if(u[0]===0xFF&&u[1]===0xFE)enc='utf-16le';else if(u[0]===0xFE&&u[1]===0xFF)enc='utf-16be';
+    let t;try{t=new TextDecoder(enc).decode(buf)}catch(e){t=new TextDecoder('utf-8').decode(buf)}if(/�/.test(t)&&enc==='utf-8')t=new TextDecoder('windows-1252').decode(buf);return cwText(t,nm)}
+  cwMsg('Reading file…');const before=new Set(P.sheets);window.cwSuppress=true;
+  try{await importFile(file)}finally{window.cwSuppress=false}
+  const made=P.sheets.filter(s=>!before.has(s));if(!made.length)return cwMsg('No table found in that file');
+  const sh=made[made.length-1];P.sheets=P.sheets.filter(s=>before.has(s));P.open=P.open.filter(w=>w.t!=='sheet'||P.sheets.some(s=>s.id===w.id));if(P.act&&!winObj(P.act.t,P.act.id))P.act=P.open[0]||null;showWin();
+  cwSetSheet(sh,nm)}
+function cwText(t,nm){cw.text=t;cw.name=nm;cwReparse()}
+function cwReparse(){
+  let r;try{const o={...cw.opts};if(o.header!=='auto')o.header=+o.header;r=parseWizard(cw.text,o)}catch(e){return cwMsg('Could not read the data: '+e.message)}
+  if(!r.cols.length||!r.nrows)return cwMsg('No data rows found');cw.info=r.info;
+  const sh=mkSheetDetached(cw.name,r.cols.map(c=>({unit:'',comment:'',...c})));cwDropOld();cw.sh=sh;cw.own=true;P.sheets.push(sh);cwInitCols();
+  if(cw.step===1)cw.step=2;cwRender()}
+function cwInitCols(){
+  const sh=cw.sh,N=NR(sh),isNum=c=>c.d.some(v=>typeof v==='number'&&Number.isFinite(v))&&c.d.every(v=>typeof v==='number'||v==null||v==='');
+  let x=sh.cols.findIndex(c=>c.des==='X');const num=sh.cols.map((c,i)=>isNum(c)?i:-1).filter(i=>i>=0);
+  if(sh.cols.length===1)x=-1;else if(x<0)x=sh.cols.findIndex(c=>c.fmt==='date');
+  if(x<0&&sh.cols.length>1&&num.length)x=num[0];
+  cw.x=x;cw.ys=num.filter(i=>i!==x).slice(0,8);if(!cw.ys.length&&num.length)cw.ys=[num[0]];
+  const xd=x>=0&&sh.cols[x].fmt==='date',dx=x>=0?sh.cols[x].d:[];let mono=x>=0&&N>2;for(let r=1;r<N&&mono;r++)if(!(dx[r]>dx[r-1])&&!(dx[r]<dx[r-1]))mono=false;
+  cw.type=cw.ys.length===1&&x<0?'hist':(xd||mono)?'line':x>=0?'scatter':'box';cwApplyRoles();cw.g=null}
+function cwApplyRoles(){cw.sh.cols.forEach((c,i)=>{if(i===cw.x)c.des='X';else if(cw.ys.includes(i))c.des='Y';else c.des='L'})}
+
+// ---------- step 2: check & describe ----------
+function cwOutliers(){
+  const sh=cw.sh,N=NR(sh),out=new Map();
+  cw.ys.forEach(ci=>{const c=sh.cols[ci],v=[];for(let r=0;r<N;r++)if(typeof c.d[r]==='number'&&Number.isFinite(c.d[r]))v.push(c.d[r]);if(v.length<6)return;
+    const s=v.slice().sort((a,b)=>a-b),q=p=>{const i=(s.length-1)*p,f=Math.floor(i);return s[f]+(s[Math.min(f+1,s.length-1)]-s[f])*(i-f)},q1=q(.25),q3=q(.75),lo=q1-1.5*(q3-q1),hi=q3+1.5*(q3-q1);
+    for(let r=0;r<N;r++){const x=c.d[r];if(typeof x==='number'&&Number.isFinite(x)&&(x<lo||x>hi)){if(!out.has(r))out.set(r,new Set());out.get(r).add(ci)}}});
+  return out}
+function cwStep2(b){
+  const sh=cw.sh,N=NR(sh),show=Math.min(N,200),outl=cwOutliers(),cols=sh.cols;
+  const roleSel=i=>`<select data-role="${i}"><option value="X" ${cw.x===i?'selected':''}>X / category</option><option value="Y" ${cw.ys.includes(i)?'selected':''}>Y value</option><option value="L" ${cw.x!==i&&!cw.ys.includes(i)?'selected':''}>Ignore</option></select>`;
+  const text=cw.text!=null,o=cw.opts;
+  b.innerHTML=`${text?`<div class="cwopt"><label>Delimiter <select data-o="sep"><option value="auto">Auto</option><option value=",">Comma</option><option value=";">Semicolon</option><option value="\t">Tab</option><option value="|">Pipe</option><option value="space">Whitespace</option></select></label><label>Decimal <select data-o="decimal"><option value="auto">Auto</option><option value=".">1.5</option><option value=",">1,5</option></select></label><label>Header rows <select data-o="header"><option value="auto">Auto</option><option value="0">0</option><option value="1">1 (names)</option><option value="2">2 (+units)</option></select></label><label>Skip lines <input data-o="skip" type="number" min="0" value="${o.skip}" style="width:60px"></label></div>`:''}
+  <div class="cwsum" id="cwSum"></div><div class="cwtab"><table class="rt"><thead><tr><th class="rn"></th>${cols.map((c,i)=>`<th><input class="hn" data-n="${i}" value="${esc(c.name||'')}" placeholder="${L(i)}"><input class="hu" data-u="${i}" value="${esc(c.unit||'')}" placeholder="unit">${roleSel(i)}</th>`).join('')}</tr></thead><tbody>${Array.from({length:show},(_,r)=>`<tr><td class="rn">${r+1}</td>${cols.map((c,i)=>{const v=c.d[r],na=v==null||v===''||(typeof v==='number'&&Number.isNaN(v)),isOut=outl.get(r)?.has(i);return`<td contenteditable="plaintext-only" data-r="${r}" data-c="${i}" class="${na?'na':''}${isOut?' out':''}${typeof v==='number'?' num':''}">${na?'':c.fmt==='date'&&typeof v==='number'?esc(new Date(v).toISOString().slice(0,10)):esc(String(v))}</td>`}).join('')}</tr>`).join('')}</tbody></table>${N>show?`<div class="note" style="padding:6px">Showing the first ${show} of ${N} rows.</div>`:''}</div>`;
+  if(text)b.querySelectorAll('[data-o]').forEach(e=>{e.value=cw.opts[e.dataset.o]});
+  cwSummary();
+  b.onchange=e=>{const t=e.target;
+    if(t.dataset.o){cw.opts[t.dataset.o]=t.type==='number'?+t.value:t.value;return cwReparse()}
+    if(t.dataset.role!==undefined){const i=+t.dataset.role;if(t.value==='X'){cw.x=i;cw.ys=cw.ys.filter(j=>j!==i)}else{if(cw.x===i)cw.x=-1;cw.ys=cw.ys.filter(j=>j!==i);if(t.value==='Y')cw.ys.push(i)}cw.ys.sort((p,q)=>p-q);cwApplyRoles();cw.g=null;return cwStep2(b)}
+    if(t.dataset.n!==undefined)cols[+t.dataset.n].name=t.value.trim();if(t.dataset.u!==undefined)cols[+t.dataset.u].unit=t.value.trim();cw.g=null};
+  b.onfocusout=e=>{const td=e.target.closest&&e.target.closest('td[data-r]');if(!td)return;const r=+td.dataset.r,ci=+td.dataset.c,c=cols[ci],t=td.textContent.trim().replace(/ /g,' ');
+    let v=t===''?NaN:(c.fmt==='date'?Date.parse(t):Number(t.replace(',','.')));if(t!==''&&Number.isNaN(v)){if(c.fmt==='date')v=NaN;else v=t}
+    if(c.d[r]===v||(Number.isNaN(v)&&(c.d[r]==null||Number.isNaN(c.d[r]))))return;c.d[r]=v;cw.g=null;cwStep2(b)};
+  b.onclick=e=>{if(e.target.closest('#cwMask')){cw.mask=e.target.closest('#cwMask').checked;const out=cwOutliers();sh.mask=[];if(cw.mask)out.forEach((_,r)=>sh.mask[r]=true);cw.g=null}};}
+function cwSummary(){
+  const sh=cw.sh,N=NR(sh),out=cwOutliers(),cells=[...out.values()].reduce((a,s)=>a+s.size,0);let na=0;sh.cols.forEach(c=>{for(let r=0;r<N;r++){const v=c.d[r];if(v==null||v===''||(typeof v==='number'&&Number.isNaN(v)))na++}});
+  const el=cwQ('#cwSum');if(!el)return;
+  el.innerHTML=`<b>${N}</b> rows × <b>${sh.cols.length}</b> columns${cw.info?` · delimiter “${esc(cw.info.sep)}”, decimal “${esc(cw.info.decimal)}”`:''}${na?` · <span class="warnt">${na} empty cell${na>1?'s':''}</span>`:''}. ${out.size?`<span class="warnt">${cells} potential outlier${cells>1?'s':''} in ${out.size} row${out.size>1?'s':''}</span> (highlighted) <label class="inl"><input type="checkbox" id="cwMask" ${cw.mask?'checked':''}> leave them out of the chart</label>`:'<span class="okt">No outliers detected.</span>'} Click a cell to edit it, rename columns, and set each column’s role.`}
+
+// ---------- step 3: visualize ----------
+function cwWith(fn){const pa=P.act,gs=gsel,cs=cur;P.act={t:'sheet',id:cw.sh.id};gsel={c0:cw.ys[0]??0,r0:0,c1:cw.ys[0]??0,r1:0,extra:new Set(cw.ys)};
+  try{return fn()}finally{P.act=pa;gsel=gs;cur=cs}}
+function cwBuild(type){
+  const old=cw.g;let g=null;window.PLOT_DRY=true;const nid=P.nid,ao=window.alert;window.alert=()=>{};
+  try{cwWith(()=>{g=plotCmd(type)})}catch(e){g=null}finally{window.PLOT_DRY=false;window.alert=ao;P.nid=nid}
+  if(!g)return false;g.id=0;if(old)CW_KEEP.forEach(k=>{if(old[k]!==undefined)g[k]=old[k]});
+  if(cw.tpl>=0)applyBuiltin(g,BUILTIN_TPL[cw.tpl]);if(old&&old.lwAll)g.series.forEach(s=>s.lw=old.lwAll);
+  cw.g=g;cw.type=type;return true}
+function cwStep3(b){
+  if(!cw.g||cw.g.type!==cw.type)if(!cwBuild(cw.type)){const ok=['line','scatter','column','hist','box'].some(t=>cwBuild(t));if(!ok){cw.step=2;cwRender();return cwMsg('This data cannot be charted. Check column roles.')}}
+  b.innerHTML=`<div class="cw3"><aside class="cwg"><div class="cwgh">Chart type</div><div class="cwgrid" id="cwGrid"></div><button id="cwMore" class="lnk">Show more chart types</button></aside>
+  <main class="cwp"><div class="cwprev"><canvas id="cwCv"></canvas></div></main>
+  <aside class="cwc"><div class="seg" id="cwSeg">${[['refine','Refine'],['annotate','Annotate'],['layout','Layout']].map(([k,l])=>`<button data-t="${k}" class="${cw.tab===k?'on':''}">${l}</button>`).join('')}</div><div id="cwCtl"></div></aside></div>`;
+  cwDrawPreview();cwControls();cwGallery(false);
+  b.querySelector('#cwSeg').onclick=e=>{const t=e.target.closest('[data-t]');if(!t)return;cw.tab=t.dataset.t;b.querySelectorAll('#cwSeg button').forEach(x=>x.classList.toggle('on',x===t));cwControls()};
+  b.querySelector('#cwMore').onclick=e=>{e.target.remove();cwGallery(true)};
+  b.querySelector('#cwGrid').onclick=e=>{const t=e.target.closest('[data-type]');if(!t)return;if(cwBuild(t.dataset.type)){cwQ('#cwGrid').querySelectorAll('.cwty').forEach(x=>x.classList.toggle('on',x===t));cwDrawPreview();cwControls()}else cwMsg('That chart type cannot show this data')}}
+let cwGalTok=0;
+function cwGallery(all){
+  const grid=cwQ('#cwGrid');if(!grid)return;const tok=++cwGalTok;if(!all)grid.innerHTML='';
+  let list=all?Object.keys(GTYPES).filter(t=>!PREVIEW_FIRST.includes(t)):PREVIEW_FIRST.filter(t=>GTYPES[t]);
+  const step=()=>{if(tok!==cwGalTok||!cw||!document.body.contains(grid))return;const t=list.shift();if(!t)return;
+    const url=cwWith(()=>previewThumb(t));
+    if(url){const d=document.createElement('button');d.className='cwty'+(t===cw.type?' on':'');d.dataset.type=t;d.title=GTYPES[t];d.innerHTML=`<img src="${url}" alt=""><span>${esc(GTYPES[t])}</span>`;grid.append(d)}setTimeout(step,0)};
+  step()}
+function cwDrawPreview(){
+  const cv=cwQ('#cwCv');if(!cv||!cw.g)return;const g=cw.g,[W,H]=graphSize(g),dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.aspectRatio=`${W}/${H}`;const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+  try{drawGraphTo(c,g,W,H,cwPal())}catch(e){c.fillStyle='#c00';c.fillText('Could not draw: '+e.message,20,30)}}
+function cwControls(){
+  const box=cwQ('#cwCtl');if(!box)return;const g=cw.g,sh=cw.sh;
+  const T=(k,l,ph='')=>`<div class="f"><label>${l}</label><input type="text" data-k="${k}" value="${esc(g[k]||'')}" placeholder="${esc(ph)}"></div>`;
+  if(cw.tab==='refine'){
+    const num=sh.cols.map((c,i)=>i).filter(i=>sh.cols[i].d.some(v=>typeof v==='number'));
+    box.innerHTML=`${T('title','Title','Headline that states the finding')}${T('subtitle','Subtitle')}${T('xl','X axis title',cw.x>=0?sh.cols[cw.x].name:'')}${T('yl','Y axis title')}
+    <div class="f"><label>X axis</label><select id="cwX">${`<option value="-1" ${cw.x<0?'selected':''}>(row number)</option>`+sh.cols.map((c,i)=>`<option value="${i}" ${cw.x===i?'selected':''}>${esc(c.name||L(i))}</option>`).join('')}</select></div>
+    <div class="f"><label>Y columns</label><div class="chk">${num.filter(i=>i!==cw.x).map(i=>`<label><input type="checkbox" data-y="${i}" ${cw.ys.includes(i)?'checked':''}> ${esc(sh.cols[i].name||L(i))}</label>`).join('')}</div></div>
+    <div class="f"><label>Y scale</label><select data-k="ys"><option value="linear">Linear</option><option value="log">Logarithmic</option></select></div>
+    <div class="f"><label>Line width</label><input type="range" min="1" max="6" step=".5" id="cwLw" value="${g.lwAll||g.series[0]?.lw||2}"></div>
+    <div class="f c"><input type="checkbox" data-k="gridy" ${g.gridy?'checked':''}><label>Horizontal grid</label></div><div class="f c"><input type="checkbox" data-k="gridx" ${g.gridx?'checked':''}><label>Vertical grid</label></div>`;
+    const ys=box.querySelector('[data-k=ys]');if(ys)ys.value=g.ys||'linear'}
+  else if(cw.tab==='annotate'){
+    box.innerHTML=`<div class="f"><label>Text note</label><input type="text" id="nT" placeholder="e.g. Peak in 2022"></div><div class="two"><div class="f"><label>at X</label><input type="text" id="nX"></div><div class="f"><label>at Y</label><input type="text" id="nY"></div></div><button id="nAdd">Add note</button>
+    <div class="f" style="margin-top:12px"><label>Reference line</label></div><div class="two"><select id="rA"><option value="y">Horizontal (y =)</option><option value="x">Vertical (x =)</option></select><input type="text" id="rV" placeholder="value"></div><button id="rAdd">Add line</button>
+    <div class="f" style="margin-top:12px"><label>Description below the chart</label><textarea rows="3" data-k="desc" placeholder="Explain what the reader should see">${esc(g.desc||'')}</textarea></div>${T('cwSrc','Source','Data: …')}
+    <div class="cwlist">${(g.notes||[]).map((n,i)=>`<span class="tag">${esc(n.text)}<button data-rn="${i}">✕</button></span>`).join('')}${(g.refs||[]).map((r,i)=>`<span class="tag">${r.axis}=${Mx.fmt(r.v,5)}<button data-rr="${i}">✕</button></span>`).join('')}</div><p class="note">Tip: later, in the workspace, you can drag notes and draw arrows and shapes.</p>`}
+  else{
+    box.innerHTML=`<div class="f"><label>Size</label><select id="cwSz">${CW_SIZES.map(([v,l])=>`<option value="${v}" ${(g.outSize?g.outSize.join('x'):'')===v?'selected':''}>${l}</option>`).join('')}</select></div>
+    <div class="f"><label>Style</label><select id="cwTpl"><option value="-1">Default</option>${BUILTIN_TPL.map((t,i)=>`<option value="${i}" ${cw.tpl===i?'selected':''}>${esc(t.name)}: ${esc(t.desc)}</option>`).join('')}</select></div>
+    <div class="f"><label>Background</label><select id="cwBg"><option value="0">Light</option><option value="1" ${g.cwDark?'selected':''}>Dark</option></select></div>
+    <div class="f"><label>Font size</label><input type="range" min="9" max="24" id="cwFs" value="${g.fs||12}"></div>
+    <div class="f"><label>Legend</label><select data-k="legend">${[['none','Hidden'],['tr','Top right'],['tl','Top left'],['br','Bottom right'],['bl','Bottom left']].map(([v,l])=>`<option value="${v}" ${g.legend===v?'selected':''}>${l}</option>`).join('')}</select></div>`}
+  cwBind(box)}
+function cwBind(box){
+  const redo=()=>{cwDrawPreview()};
+  box.oninput=e=>{const t=e.target,k=t.dataset.k;if(k){const g=cw.g;g[k]=t.type==='checkbox'?t.checked:t.value;if(k==='cwSrc'||k==='desc')cwSyncSrc();redo();return}
+    if(t.id==='cwLw'){cw.g.lwAll=+t.value;cw.g.series.forEach(s=>s.lw=+t.value);redo()}if(t.id==='cwFs'){cw.g.fs=+t.value;redo()}};
+  box.onchange=e=>{const t=e.target;
+    if(t.id==='cwX'){cw.x=+t.value;cw.ys=cw.ys.filter(j=>j!==cw.x);if(!cw.ys.length){const f=cw.sh.cols.findIndex((c,i)=>i!==cw.x&&c.d.some(v=>typeof v==='number'));if(f>=0)cw.ys=[f]}cwApplyRoles();cwRebuild();return}
+    if(t.dataset.y!==undefined){const i=+t.dataset.y;cw.ys=cw.ys.filter(j=>j!==i);if(t.checked)cw.ys.push(i);cw.ys.sort((a,b)=>a-b);if(!cw.ys.length){t.checked=true;cw.ys=[i]}cwApplyRoles();cwRebuild();return}
+    if(t.id==='cwSz'){cw.g.outSize=t.value?t.value.split('x').map(Number):null;redo()}
+    if(t.id==='cwTpl'){cw.tpl=+t.value;if(cw.tpl>=0)applyBuiltin(cw.g,BUILTIN_TPL[cw.tpl]);else cwBuild(cw.type);cwControls();redo()}
+    if(t.id==='cwBg'){cw.g.cwDark=t.value==='1';redo()}
+    if(t.dataset.k==='ys'||t.dataset.k==='legend'||t.dataset.k==='gridx'||t.dataset.k==='gridy'){cw.g[t.dataset.k]=t.type==='checkbox'?t.checked:t.value;redo()}};
+  box.onclick=e=>{const g=cw.g,t=e.target;
+    if(t.id==='nAdd'){const tx=box.querySelector('#nT').value.trim(),x=box.querySelector('#nX').value,y=parseFloat(box.querySelector('#nY').value);let xv=parseFloat(x);if(cw.x>=0&&cw.sh.cols[cw.x].fmt==='date'&&Number.isNaN(xv))xv=Date.parse(x);if(!tx||Number.isNaN(xv)||Number.isNaN(y))return cwMsg('Enter the note text and numeric X and Y positions');(g.notes=g.notes||[]).push({x:xv,y,text:tx});cwControls();cwDrawPreview()}
+    if(t.id==='rAdd'){const v=parseFloat(box.querySelector('#rV').value);if(Number.isNaN(v))return cwMsg('Enter a numeric value');(g.refs=g.refs||[]).push({axis:box.querySelector('#rA').value,v});cwControls();cwDrawPreview()}
+    if(t.dataset.rn!==undefined){g.notes.splice(+t.dataset.rn,1);cwControls();cwDrawPreview()}if(t.dataset.rr!==undefined){g.refs.splice(+t.dataset.rr,1);cwControls();cwDrawPreview()}}}
+function cwSyncSrc(){const g=cw.g;g.desc=(g.desc||'').replace(/\n?Source: .*$/,'');if(g.cwSrc&&g.cwSrc.trim()){g.desc=(g.desc?g.desc+'\n':'')+'Source: '+g.cwSrc.replace(/^Source:\s*/i,'').trim()}}
+function cwRebuild(){if(!cwBuild(cw.type)){cw.g=null;cwBuild('line')||cwBuild('scatter')}cwDrawPreview();cwControls();cwGallery(false)}
+
+// ---------- step 4: publish ----------
+function cwName(){return(cw.g.title||cw.name||'chart').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-').toLowerCase()||'chart'}
+function cwCanvas(scale){const g=cw.g,[W,H]=graphSize(g),cv=document.createElement('canvas');cv.width=W*scale;cv.height=H*scale;const c=cv.getContext('2d');c.scale(scale,scale);drawGraphTo(c,g,W,H,cwPal());return cv}
+function cwSVGText(){const g=cw.g,[W,H]=graphSize(g),c=new SVGCtx();drawGraphTo(c,g,W,H,cwPal());return c.toSVG(W,H)}
+function cwStep4(b){
+  b.innerHTML=`<div class="cw4"><div class="cwprev small"><canvas id="cwCv"></canvas></div><div class="cwpub">
+  <h3>Publish & export</h3>
+  <div class="pcard"><b>Image</b><div class="note">For reports, slides and social media.</div><div class="row"><select id="pS"><option value="1">1× (${graphSize(cw.g).join(' × ')})</option><option value="2" selected>2× retina</option><option value="3">3× print</option></select><button data-p="png">Download PNG</button><button data-p="copy">Copy image</button></div></div>
+  <div class="pcard"><b>Vector & print</b><div class="note">Sharp at any size; editable in vector editors.</div><div class="row"><button data-p="svg">SVG</button><button data-p="pdf">PDF</button><button data-p="eps">EPS</button></div></div>
+  <div class="pcard"><b>Web</b><div class="note">Self-contained, responsive, no server needed.</div><div class="row"><button data-p="html">Download web page (.html)</button><button data-p="embed">Copy embed code</button><button data-p="svgcode">Copy SVG code</button></div></div>
+  <div class="pcard"><b>Office</b><div class="row"><button data-p="pptx">PowerPoint slide (.pptx)</button><button data-p="csv">Data as CSV</button></div></div>
+  <div class="pcard"><b>Project</b><div class="note">Keep editing with the full toolset: annotations, fits, statistics, layouts.</div><div class="row"><button data-p="open" class="p">Open in workspace</button><button data-p="share">Share whole project (.html)</button></div></div>
+  </div></div>`;
+  cwDrawPreview();
+  b.querySelector('.cwpub').onclick=async e=>{const p=e.target.closest('[data-p]')?.dataset.p;if(!p)return;const nm=cwName();
+    try{
+      if(p==='png')cwCanvas(+b.querySelector('#pS').value).toBlob(bl=>{download(nm+'.png',bl);cwMsg('PNG saved')});
+      else if(p==='copy'){const bl=await new Promise(r=>cwCanvas(2).toBlob(r));await navigator.clipboard.write([new ClipboardItem({'image/png':bl})]);cwMsg('Image copied')}
+      else if(p==='svg'){download(nm+'.svg',new Blob([cwSVGText()],{type:'image/svg+xml'}));cwMsg('SVG saved')}
+      else if(p==='pdf'){exportPDF([cw.g],nm+'.pdf');cwMsg('PDF saved')}
+      else if(p==='eps'){download(nm+'.eps',graphToEPS(cw.g));cwMsg('EPS saved')}
+      else if(p==='html'||p==='embed'||p==='svgcode'){const svg=cwSVGText().replace(/<svg /,'<svg style="max-width:100%;height:auto" ');
+        const fig=`<figure style="margin:0;max-width:960px">${svg}</figure>`;
+        if(p==='svgcode'){await navigator.clipboard.writeText(svg);cwMsg('SVG code copied')}else if(p==='embed'){await navigator.clipboard.writeText(fig);cwMsg('Embed code copied: paste it into any web page')}
+        else{const doc=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(cw.g.title||cw.name)}</title><style>body{margin:0;padding:24px;background:${cwPal().bg};font-family:system-ui,sans-serif;display:flex;justify-content:center}figure{width:100%;max-width:960px}</style></head><body>${fig}</body></html>`;download(nm+'.html',new Blob([doc],{type:'text/html'}));cwMsg('Web page saved')}}
+      else if(p==='pptx'){download(nm+'.pptx',pptxBlob([cw.g],cw.g.title||'LabScale'));cwMsg('PowerPoint saved')}
+      else if(p==='csv'){const sh=cw.sh,N=NR(sh),q=v=>{const s=v==null||(typeof v==='number'&&Number.isNaN(v))?'':String(v);return/[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+        download(nm+'-data.csv',new Blob([[sh.cols.map((c,i)=>q(c.name||L(i))).join(',')].concat(Array.from({length:N},(_,r)=>sh.cols.map(c=>q(c.d[r])).join(','))).join('\n')],{type:'text/csv'}));cwMsg('CSV saved')}
+      else if(p==='open')cwFinish();
+      else if(p==='share'){cwCommit();const html=await buildStandalone(ser());download(nm+'-project.html',new Blob([html],{type:'text/html'}));cwMsg('Project file created: it contains the app and your data')}
+    }catch(err){alert('That did not work: '+err.message)}}}
+function cwCommit(){
+  if(cw.committed)return cw.g;
+  if(cw.own){const i=P.sheets.indexOf(cw.sh);if(i>=0)P.sheets.splice(i,1);histHint='Chart wizard';snap();histHint=null;P.sheets.push(cw.sh)}else{histHint='Chart wizard';snap();histHint=null}
+  const g=cw.g;g.id=uid();g.name=g.title||`${GTYPES[g.type]||g.type} ${g.id}`;g.sheetId=cw.sh.id;P.graphs.push(g);cw.committed=true;dirty();if(typeof renderExplorer==='function')renderExplorer();return g}
+function cwFinish(){const g=cwCommit();cwClose(true);openWin('graph',g.id);flash('Chart added to your project')}
+
+(function(){
+  RIB.File.push(['Chart wizard',[['Chart wizard…','✦',()=>cwStart()],['Chart wizard for current sheet','✦',()=>{const s=curSheet();if(!s||s.isMatrix)return flash('Open a regular worksheet first');cwStart(s)}]]]);
+  const adv=dawAdvice;dawAdvice=function(sh){const r=adv(sh);if(!sh.isMatrix&&r.p.num.length)r.out.unshift({group:'Guided',title:'Open the chart wizard',sub:'Check the data, compare chart types, annotate and publish',fn:()=>cwStart(sh)});
+    const order=['Guided','Understand','Clean up','Visualise','Analyse','Not sure?'];r.out.sort((a,b)=>order.indexOf(a.group)-order.indexOf(b.group));return r};
+  const da=dawAfter;dawAfter=function(){if(window.cwSuppress||cw){dawMade=[];dawArmed=0;return}return da.apply(this,arguments)};
+})();
 </script>
 </body>
 </html>

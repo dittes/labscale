@@ -146,3 +146,18 @@ The View menu offers two layouts: Standard and Minimal.
 - Folders in every explorer section; drag items onto folders, right-click for Move to folder / New folder / Duplicate / Delete.
 - Layouts have multiple pages (page bar, reorder by drag, duplicate, rename; PDF/print export all pages).
 - Drag graphs and results from the explorer or results log onto a layout page or into a report; reports support `{{pagebreak}}`.
+
+## Round 17: guidance and data insight
+- **Import assistant:** after a file is imported, a panel profiles the data (rows, numeric/date/text columns, missing values, duplicates, X-axis candidate) and suggests clean-up, plots and analyses with one click. Reopen via File ▸ Data assistant; can be switched off.
+- **Results log:** resizable by dragging its top edge; the collapse arrow turns into an expand arrow (▴) when collapsed.
+- **Data profile** (Data ▸ Insight): per column type, valid/missing/unique counts, min/mean/median/max/SD, outlier count and a mini distribution.
+- **Mask outliers** (Data ▸ Insight): Tukey fences, far-out fences, |z| > 3 or MAD; masked rows stay in the sheet but are ignored by plots and analyses.
+- **Colour-vision check** (Plot menu): preview a graph as red-green or blue-yellow colour-blind viewers or in grayscale print (display only).
+- Explorer folders show a folder icon (open/closed).
+
+## Round 18: chart wizard
+File ▸ Chart wizard… (or “Open the chart wizard” in the import assistant) guides a chart from data to publication in four steps:
+1. **Upload:** drop or choose a file (CSV/TSV/TXT, Excel, JSON, HTML tables, XML), paste data, or start from an example.
+2. **Check & describe:** editable preview table; delimiter, decimal, header-row and skip options; rename columns, set units, choose each column’s role (X, Y, ignore); empty cells and potential outliers are highlighted, with an option to leave outliers out of the chart.
+3. **Visualize:** live thumbnails of the data as ~24 chart types (more on request) next to a large preview. *Refine* (titles, axes, Y columns, scale, line width, grid), *Annotate* (text notes at data coordinates, reference lines, description and source line), *Layout* (output size presets, built-in styles, light/dark background, font size, legend position).
+4. **Publish:** PNG (1–3×), copy image, SVG, PDF, EPS, responsive web page (.html), embed / SVG code to paste into a web page, PowerPoint slide, data as CSV, open in the workspace for further editing, or share the whole project as one file.
