@@ -44,8 +44,8 @@ Date/time columns and date axes, repeated-measures / Welch / Dunnett tests, stan
 - `js/ui.js` – ribbon, dialogs, properties panel, results log
 - `js/samples.js` – demo datasets
 
-Excel (.xlsx) import loads the SheetJS reader from cdnjs on demand; everything else works offline.
+Everything runs in the browser and nothing is sent to any server. The Excel reader (SheetJS) and the Python console (Pyodide) are bundled in `vendor/` and loaded from the same site on first use. They are not part of the single-file `labscale-standalone.html`, where Excel import and the Python console are unavailable.
 
 
 ## Legal
-© 2026 LabScale
+© LabScale

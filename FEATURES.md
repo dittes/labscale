@@ -170,3 +170,7 @@ File ▸ Chart wizard… (or “Open the chart wizard” in the import assistant
 ## Round 20: automatic wizard, tidy axes
 - The chart wizard now opens by itself after every file import (data with at least one numeric column; matrices keep the import assistant). A checkbox in the wizard footer, “Open after every import”, turns this off.
 - **Axis labels never overlap:** when tick labels would collide, in any chart and any size, labels are thinned to every 2nd, 3rd… (preferring round values such as 2018, 2020 over 2017.5, 2018.5); the skipped ticks stay as small marks.
+
+## Round 21: local libraries, legal text, phone header
+- SheetJS (Excel import) and Pyodide (Python console) are bundled in `vendor/` and served from the same site, so no consent dialog and no third-party requests remain. The privacy notice now describes GitHub Pages hosting; the licence text reads “© LabScale”. Neither library is part of the single-file build.
+- Settings and History icons are SVG instead of emoji-capable glyphs; other symbols are forced to text presentation. On phones the header keeps Undo/Redo/Settings/Search visible and the menu bar scrolls.

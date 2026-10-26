@@ -28,7 +28,7 @@ function renderExplorer(){
   const it=(t,o,sub)=>`<div class="it ${P.act&&P.act.t===t&&P.act.id===o.id?'on':''}" draggable="true" data-t="${t}" data-id="${o.id}"><span>${WINICON[t]||'◢'}</span><span class="n" title="${esc(o.name)}">${esc(o.name)}</span><span class="note">${sub}</span><button class="x" data-del="1" title="Delete">✕</button></div>`;
   const sec=(t,items,sub,btn,none)=>`<h5 data-sec="${t}">${SEC_NAME[t]}${btn?` <span class="sp"></span>${btn}`:''}</h5>${folderBlock(items,t,sub,it)||`<div class="note" style="padding:6px 10px">${none}</div>`}`;
   $('#explorer').innerHTML=`<div class="ex">`+
-    sec('sheet',P.sheets,s=>`${s.cols.length}×${NR(s)}${s.conn?' ⛓':''}`,'<button id="exNew" style="padding:0 6px" title="New sheet">+</button>','No sheets')+
+    sec('sheet',P.sheets,s=>`${s.cols.length}×${NR(s)}${s.conn?' ⛓︎':''}`,'<button id="exNew" style="padding:0 6px" title="New sheet">+</button>','No sheets')+
     sec('graph',P.graphs,g=>GTYPES[g.type]?.split(' ')[0]||'','','No graphs yet')+
     sec('layout',listOf('layout'),l=>(l.pages&&l.pages.length>1)?l.pages.length+' pg':'','<button id="exLay" style="padding:0 6px" title="New layout page">+</button>','None')+
     sec('note',listOf('note'),()=>'','<button id="exNote" style="padding:0 6px" title="New report / note">+</button>','None')+
@@ -70,7 +70,7 @@ function exContext(e){const it=e.target.closest('.it'),fold=e.target.closest('.f
   let items=null;
   if(it){items=itemMenu(it.dataset.t,+it.dataset.id)}
   else if(fold){const t=fold.dataset.t,f=fold.dataset.f;items=[['Rename folder','',()=>renameFolderInline(fold),null,'✎'],['New folder','',()=>orgNewFolder(t),null,'+'],['—'],['Delete folder (items move out)','',()=>deleteFolder(t,f),null,'✕']]}
-  else if(h){const t=h.dataset.sec;items=[['New '+TYPE_LABEL[t],'',NEWFN[t],null,'+'],['New folder','',()=>orgNewFolder(t),null,'📁']]}
+  else if(h){const t=h.dataset.sec;items=[['New '+TYPE_LABEL[t],'',NEWFN[t],null,'+'],['New folder','',()=>orgNewFolder(t),null,'📁︎']]}
   if(!items)return;e.preventDefault();popMenu(items,e.clientX,e.clientY)}
 
 // ---------- explorer drag & drop ----------

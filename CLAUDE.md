@@ -19,7 +19,7 @@ Browser-based data analysis and graphing workbench (labscale.org). Static files 
 - Charts draw through a ctx abstraction (canvas, `PDFCtx`, `SVGCtx`) so PNG, PDF, SVG and EPS match. Chart types are in `gallery*.js` (`GX.<type>`).
 - Menus: `popMenu(items,x,y)` where an item is `[label, hint, fn, submenu, icon]`; `['—']` is a separator.
 - UI: top menu bar (`nav.js`), context bar per window (`#sbar` for sheets, `#gbar` for graphs), left tool strip `#tstrip`, right-click and ⋯ menus. There is no ribbon.
-- Third-party scripts (SheetJS, Pyodide) load from CDNs only after `extConsent()`.
+- Third-party scripts (SheetJS, Pyodide) are bundled in `vendor/` and loaded from the same origin on demand; never load anything from a CDN. They are not in the standalone build.
 
 ## Testing
 

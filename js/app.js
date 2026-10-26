@@ -257,7 +257,7 @@ async function importFile(file){const nm=file.name.replace(/\.[^.]+$/,'');
     if(/\.json$/i.test(file.name)){importJSONText(await file.text(),nm);return}
     if(/\.html?$/i.test(file.name)){htmlTablesToSheets(await file.text(),nm);return}
     if(/\.xml$/i.test(file.name)){xmlToSheet(await file.text(),nm);return}
-    if(/\.xlsx?$/i.test(file.name)){if(!window.XLSX){if(!await extConsent('The Excel reader (SheetJS, Apache-2.0)','cdnjs.cloudflare.com'))return;await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=ok;s.onerror=()=>no(new Error('Could not load the Excel reader (offline?). Save as CSV instead.'));document.head.append(s)})}
+    if(/\.xlsx?$/i.test(file.name)){if(!window.XLSX){await new Promise((ok,no)=>{const s=document.createElement('script');s.src='vendor/sheetjs/xlsx.full.min.js';s.onload=ok;s.onerror=()=>no(new Error('The Excel reader could not be loaded (it is part of the hosted site, not of the single-file version). Save as CSV instead.'));document.head.append(s)})}
       const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});snap();let last;wb.SheetNames.forEach(n=>{last=matrixToSheet(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true}),wb.SheetNames.length>1?`${nm}_${n}`:nm)||last});if(last)openWin('sheet',last.id);return}
     snap();const sh=matrixToSheet(parseDelimited(await file.text()),nm);if(!sh)return alert('No data found in file.');openWin('sheet',sh.id);dirty();flash(`Imported ${sh.cols.length} columns × ${NR(sh)} rows`)
   }catch(e){alert('Import failed: '+e.message)}}

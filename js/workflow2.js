@@ -19,9 +19,9 @@ function histRefresh(){const p=document.getElementById('histPanel');if(!p)return
   h+=`<div class="hi" style="color:var(--mut);cursor:default">${undoS.length?'Click a step to go back to the state before it.':'No steps yet. Changes you make appear here.'}</div>`;body.innerHTML=h}
 function histToggle(){let p=document.getElementById('histPanel');if(p){p.remove();return}p=document.createElement('div');p.id='histPanel';p.className='fpanel';p.innerHTML=`<div class="gh"><b>History</b><span style="flex:1"></span><button data-c="clr" title="Forget history">Clear</button><button data-c="x">✕</button></div><div class="fb2"></div>`;document.body.append(p);
   p.addEventListener('click',e=>{const b=e.target.closest('button[data-c]');if(b){if(b.dataset.c==='x')p.remove();else{undoS=[];undoL=[];redoS=[];redoL=[];updUndo()}return}const u=e.target.closest('[data-undo]'),r=e.target.closest('[data-redo]');if(u){for(let k=+u.dataset.undo;k>0;k--)undo()}else if(r){for(let k=+r.dataset.redo;k>0;k--)redo()}});histRefresh()}
-(function(){const top=document.getElementById('top'),u=document.getElementById('bUndo');if(!document.getElementById('bHist')){const b=document.createElement('button');b.id='bHist';b.title='History (every change, jump back to any step)';b.textContent='⏱';u.parentNode.insertBefore(b,document.getElementById('bRedo').nextSibling)}document.getElementById('bHist').onclick=histToggle;
+(function(){const top=document.getElementById('top'),u=document.getElementById('bUndo');if(!document.getElementById('bHist')){const b=document.createElement('button');b.id='bHist';b.title='History (every change, jump back to any step)';b.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';u.parentNode.insertBefore(b,document.getElementById('bRedo').nextSibling)}document.getElementById('bHist').onclick=histToggle;
   const _ra=runAnalysis;runAnalysis=function(id,...a){histHint=A.defs[id]?A.defs[id].label:null;try{return _ra(id,...a)}finally{histHint=null}};
-  RIB.File.push(['History',[['History panel','⏱',histToggle]]])})();
+  RIB.File.push(['History',[['History panel','⏱︎',histToggle]]])})();
 
 // ============ Graph template gallery ============
 const BUILTIN_TPL=[

@@ -73,7 +73,7 @@ function dawShow(sh){
   const imp=importFile;importFile=async function(file){dawMade=[];dawArmed=1;try{await imp.apply(this,arguments)}finally{dawArmed=0}dawAfter()};
   const iw=importWizard;importWizard=function(file){dawMade=[];dawArmed=1;setTimeout(()=>{dawArmed=0},10*60*1000);return iw.apply(this,arguments)};
   const op=openWin;openWin=function(t,id){op.apply(this,arguments);if(dawArmed&&t==='sheet'&&dawPending==null&&dawMade.some(q=>q.id===id))dawPending=setTimeout(dawAfter,60)};
-  RIB.File.push(['Assistant',[['Data assistant','✨',()=>dawShow()]]]);
+  RIB.File.push(['Assistant',[['Data assistant','✨︎',()=>dawShow()]]]);
 })();
 let dawPending=null;
 function dawAfter(){clearTimeout(dawPending);dawPending=null;const sh=dawMade[dawMade.length-1];dawMade=[];dawArmed=0;if(!sh)return;

@@ -274,3 +274,14 @@ body[data-ws=studio] .brand,body[data-ws=minimal] .brand{white-space:nowrap}body
 #cw .cwsz select{padding:4px 6px;font:inherit;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
 .cwty img{aspect-ratio:auto}
 body.cwlive #body{padding:0 300px 0 260px;box-sizing:border-box}
+
+body{font-variant-emoji:text}#bSet,#bHist{display:inline-flex;align-items:center;justify-content:center}
+
+/* phones: keep Undo / Redo / History / Settings / Search reachable, let the menu bar scroll */
+@media(max-width:760px){
+  #top{flex-wrap:nowrap;overflow:hidden;gap:2px}
+  #top .brand{font-size:0;flex:none;margin-right:2px}#top .brand img{margin:0!important}
+  #top #mbar{flex:1 1 0;min-width:0;overflow-x:auto;scrollbar-width:none}#top #mbar::-webkit-scrollbar{display:none}
+  #top>.sp{display:none}#top>button{flex:none;padding-left:7px;padding-right:7px}
+  #bSearch span{display:none}
+}
