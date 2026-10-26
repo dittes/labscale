@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DNAScale — Sequence &amp; Trace Workbench</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+<script>
+  // apply theme before first paint
+  (function () { try { var t = localStorage.getItem('bw-theme'); if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; document.documentElement.dataset.theme = t; } catch (e) {} })();
+</script>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="var(--accent)"/><path d="M39.2 15.5L24.8 15.5" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M42.8 23.8L21.2 23.8" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M21.2 40.2L42.8 40.2" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M24.8 48.5L39.2 48.5" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M32.0 11.0 L30.2 12.1 L28.4 13.1 L26.8 14.2 L25.2 15.2 L23.9 16.2 L22.7 17.3 L21.8 18.4 L21.1 19.4 L20.6 20.5 L20.5 21.5 L20.6 22.6 L21.1 23.6 L21.8 24.6 L22.7 25.7 L23.9 26.8 L25.2 27.8 L26.8 28.8 L28.4 29.9 L30.2 30.9 L32.0 32.0 L33.8 33.0 L35.6 34.1 L37.2 35.1 L38.8 36.2 L40.1 37.2 L41.3 38.3 L42.2 39.4 L42.9 40.4 L43.4 41.5 L43.5 42.5 L43.4 43.6 L42.9 44.6 L42.2 45.6 L41.3 46.7 L40.1 47.8 L38.8 48.8 L37.2 49.9 L35.6 50.9 L33.8 51.9 L32.0 53.0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/><path d="M32.0 11.0 L33.8 12.1 L35.6 13.1 L37.2 14.2 L38.8 15.2 L40.1 16.2 L41.3 17.3 L42.2 18.4 L42.9 19.4 L43.4 20.5 L43.5 21.5 L43.4 22.6 L42.9 23.6 L42.2 24.6 L41.3 25.7 L40.1 26.8 L38.8 27.8 L37.2 28.8 L35.6 29.9 L33.8 30.9 L32.0 32.0 L30.2 33.0 L28.4 34.1 L26.8 35.1 L25.2 36.2 L23.9 37.2 L22.7 38.3 L21.8 39.4 L21.1 40.4 L20.6 41.5 L20.5 42.5 L20.6 43.6 L21.1 44.6 L21.8 45.6 L22.7 46.7 L23.9 47.8 L25.2 48.8 L26.8 49.9 L28.4 50.9 L30.2 51.9 L32.0 53.0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><b>DNA<span style="color:var(--accent)">Scale</span></b></div>
+    </div>
+    <div class="seg" role="tablist" id="viewTabs">
+      <button role="tab" data-view="align" aria-selected="true" title="Alignment &amp; chromatograms (1)"><span data-i="grid"></span>Alignment</button>
+      <button role="tab" data-view="tree" aria-selected="false" title="Phylogenetic tree (2)"><span data-i="tree"></span>Tree</button>
+      <button role="tab" data-view="matrix" aria-selected="false" title="Pairwise identity (3)"><span data-i="matrix"></span>Identity</button>
+      <button role="tab" data-view="analysis" aria-selected="false" title="ORFs, restriction map, plots (4)"><span data-i="dna"></span>Analysis</button>
+      <button role="tab" data-view="viz" aria-selected="false" title="3D helix, dot plot, walks, logos (5)"><span data-i="spark"></span>Visualize</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="btnPalette" title="Command palette"><span data-i="search"></span><span class="lbl">Search commands</span> <kbd>⌘K</kbd></button>
+    <button class="btn icon ghost" id="btnUndo" title="Undo (⌘Z)"><span data-i="undo"></span></button>
+    <button class="btn icon ghost" id="btnRedo" title="Redo (⇧⌘Z)"><span data-i="redo"></span></button>
+    <button class="btn" id="btnOpen"><span data-i="open"></span>Open</button>
+    <button class="btn primary" id="btnAlign"><span data-i="align"></span>Align…</button>
+    <div class="menu-wrap">
+      <button class="btn" id="btnExport"><span data-i="export"></span>Export</button>
+      <div class="menu" id="menuExport" hidden></div>
+    </div>
+    <button class="btn icon ghost" id="btnSb" title="Toggle sequence panel (⌘\)"><span data-i="panel-l"></span></button>
+    <button class="btn icon ghost" id="btnIn" title="Toggle inspector"><span data-i="panel-r"></span></button>
+    <button class="btn icon ghost" id="btnTheme" title="Toggle light/dark"><span data-i="moon"></span></button>
+    <button class="btn icon ghost" id="btnHelp" title="Keyboard shortcuts (?)"><span data-i="help"></span></button>
+  </header>
+
+  <div class="body">
+    <aside id="sidebar">
+      <div class="panel-head"><h3>Sequences</h3><span class="chip num" id="seqCount">0</span><div class="spacer"></div>
+        <button class="btn icon ghost sm" id="btnAddSeq" title="Add sequences"><span data-i="plus"></span></button>
+        <button class="btn icon ghost sm" id="btnHideSb" title="Hide panel (⌘\)"><span data-i="panel-l"></span></button></div>
+      <div class="search"><span data-i="search"></span><input id="seqFilter" placeholder="Filter sequences" aria-label="Filter sequences"></div>
+      <div id="seqList"></div>
+      <div class="sidebar-foot" id="sbFoot"></div>
+    </aside>
+
+    <main id="main">
+      <section class="view" id="viewAlign">
+        <div class="toolstrip" id="toolstrip">
+          <div class="grp">
+            <select class="sel" id="selScheme"></select></div>
+          <div class="grp"><div class="seg" id="segDisplay">
+            <button data-d="letters" class="on" title="Show every residue">Letters</button>
+            <button data-d="dots" title="Show only differences from reference/consensus (D)">Differences</button></div></div>
+          <div class="sep"></div>
+          <div class="grp"><span data-i="zoom-in" style="color:var(--muted)"></span><input type="range" id="zoom" class="zoom" min="4" max="30" value="14" aria-label="Zoom"></div>
+          <div class="sep"></div>
+          <div class="grp">
+            <button class="btn sm" id="btnTranslate" title="Show translation of consensus (T)"><span data-i="dna"></span>Translation</button>
+            <select class="sel" id="selCode" title="Genetic code" style="max-width:150px"></select>
+            <select class="sel" id="selFrame" title="Reading frame"><option value="0">Frame 1</option><option value="1">Frame 2</option><option value="2">Frame 3</option></select>
+          </div>
+          <div class="spacer"></div>
+          <div class="grp">
+            <button class="btn sm icon" id="btnPrevDiff" title="Previous difference ([)"><span data-i="chev-l"></span></button>
+            <span class="muted num" id="diffCount" style="min-width:92px;text-align:center;font-size:12px"></span>
+            <button class="btn sm icon" id="btnNextDiff" title="Next difference (])"><span data-i="chev-r"></span></button>
+            <button class="btn sm" id="btnEdit" title="Unlock editing (E)"><span data-i="lock"></span><span id="editLbl">Locked</span></button>
+          </div>
+        </div>
+        <div id="alignHost" tabindex="-1">
+          <div id="findPanel" hidden>
+            <div class="find-row"><span data-i="search"></span><input id="findQ" placeholder="Find a sequence (IUPAC codes allowed)" spellcheck="false" autocomplete="off">
+              <span class="muted num" id="findCount"></span>
+              <button class="btn sm icon" id="findPrev" title="Previous (⇧↵)"><span data-i="chev-u"></span></button><button class="btn sm icon" id="findNext" title="Next (↵)"><span data-i="chev-d"></span></button><button class="btn sm icon" id="findClose" title="Close (Esc)"><span data-i="x"></span></button></div>
+            <div class="find-row opts"><select class="sel" id="findMode"><option value="exact">Exact / IUPAC</option><option value="sim">Similar (alignment)</option></select>
+              <label class="chk"><input type="checkbox" id="findBoth" checked> both strands</label>
+              <label class="chk" style="display:none">identity ≥ <input class="field" id="findId" type="number" min="50" max="100" value="80" style="width:54px;padding:2px 5px"> %</label></div>
+            <div id="findList"></div>
+          </div>
+          <div id="alignScroller" tabindex="0" aria-label="Sequence alignment"><div id="alignSpacer"></div><canvas id="alignCanvas"></canvas></div></div>
+        <div id="overview" title="Overview — click or drag to navigate"><canvas></canvas></div>
+        <div class="splitter" id="splitter" role="separator" aria-orientation="horizontal"></div>
+        <section id="traceDock">
+          <div class="dock-head">
+            <div class="title"><span data-i="wave"></span><span class="nm" id="trName">Chromatogram</span><span id="trChips"></span></div>
+            <div class="tools">
+                            <label class="chk"><input type="checkbox" id="trQual" checked> Quality</label>
+              <label class="chk"><input type="checkbox" id="trClassic"> Classic colors</label>
+              <button class="btn sm icon" id="trGainDn" title="Lower peak height"><span data-i="minus"></span></button>
+                            <button class="btn sm icon" id="trGainUp" title="Raise peak height"><span data-i="plus"></span></button>
+              <button class="btn sm icon" id="trZoomOut" title="Zoom out"><span data-i="zoom-out"></span></button>
+              <button class="btn sm icon" id="trZoomIn" title="Zoom in"><span data-i="zoom-in"></span></button>
+              <button class="btn sm" id="trFlip" title="Reverse-complement this read"><span data-i="flip"></span>Flip</button>
+              <button class="btn sm icon" id="trCopy" title="Copy this view as an image"><span data-i="copy"></span></button>
+              <button class="btn sm icon" id="trPng" title="Save view as PNG"><span data-i="image"></span></button>
+              <button class="btn sm icon" id="trCollapse" title="Collapse"><span data-i="chev-d"></span></button>
+            </div>
+          </div>
+          <div id="traceBody"><canvas id="traceCanvas"></canvas><div class="dock-empty" id="trEmpty"></div></div>
+        </section>
+      </section>
+
+      <section class="view" id="viewTree" hidden>
+        <div class="pane-head"><h2>Neighbour-joining tree</h2><span class="muted" id="treeNote"></span><div class="spacer"></div>
+          <button class="btn sm" id="btnTreeSvg"><span data-i="image"></span>Save SVG</button>
+          <button class="btn sm" id="btnTreeNwk"><span data-i="export"></span>Newick</button></div>
+        <div class="pane"><svg id="treeSvg"></svg></div>
+      </section>
+      <section class="view" id="viewMatrix" hidden>
+        <div class="pane-head"><h2>Pairwise identity</h2><span class="muted">Share of identical residues across columns where both sequences have data</span><div class="spacer"></div>
+          <button class="btn sm" id="btnMatrixCsv"><span data-i="export"></span>CSV</button></div>
+        <div class="pane" id="matrixWrap"></div>
+      </section>
+
+      <section class="view" id="viewAnalysis" hidden>
+        <div class="pane-head"><h2>Sequence analysis</h2><select class="sel" id="anSeq" style="max-width:340px"></select><span class="muted">ORFs, G+C frame plot, restriction map, protein profiles, reverse translation</span></div>
+        <div class="pane" id="anBody"></div>
+      </section>
+
+      <section class="view" id="viewViz" hidden>
+        <div class="pane-head"><h2>Visualize</h2><div class="seg" id="vzTabs"></div><span id="vzSeqs" class="vz-seqs"></span></div>
+        <div class="pane vz" id="vzBody"></div>
+      </section>
+
+      <div id="empty">
+        <div class="empty-card">
+          <svg class="hero" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563eb"/><path d="M39.2 15.5L24.8 15.5" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M42.8 23.8L21.2 23.8" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M21.2 40.2L42.8 40.2" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M24.8 48.5L39.2 48.5" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M32.0 11.0 L30.2 12.1 L28.4 13.1 L26.8 14.2 L25.2 15.2 L23.9 16.2 L22.7 17.3 L21.8 18.4 L21.1 19.4 L20.6 20.5 L20.5 21.5 L20.6 22.6 L21.1 23.6 L21.8 24.6 L22.7 25.7 L23.9 26.8 L25.2 27.8 L26.8 28.8 L28.4 29.9 L30.2 30.9 L32.0 32.0 L33.8 33.0 L35.6 34.1 L37.2 35.1 L38.8 36.2 L40.1 37.2 L41.3 38.3 L42.2 39.4 L42.9 40.4 L43.4 41.5 L43.5 42.5 L43.4 43.6 L42.9 44.6 L42.2 45.6 L41.3 46.7 L40.1 47.8 L38.8 48.8 L37.2 49.9 L35.6 50.9 L33.8 51.9 L32.0 53.0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/><path d="M32.0 11.0 L33.8 12.1 L35.6 13.1 L37.2 14.2 L38.8 15.2 L40.1 16.2 L41.3 17.3 L42.2 18.4 L42.9 19.4 L43.4 20.5 L43.5 21.5 L43.4 22.6 L42.9 23.6 L42.2 24.6 L41.3 25.7 L40.1 26.8 L38.8 27.8 L37.2 28.8 L35.6 29.9 L33.8 30.9 L32.0 32.0 L30.2 33.0 L28.4 34.1 L26.8 35.1 L25.2 36.2 L23.9 37.2 L22.7 38.3 L21.8 39.4 L21.1 40.4 L20.6 41.5 L20.5 42.5 L20.6 43.6 L21.1 44.6 L21.8 45.6 L22.7 46.7 L23.9 47.8 L25.2 48.8 L26.8 49.9 L28.4 50.9 L30.2 51.9 L32.0 53.0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h1>Look at your sequences, then trust them.</h1>
+          <p>Open Sanger trace files, align reads to a reference, and walk every difference with the raw chromatogram right underneath.</p>
+          <div class="drop" id="dropZone">
+            <div style="font-weight:650;font-size:15px">Drop files here</div>
+            <div class="formats"><span class="chip">.ab1 / .scf</span><span class="chip">.fasta / .fastq</span><span class="chip">.gb</span><span class="chip">.aln</span><span class="chip">.dnascale</span></div>
+            <div class="actions">
+              <button class="btn primary" id="emOpen"><span data-i="open"></span>Choose files…</button>
+              <button class="btn" id="emDemo"><span data-i="spark"></span>Try the demo</button>
+              <button class="btn" id="emPaste"><span data-i="paste"></span>Paste sequence</button>
+              <button class="btn" id="emResume" hidden><span data-i="undo"></span>Resume last session</button>
+            </div>
+          </div>
+          <div class="flow">
+            <div><span class="n">1</span><b>Open reads</b>Trace files are trimmed by quality automatically and reverse reads are flipped to match.</div>
+            <div><span class="n">2</span><b>Align</b>Map reads to a reference, or build a multiple alignment of anything.</div>
+            <div><span class="n">3</span><b>Verify</b>Jump from difference to difference with the chromatogram centred on each base.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside id="inspector">
+      <div class="panel-head"><h3>Inspector</h3><div class="spacer"></div><button class="btn icon ghost sm" id="btnHideIn" title="Hide panel"><span data-i="panel-r"></span></button></div>
+      <div id="inspectorBody"></div>
+    </aside>
+  </div>
+
+  <footer id="status"></footer>
+</div>
+
+<div id="dropOverlay"><div>Drop to add sequences &amp; traces</div></div>
+<div id="toasts"></div>
+<input type="file" id="fileInput" multiple hidden accept=".ab1,.abi,.scf,.ztr,.sff,.rsf,.fastq,.fq,.embl,.dat,.gp,.gpt,.fasta,.fa,.fas,.fna,.faa,.seq,.txt,.gb,.gbk,.aln,.clustal,.dnascale,.json">
+
+<dialog id="dlgAlign"></dialog>
+<dialog id="dlgPaste"></dialog>
+<dialog id="dlgHelp"></dialog>
+<dialog id="palette"><input id="palInput" placeholder="Type a command…" autocomplete="off" spellcheck="false"><div id="palList"></div></dialog>
+
+<script src="js/data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/formats2.js"></script>
+<script src="js/demo.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/legal.js"></script>
+<script src="js/trace.js"></script>
+<script src="js/alignview.js"></script>
+<script src="js/analysis.js"></script>
+<script src="js/analysisview.js"></script>
+<script src="js/helix.js"></script>
+<script src="js/viz.js"></script>
+<script src="js/report.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
