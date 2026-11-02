@@ -30,6 +30,86 @@
     return new Blob(parts.concat(cd, [new Uint8Array(end.buffer)]), { type: 'application/zip' });
   };
 
+
+  /* ---------- PDF report: hand-written PDF, charts embedded as JPEG images ---------- */
+  const win = (t) => String(t).replace(/≥/g, '>=').replace(/≤/g, '<=').replace(/→/g, '->').replace(/′/g, "'").replace(/[–—]/g, '-').replace(/[“”]/g, '"').replace(/[’‘]/g, "'").replace(/[^\x20-\x7e\xa0-\xff]/g, '?');
+  const pesc = (t) => win(t).replace(/([\\()])/g, '\\$1');
+  const hexc = (h) => [1, 3, 5].map((i) => (parseInt(h.slice(i, i + 2), 16) / 255).toFixed(3)).join(' ');
+  function svgJpeg(svg, scale) {
+    return new Promise((ok, no) => {
+      const m = svg.match(/viewBox="0 0 (\d+) (\d+)"/), w = +m[1], h = +m[2], img = new Image();
+      img.onload = () => { const c = document.createElement('canvas'); c.width = w * scale; c.height = h * scale; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.scale(scale, scale); x.drawImage(img, 0, 0); const d = atob(c.toDataURL('image/jpeg', 0.92).split(',')[1]), b = new Uint8Array(d.length); for (let i = 0; i < d.length; i++) b[i] = d.charCodeAt(i); ok({ w: c.width, h: c.height, data: b }); };
+      img.onerror = () => no(new Error('Figure rendering failed')); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(QS.svgStandalone(svg, QS.palette(false), w, h));
+    });
+  }
+  class PdfDoc {
+    constructor() { this.pages = []; this.images = []; this.W = 595; this.H = 842; this.M = 40; this.newPage(); }
+    newPage() { this.cur = { ops: [], imgs: [] }; this.pages.push(this.cur); this.y = this.H - this.M; }
+    room(h) { if (this.y - h < this.M + 14) this.newPage(); }
+    text(t, x, y, size, bold, col) { this.cur.ops.push(`BT /F${bold ? 2 : 1} ${size} Tf ${hexc(col || '#1c2230')} rg ${x.toFixed(1)} ${y.toFixed(1)} Td (${pesc(t)}) Tj ET`); }
+    wrap(t, size, width) { const cw = size * 0.5, max = Math.floor(width / cw), out = []; String(t).split('\n').forEach((para) => { let line = ''; para.split(/\s+/).forEach((w) => { if ((line + ' ' + w).trim().length > max) { out.push(line); line = w; } else line = (line + ' ' + w).trim(); }); out.push(line); }); return out; }
+    para(t, size, o) { o = o || {}; const x = this.M + (o.indent || 0), lines = this.wrap(t, size, this.W - 2 * this.M - (o.indent || 0)); lines.forEach((l) => { this.room(size * 1.4); this.y -= size * 1.35; this.text(l, x, this.y, size, o.bold, o.col); }); }
+    gap(h) { this.y -= h; }
+    rect(x, y, w, h, col) { this.cur.ops.push(`${hexc(col)} rg ${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)} re f`); }
+    image(im, width) { const h = (im.h / im.w) * width; this.room(h + 6); let id = this.images.indexOf(im); if (id < 0) { this.images.push(im); id = this.images.length - 1; } this.y -= h; this.cur.imgs.push(id); this.cur.ops.push(`q ${width.toFixed(1)} 0 0 ${h.toFixed(1)} ${this.M} ${this.y.toFixed(1)} cm /Im${id} Do Q`); this.y -= 6; }
+    build() {
+      const enc = new TextEncoder(), chunks = [], offs = []; let len = 0;
+      const put = (x) => { const b = typeof x === 'string' ? Uint8Array.from(x, (c) => c.charCodeAt(0) & 255) : x; chunks.push(b); len += b.length; };
+      const obj = (n, body) => { offs[n] = len; put(`${n} 0 obj\n`); put(body); put('\nendobj\n'); };
+      const np = this.pages.length, ni = this.images.length, first = 5;
+      put('%PDF-1.4\n');
+      obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+      obj(2, `<< /Type /Pages /Count ${np} /Kids [${this.pages.map((_, i) => `${first + ni + i * 2} 0 R`).join(' ')}] >>`);
+      obj(3, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+      obj(4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+      this.images.forEach((im, i) => { offs[first + i] = len; put(`${first + i} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.data.length} >>\nstream\n`); put(im.data); put('\nendstream\nendobj\n'); });
+      this.pages.forEach((pg, i) => {
+        const pn = first + ni + i * 2, cn = pn + 1, ops = pg.ops.join('\n') + `\nBT /F1 8 Tf 0.4 0.44 0.5 rg ${this.M} 22 Td (QualityScale ${QS.VERSION}) Tj ET\nBT /F1 8 Tf 0.4 0.44 0.5 rg ${this.W - this.M - 30} 22 Td (Page ${i + 1} of ${np}) Tj ET`;
+        obj(pn, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${this.W} ${this.H}] /Contents ${cn} 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> /XObject << ${[...new Set(pg.imgs)].map((id) => `/Im${id} ${first + id} 0 R`).join(' ')} >> >> >>`);
+        obj(cn, `<< /Length ${ops.length} >>\nstream\n${ops}\nendstream`);
+      });
+      const total = first + ni + np * 2; const xref = len;
+      put(`xref\n0 ${total}\n0000000000 65535 f \n`); for (let n = 1; n < total; n++) put(String(offs[n]).padStart(10, '0') + ' 00000 n \n');
+      put(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+      return new Blob(chunks, { type: 'application/pdf' });
+    }
+  }
+  QS.reportPdf = async (samples, o) => {
+    const P = QS.palette(false), lim = o.lim, done = samples.filter((s) => s.res), D = new PdfDoc(), CW = D.W - 2 * D.M, SC = { pass: '#15803d', warn: '#c2410c', fail: '#d1344a', info: '#667085', na: '#667085' };
+    QS.noTips = true;
+    try {
+      D.text('QualityScale report', D.M, D.y - 22, 22, true); D.gap(30);
+      D.para(`${done.length} sample${done.length === 1 ? '' : 's'}  -  generated ${new Date().toLocaleString('en-GB')}  -  analysed locally in the browser`, 9, { col: '#667085' }); D.gap(8);
+      done.forEach((s) => { D.room(16); D.y -= 15; const m = QS.metrics(s.res, s.ev); D.text(s.name, D.M, D.y, 10, true); D.text(`score ${s.ev.score} (${s.ev.grade})`, D.M + 300, D.y, 10, true, s.ev.score >= 80 ? '#15803d' : s.ev.score >= 60 ? '#c2410c' : '#d1344a'); D.text(`${QS.si(m.reads)} reads  Q${f1(m.meanQ, 1)}  ${f1(m.q30, 0)}% >= Q30`, D.M + 380, D.y, 9, false, '#4a5367'); });
+      let first = true;
+      for (const s of done) {
+        const res = s.res, ev = s.ev; if (!first || done.length > 4) D.newPage(); else D.gap(22); first = false;
+        D.text(s.name, D.M, D.y - 18, 16, true); D.gap(26);
+        D.para(`${res.fmt}${res.gz ? ' (gzip)' : ''}  -  ${QS.num(res.n)} reads${res.truncated ? ' (first ' + QS.si(res.limit) + ' analysed)' : ''}  -  ${res.minLen === res.maxLen ? res.maxLen + ' bp' : res.minLen + '-' + res.maxLen + ' bp'}  -  ${res.hasQual ? res.enc.name : 'no qualities'}`, 9, { col: '#667085' });
+        D.gap(6); D.para(`Score ${ev.score}, grade ${ev.grade}: ${ev.cnt.pass} passed, ${ev.cnt.warn} warnings, ${ev.cnt.fail} failures`, 11, { bold: true }); D.gap(4);
+        QS.insights(res, ev).forEach((i) => { D.para(i.title, 10, { bold: true, col: i.sev === 'fail' ? '#d1344a' : i.sev === 'warn' ? '#c2410c' : i.sev === 'ok' ? '#15803d' : '#2563eb' }); D.para(i.text, 9, { indent: 10, col: '#4a5367' }); D.gap(3); });
+        for (const x of QS.MODS) {
+          const e = ev.mods[x.id]; if (!e || e.st === 'na') continue;
+          for (const mode of x.id === 'tile' ? ['tile', 'flow'] : [undefined]) {
+            D.room(40); D.gap(10); D.y -= 13; D.text(x.title + (mode === 'flow' ? ' - flow-cell layout' : ''), D.M, D.y, 11, true); D.text(({ pass: 'Pass', warn: 'Warning', fail: 'Fail', info: 'Info' })[e.st], D.M + CW - 50, D.y, 9, true, SC[e.st]);
+            if (e.note) D.para(e.note, 8.5, { col: '#4a5367' });
+            if (QS.CHART_HTML[x.id]) { tableText(D, x.id, res); continue; }
+            const svg = QS.renderMod(x.id, res, { P, lim, opts: { mode }, w: 760, h: 380 });
+            if (svg.startsWith('<svg')) D.image(await svgJpeg(svg, 2), CW);
+          }
+        }
+      }
+    } finally { QS.noTips = false; }
+    return D.build();
+  };
+  function tableText(D, id, res) {
+    const row = (cols, bold) => { D.room(12); D.y -= 11.5; cols.forEach(([t, x]) => D.text(t, D.M + x, D.y, 8.5, bold, '#1c2230')); };
+    D.gap(2);
+    if (id === 'basic') { const d = QS.derive(res); [['File name', res.name], ['File type', res.fmt + (res.gz ? ' (gzip)' : '')], ['Quality encoding', res.hasQual ? res.enc.name : '-'], ['Reads analysed', QS.num(res.n)], ['Total bases', QS.si(res.totalBases) + 'bp'], ['Read length', res.minLen === res.maxLen ? res.maxLen + ' bp' : res.minLen + '-' + res.maxLen + ' bp'], ['GC content', f1(d.gcPct, 1) + '%']].concat(res.hasQual ? [['Mean quality', 'Q' + f1(d.meanQ, 1)], ['Bases >= Q20 / >= Q30', f1(d.q20, 1) + '% / ' + f1(d.q30, 1) + '%']] : []).forEach(([a, b]) => row([[a, 0], [b, 170]])); }
+    else if (id === 'over') { if (!res.over.length) return row([['No sequence reaches 0.1% of the reads.', 0]]); row([['Sequence', 0], ['Count', 330], ['Share', 375], ['Source', 420]], true); res.over.slice(0, 10).forEach((s) => row([[s.seq.length > 50 ? s.seq.slice(0, 50) : s.seq, 0], [QS.num(s.count), 330], [f1(s.pct, 2) + '%', 375], [(s.hit || 'no hit').slice(0, 24), 420]])); }
+    else if (id === 'kmer') { if (!res.kmer.length) return row([['No k-mer is enriched at a specific position.', 0]]); row([['7-mer', 0], ['Count', 90], ['Max enrichment', 150], ['-log10 p', 250], ['Position', 320]], true); res.kmer.slice(0, 10).forEach((k) => row([[k.seq, 0], [QS.num(k.count), 90], [f1(k.ratio, 1) + 'x', 150], [f1(k.lp, 1), 250], [String(k.pos), 320]])); }
+  }
+
   QS.reportHtml = (samples, o) => {
     const P = QS.palette(false), lim = o.lim, done = samples.filter((s) => s.res);
     const mods = QS.MODS.filter((m) => m.core);

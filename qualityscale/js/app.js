@@ -67,20 +67,40 @@
     if (res.name && s.name !== res.name && !s.keepName) s.name = res.name;
     const first = done().length === 1; if (first) { S.sel = S.samples.indexOf(s); }
   }
-  let queue = Promise.resolve();
+  /* analysis runs in web workers (up to three in parallel) and falls back to the main thread when workers are unavailable */
+  const MAXW = Math.max(1, Math.min(3, (navigator.hardwareConcurrency || 4) - 1)), jobs = []; let active = 0, workerOK = typeof Worker !== 'undefined';
+  function pump() { while (jobs.length && active < (workerOK ? MAXW : 1)) { const j = jobs.shift(); active++; j().finally(() => { active--; pump(); }); } }
+  const optsNow = () => ({ limit: S.readLimit, adapters: S.adapters || undefined, contaminants: S.contam || undefined });
+  function inWorker(msg, s) {
+    return new Promise((ok, no) => {
+      let w, got = false; try { w = new Worker('js/worker.js?v=1'); } catch (e) { return no(Object.assign(e, { noWorker: true })); }
+      s.abort = () => { w.terminate(); no(new Error('cancelled')); };
+      w.onmessage = (ev) => { got = true; const m = ev.data; if (m.t === 'p') { s.progress = m.p; s.reads = m.n; progressSoon(); } else { w.terminate(); m.t === 'done' ? ok(m.res) : no(new Error(m.msg)); } };
+      w.onerror = (ev) => { w.terminate(); no(Object.assign(new Error(ev.message || 'The worker failed'), { noWorker: !got })); };
+      w.postMessage(msg);
+    });
+  }
+  async function analyze(s, file, demoKind) {
+    if (workerOK) {
+      try { return await inWorker(demoKind ? { demo: demoKind, opts: optsNow() } : { file, opts: optsNow() }, s); } catch (e) { if (!e.noWorker) throw e; workerOK = false; }
+    }
+    if (demoKind) { await new Promise((r) => setTimeout(r, 30)); const res = QS.analyzeText(QS.makeDemo(demoKind), QS.demoName(demoKind), optsNow()); res.name = QS.demoName(demoKind); return res; }
+    const ac = new AbortController(); s.abort = () => ac.abort();
+    return QS.analyzeFile(file, Object.assign(optsNow(), { signal: ac.signal, onProgress: (p, n) => { s.progress = p; s.reads = n; progressSoon(); } }));
+  }
   function runFiles(files) {
     files = [...files]; if (!files.length) return;
-    files.forEach((file) => {
-      if (/\.(qualityscale|json)$/i.test(file.name)) { queue = queue.then(() => file.text().then(loadResultsText).catch((e) => toast(e.message, true))); return; }
+    const texts = files.filter((f) => /\.(qualityscale|json)$/i.test(f.name)), seqs = files.filter((f) => !texts.includes(f));
+    texts.forEach((f) => f.text().then(loadResultsText).catch((e) => toast(e.message, true)));
+    seqs.forEach((file) => {
       const s = newSample(file.name); s.file = file; S.busy++; render();
-      queue = queue.then(async () => {
-        try {
-          const res = await QS.analyzeFile(file, { limit: S.readLimit, adapters: S.adapters || undefined, contaminants: S.contam || undefined, onProgress: (p, n) => { s.progress = p; s.reads = n; progressSoon(); } });
-          finishSample(s, res, file); toast(`${file.name}: ${num(res.n)} reads analysed`);
-        } catch (e) { s.state = 'err'; s.err = e.message; toast(file.name + ': ' + e.message, true); }
+      jobs.push(async () => {
+        try { const res = await analyze(s, file); if (s.removed) { S.busy--; return; } finishSample(s, res, file); toast(`${file.name}: ${num(res.n)} reads analysed`); }
+        catch (e) { if (e.message !== 'cancelled') { s.state = 'err'; s.err = e.message; toast(file.name + ': ' + e.message, true); } }
         S.busy--; render();
       });
     });
+    pump();
   }
   let pgPending = false;
   function progressSoon() { if (pgPending) return; pgPending = true; setTimeout(() => { pgPending = false; renderSide(); renderStatus(); const s = cur(); if (s && s.state === 'run') renderMain(true); }, 120); }
@@ -88,13 +108,15 @@
     const o = QS.unpackRes(txt); if (!o || o.app !== 'qualityscale' || !Array.isArray(o.samples)) throw new Error('This is not a QualityScale results file.');
     o.samples.forEach((r) => { const s = newSample(r.name); s.keepName = true; finishSample(s, r); }); S.view = 'dash'; render(); toast('Loaded ' + o.samples.length + ' result set(s)');
   }
-  async function demo(kinds) {
+  function demo(kinds) {
     kinds = kinds || QS.demoKinds;
-    for (const k of kinds) {
-      const s = newSample(QS.demoName(k)); s.keepName = true; S.busy++; render(); await new Promise((r) => setTimeout(r, 30));
-      try { const res = QS.analyzeText(QS.makeDemo(k), QS.demoName(k), { adapters: S.adapters || undefined, contaminants: S.contam || undefined }); res.name = QS.demoName(k); finishSample(s, res); } catch (e) { s.state = 'err'; s.err = e.message; }
-      S.busy--; render();
-    }
+    const all = kinds.map((k) => { const s = newSample(QS.demoName(k)); s.keepName = true; S.busy++; return [k, s]; }); render();
+    return Promise.all(all.map(([k, s]) => new Promise((resolve) => {
+      jobs.push(async () => {
+        try { const res = await analyze(s, null, k); if (!s.removed) finishSample(s, res); } catch (e) { if (e.message !== 'cancelled') { s.state = 'err'; s.err = e.message; } }
+        S.busy--; render(); resolve();
+      }); pump();
+    })));
   }
   function pasteDlg() {
     dlg({ title: 'Paste reads', width: 620, body: '<p class="muted" style="margin-top:0">Paste FASTQ or FASTA text (a few thousand reads are enough).</p><textarea id="pasteTxt" placeholder="@read1&#10;ACGT…&#10;+&#10;IIII…" spellcheck="false"></textarea>', buttons: [{ l: 'Cancel' }, { l: 'Analyse', primary: true, f: () => { const t = $('#pasteTxt').value.trim(); if (!t) return false; try { const s = newSample('Pasted reads'); s.keepName = true; finishSample(s, QS.analyzeText(t + '\n', 'Pasted reads', { limit: 0 })); S.view = 'dash'; render(); } catch (e) { toast(e.message, true); S.samples.pop(); S.sel = S.samples.length - 1; render(); } } }] });
@@ -122,6 +144,19 @@
   }
   const tools = (s, id) => `<span class="tools">${QS.CHART_HTML[id] ? '' : `<button class="ico-btn" title="Save as SVG" data-act="svg:${id}">${icon('image')}</button><button class="ico-btn" title="Save as PNG" data-act="png:${id}">${icon('download')}</button>`}${QS.csv[id] ? `<button class="ico-btn" title="Save data as CSV" data-act="csv:${id}">${icon('table')}</button>` : ''}</span>`;
 
+  /* ------------------------------------------------------------ paired-end detection */
+  function pairKey(n) {
+    const b = n.replace(/\.(gz|fastq|fq|fasta|fa|fna)/gi, ''), re = /([\s._·-])R?([12])(?=[\s._·-]|$)/g; let m, last = null;
+    while ((m = re.exec(b))) last = m;
+    return last ? { key: (b.slice(0, last.index) + b.slice(last.index + last[0].length)).replace(/[\s._·-]+$/, ''), role: 'R' + last[2] } : null;
+  }
+  function findPairs() {
+    const g = new Map();
+    done().forEach((s) => { const k = pairKey(s.name); if (!k) return; if (!g.has(k.key)) g.set(k.key, {}); g.get(k.key)[k.role] = s; });
+    return [...g.entries()].filter(([, v]) => v.R1 && v.R2).map(([key, v]) => ({ key, r1: v.R1, r2: v.R2, info: QS.pairInfo(v.R1.res, v.R2.res) }));
+  }
+  const pairOf = (s) => findPairs().find((p) => p.r1 === s || p.r2 === s);
+
   /* ------------------------------------------------------------ views */
   function ring(score, grade) {
     const c = 2 * Math.PI * 64, col = score >= 80 ? 'var(--ok)' : score >= 60 ? '#f59e0b' : 'var(--bad)';
@@ -130,7 +165,8 @@
   const kpi = (l, v, sub, bar, col) => `<div class="kpi card"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub || '&nbsp;'}</div>${bar !== undefined ? `<div class="bar"><i style="width:${Math.max(2, Math.min(100, bar))}%;background:${col || 'var(--accent)'}"></i></div>` : ''}</div>`;
 
   function viewDash(s) {
-    const r = s.res, ev = s.ev, d = QS.derive(r), m = QS.metrics(r, ev), fnd = QS.insights(r, ev);
+    const r = s.res, ev = s.ev, d = QS.derive(r), m = QS.metrics(r, ev), fnd = QS.insights(r, ev), pr = pairOf(s);
+    if (pr) { const o = pr.info, mate = pr.r1 === s ? pr.r2 : pr.r1; if (o.st === 'fail') fnd.unshift({ sev: 'fail', mod: 'basic', title: 'Mates are out of sync', text: `${mate.name}: ${o.note}` }); else fnd.push({ sev: 'info', mod: 'basic', title: 'Paired with ' + mate.name, text: `${o.note} Mean quality ${pr.r1 === s ? 'R1' : 'R2'} Q${fx(pr.r1 === s ? o.qa : o.qb, 1)} versus mate Q${fx(pr.r1 === s ? o.qb : o.qa, 1)}.`, act: { label: 'Compare mates', act: 'view:cmp' } }); }
     const worst = fnd.filter((x) => x.sev === 'fail').length, warn = fnd.filter((x) => x.sev === 'warn').length;
     const sum = worst + warn === 0 ? 'Everything looks healthy. No check needs attention.' : `${worst ? worst + ' check' + (worst > 1 ? 's' : '') + ' failed' : ''}${worst && warn ? ' and ' : ''}${warn ? warn + ' raised warnings' : ''}. See the findings below for what to do next.`;
     let h = `<div class="wrap"><div class="hero card">${ring(ev.score, ev.grade)}<div><h1>${esc(s.name)}</h1><div class="chips"><span class="chip acc">${r.fmt}${r.gz ? ' · gzip' : ''}</span>${r.hasQual ? `<span class="chip">${esc(r.enc.name)}</span>` : '<span class="chip warn">no qualities</span>'}<span class="chip">${r.minLen === r.maxLen ? r.maxLen + ' bp' : r.minLen + '–' + r.maxLen + ' bp'}</span>${r.truncated ? `<span class="chip warn">first ${QS.si(r.limit)} reads</span>` : ''}<span class="chip pass">${ev.cnt.pass} pass</span><span class="chip warn">${ev.cnt.warn} warn</span><span class="chip fail">${ev.cnt.fail} fail</span></div><p>${sum}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="view:report">${icon('grid')}Open full report</button>${r.hasQual ? `<button class="btn" data-act="tab-trim">${icon('scissors')}Trim advisor</button>` : ''}<button class="btn" data-act="mod:pbq">${icon('focus')}Quality in detail</button></div></div></div>`;
@@ -163,8 +199,10 @@
   function viewCmp() {
     const ss = done();
     if (ss.length < 2) return `<div class="wrap"><div class="card focus" style="text-align:center;padding:40px"><h2>Compare samples</h2><p class="muted">Load at least two samples to see the pass/fail matrix, a ranked metric table and overlaid curves.</p><div style="display:flex;gap:8px;justify-content:center"><button class="btn primary" data-act="open">${icon('open')}Open files…</button><button class="btn" data-act="demo">${icon('spark')}Load demo samples</button></div></div></div>`;
+    const prs = findPairs(); let ph = '';
+    if (prs.length) ph = `<div class="secthead" style="margin-top:0">Paired-end libraries <small>${prs.length} pair${prs.length > 1 ? 's' : ''} detected from the file names</small></div>` + prs.map((p) => { const o = p.info, c1 = p.r1, c2 = p.r2; return `<div class="card focus"><div class="hd"><h2 style="font-size:15px">${esc(p.key)}</h2>${chip(o.st)}<span class="muted">${esc(o.note)}</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start"><table class="dt kvt"><thead><tr><th></th><th class="r">R1</th><th class="r">R2</th></tr></thead><tbody><tr><td>Reads</td><td class="r">${num(c1.res.n)}</td><td class="r">${num(c2.res.n)}</td></tr><tr><td>Read length</td><td class="r">${fx(QS.derive(c1.res).meanLen, 0)} bp</td><td class="r">${fx(QS.derive(c2.res).meanLen, 0)} bp</td></tr><tr><td>Mean quality</td><td class="r">Q${fx(o.qa, 1)}</td><td class="r">Q${fx(o.qb, 1)}</td></tr><tr><td>Bases ≥ Q30</td><td class="r">${fx(o.q30a, 1)}%</td><td class="r">${fx(o.q30b, 1)}%</td></tr><tr><td>Names in sync</td><td class="r" colspan="2">${o.idPct === null ? '–' : fx(o.idPct, 1) + '%'}</td></tr><tr><td>Score</td><td class="r">${c1.ev.score}</td><td class="r">${c2.ev.score}</td></tr></tbody></table><div>${QS.cmpChart([c1, c2], 'pbq', { P: pal(), w: 640, h: 270 })}</div></div></div>`; }).join('');
     const core = QS.MODS.filter((m) => m.core), cols = `minmax(120px,max-content) repeat(${core.length}, minmax(26px,1fr))`;
-    let h = `<div class="wrap"><div class="secthead" style="margin-top:0">Check matrix <small>${ss.length} samples · click a cell to open the check</small></div><div class="card mx" style="grid-template-columns:${cols}"><div></div>${core.map((m) => `<div class="h" title="${esc(m.title)}" data-act="cmpmod:${m.id}">${esc(m.short)}</div>`).join('')}`;
+    let h = `<div class="wrap">${ph}<div class="secthead"${ph ? '' : ' style="margin-top:0"'}>Check matrix <small>${ss.length} samples · click a cell to open the check</small></div><div class="card mx" style="grid-template-columns:${cols}"><div></div>${core.map((m) => `<div class="h" title="${esc(m.title)}" data-act="cmpmod:${m.id}">${esc(m.short)}</div>`).join('')}`;
     ss.forEach((s) => { h += `<div class="rn" data-act="sel:${S.samples.indexOf(s)}"><span class="sdot" style="background:${s.color}"></span>${esc(s.name)}</div>` + core.map((m) => `<button class="c ${s.ev.mods[m.id].st}" title="${esc(s.name + ' · ' + m.title + ': ' + ST[s.ev.mods[m.id].st] + ' (' + s.ev.mods[m.id].val + ')')}" data-act="cmpcell:${S.samples.indexOf(s)}:${m.id}"></button>`).join(''); });
     h += '</div>';
     const cols2 = [['score', 'Score', 0, 1], ['reads', 'Reads', 0, 1], ['len', 'Mean length', 1, 1], ['gc', 'GC %', 1, 1], ['meanQ', 'Mean Q', 1, 1], ['q30', '% ≥ Q30', 1, 1], ['ee1', '% ≤1 error', 1, 1], ['uniq', '% unique', 1, 1], ['adp', 'Adapter %', 2, 1], ['nmax', 'N max %', 2, 1]];
@@ -181,7 +219,8 @@
   function renderSide() {
     const el = $('#sbPane'); $$('#sbTabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === S.side));
     if (S.side === 'samples') {
-      el.innerHTML = `<div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn sm" data-act="open" style="flex:1;justify-content:center">${icon('plus')}Add files</button><button class="btn sm" data-act="demo" title="Load demo samples">${icon('spark')}Demo</button></div>` + (S.samples.length ? S.samples.map((s, i) => `<div class="row ${i === S.sel ? 'sel' : ''}" data-act="sel:${i}"><span class="dot" style="background:${s.color}"></span><span class="nm">${esc(s.name)}</span><span style="display:flex;align-items:center;gap:4px">${s.state === 'done' ? `<span class="chip ${s.ev.score >= 80 ? 'pass' : s.ev.score >= 60 ? 'warn' : 'fail'}">${s.ev.score}</span>` : s.state === 'err' ? '<span class="chip fail">error</span>' : `<span class="muted num">${Math.round(s.progress * 100)}%</span>`}<button class="ico-btn x" title="Remove" data-act="rm:${i}">${icon('x')}</button></span><span class="sub">${s.state === 'done' ? `${QS.si(s.res.n)} reads · ${s.res.minLen === s.res.maxLen ? s.res.maxLen + ' bp' : s.res.minLen + '–' + s.res.maxLen + ' bp'} · Q${fx(QS.derive(s.res).meanQ || 0, 0)}` : s.state === 'err' ? esc(s.err) : `Analysing… ${QS.si(s.reads)} reads`}</span>${s.state === 'run' ? `<div class="pg"><i style="width:${s.progress * 100}%"></i></div>` : ''}</div>`).join('') : '<div class="note-box">No samples yet. Add files or load the demo.</div>');
+      const pairs = findPairs();
+      el.innerHTML = `<div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn sm" data-act="open" style="flex:1;justify-content:center">${icon('plus')}Add files</button><button class="btn sm" data-act="demo" title="Load demo samples">${icon('spark')}Demo</button></div>` + (S.samples.length ? S.samples.map((s, i) => `<div class="row ${i === S.sel ? 'sel' : ''}" data-act="sel:${i}"><span class="dot" style="background:${s.color}"></span><span class="nm">${esc(s.name)}</span><span style="display:flex;align-items:center;gap:4px">${pairs.some((p) => p.r1 === s || p.r2 === s) ? `<span class="chip acc" title="Paired-end mates">${pairs.some((p) => p.r1 === s) ? 'R1' : 'R2'} ⇄</span>` : ''}${s.state === 'done' ? `<span class="chip ${s.ev.score >= 80 ? 'pass' : s.ev.score >= 60 ? 'warn' : 'fail'}">${s.ev.score}</span>` : s.state === 'err' ? '<span class="chip fail">error</span>' : `<span class="muted num">${Math.round(s.progress * 100)}%</span>`}<button class="ico-btn x" title="Remove" data-act="rm:${i}">${icon('x')}</button></span><span class="sub">${s.state === 'done' ? `${QS.si(s.res.n)} reads · ${s.res.minLen === s.res.maxLen ? s.res.maxLen + ' bp' : s.res.minLen + '–' + s.res.maxLen + ' bp'} · Q${fx(QS.derive(s.res).meanQ || 0, 0)}` : s.state === 'err' ? esc(s.err) : `Analysing… ${QS.si(s.reads)} reads`}</span>${s.state === 'run' ? `<div class="pg"><i style="width:${s.progress * 100}%"></i></div>` : ''}</div>`).join('') : '<div class="note-box">No samples yet. Add files or load the demo.</div>');
     } else {
       const s = cur();
       el.innerHTML = s && s.res ? QS.MODS.map((x) => { const e = s.ev.mods[x.id]; return `<div class="mrow ${S.view === 'mod' && S.mod === x.id ? 'sel' : ''}" data-act="mod:${x.id}" style="${e.st === 'na' ? 'opacity:.5' : ''}"><span class="sdot ${e.st}"></span><span class="nm">${esc(x.title)}</span><span class="vl">${esc(e.val)}</span></div>`; }).join('') : '<div class="note-box">Select an analysed sample.</div>';
@@ -265,6 +304,12 @@
     download(`${base(s)}_figures.zip`, QS.zip(files));
   }
   const exportReport = () => { const ss = done(); if (!ss.length) return toast('Analyse a file first', true); download('qualityscale_report.html', QS.reportHtml(ss, { lim: S.limits }), 'text/html'); };
+  async function exportPdf() {
+    const ss = done(); if (!ss.length) return toast('Analyse a file first', true);
+    toast('Building PDF…'); S.busy++; renderStatus();
+    try { const b = await QS.reportPdf(ss, { lim: S.limits }); download('qualityscale_report.pdf', b); } catch (e) { toast(e.message, true); }
+    S.busy--; renderStatus();
+  }
   const exportJson = () => { if (!done().length) return; download('qualityscale.qualityscale', '{"app":"qualityscale","v":1,"samples":[' + done().map((s) => { s.res.name = s.name; return QS.packRes(s.res); }).join(',') + ']}', 'application/json'); };
 
   /* ------------------------------------------------------------ menus */
@@ -291,7 +336,7 @@
     File: () => [{ l: 'Open files…', h: '⌘O', f: () => $('#fileInput').click() }, { l: 'Paste reads…', f: pasteDlg }, { l: 'Load demo samples', f: () => demo() }, '-', { l: 'Open saved results…', f: () => $('#fileInput').click() }, { l: 'Save results (.qualityscale)', f: exportJson, dis: !done().length }, '-', { l: 'Remove current sample', f: () => rm(S.sel), dis: !cur() }, { l: 'Clear all', f: () => { S.samples = []; S.sel = -1; render(); }, dis: !S.samples.length }],
     View: () => [{ l: 'Dashboard', h: '1', f: () => setView('dash'), chk: S.view === 'dash' }, { l: 'Full report', h: '2', f: () => setView('report'), chk: S.view === 'report' }, { l: 'Focus on one check', h: '3', f: () => setView('mod'), chk: S.view === 'mod' }, { l: 'Compare samples', h: '4', f: () => setView('cmp'), chk: S.view === 'cmp' }, '-', { l: 'Next check', h: 'J', f: () => stepMod(1) }, { l: 'Previous check', h: 'K', f: () => stepMod(-1) }, '-', { l: 'Trim guides on charts', h: 'T', chk: S.showTrim, f: toggleTrim }, { l: 'Left panel', h: '[', chk: !$('#app').classList.contains('no-sidebar'), f: () => $('#app').classList.toggle('no-sidebar') }, { l: 'Right panel', h: ']', chk: !$('#app').classList.contains('no-inspector'), f: () => $('#app').classList.toggle('no-inspector') }, { l: dark() ? 'Light theme' : 'Dark theme', f: toggleTheme }],
     Analysis: () => [{ lbl: 'Reads to analyse' }].concat([[100000, '100,000'], [500000, '500,000'], [1000000, '1,000,000'], [5000000, '5,000,000'], [0, 'All reads']].map(([v, l]) => ({ l, chk: S.readLimit === v, f: () => { S.readLimit = v; save('qs-readlimit', v); renderInspector(); toast('Applies to the next files you open'); } })), ['-', { lbl: 'Threshold preset' }], Object.keys(QS.PRESETS).map((p) => ({ l: p, chk: S.preset === p, f: () => applyPreset(p) })), ['-', { l: 'Adapter & contaminant lists…', f: listsDlg }, { l: 'Re-run analysis', f: rerun, dis: !S.samples.some((s) => s.file) }]).flat(),
-    Export: () => [{ l: 'HTML report (all samples)', f: exportReport, dis: !done().length }, { l: 'Summary table (TSV)', f: () => download('qualityscale_summary.tsv', QS.summaryTsv(S.samples), 'text/tab-separated-values'), dis: !done().length }, { l: 'Results file (.qualityscale)', f: exportJson, dis: !done().length }, '-', { l: 'Current check as SVG', f: () => exportFig('svg', S.mod), dis: !cur() || !cur().res }, { l: 'Current check as PNG', f: () => exportFig('png', S.mod), dis: !cur() || !cur().res }, { l: 'Current check data (CSV)', f: () => exportFig('csv', S.mod), dis: !cur() || !cur().res || !QS.csv[S.mod] }, { l: 'All figures and tables (ZIP)', f: exportZip, dis: !cur() || !cur().res }],
+    Export: () => [{ l: 'PDF report (all samples)', f: exportPdf, dis: !done().length }, { l: 'HTML report (all samples)', f: exportReport, dis: !done().length }, { l: 'Summary table (TSV)', f: () => download('qualityscale_summary.tsv', QS.summaryTsv(S.samples), 'text/tab-separated-values'), dis: !done().length }, { l: 'Results file (.qualityscale)', f: exportJson, dis: !done().length }, '-', { l: 'Current check as SVG', f: () => exportFig('svg', S.mod), dis: !cur() || !cur().res }, { l: 'Current check as PNG', f: () => exportFig('png', S.mod), dis: !cur() || !cur().res }, { l: 'Current check data (CSV)', f: () => exportFig('csv', S.mod), dis: !cur() || !cur().res || !QS.csv[S.mod] }, { l: 'All figures and tables (ZIP)', f: exportZip, dis: !cur() || !cur().res }],
     Help: () => [{ l: 'Keyboard shortcuts', h: '?', f: helpDlg }, { l: 'About QualityScale', f: aboutDlg }, '-', { l: 'Imprint', f: () => legal('imprint') }, { l: 'Privacy', f: () => legal('privacy') }],
   };
   function legal(tab) { dlg({ title: tab === 'imprint' ? 'Imprint' : 'Privacy', width: 640, body: `<div class="legal">${QS.legalHtml(tab === 'imprint' ? QS.LEGAL_IMPRINT : QS.LEGAL_PRIVACY)}</div>` }); }
@@ -312,7 +357,7 @@
     const ss = S.samples.filter((s) => s.file); if (!ss.length) return toast('Only files opened in this session can be re-analysed', true);
     const files = ss.map((s) => s.file); S.samples = S.samples.filter((s) => !s.file); S.sel = S.samples.length - 1; colorIdx = 0; render(); runFiles(files);
   }
-  function rm(i) { if (i < 0) return; S.samples.splice(i, 1); if (S.sel >= S.samples.length) S.sel = S.samples.length - 1; render(); }
+  function rm(i) { if (i < 0) return; const x = S.samples[i]; if (x && x.state === 'run') { x.removed = true; if (x.abort) x.abort(); } S.samples.splice(i, 1); if (S.sel >= S.samples.length) S.sel = S.samples.length - 1; render(); }
   function toggleTrim() { S.showTrim = !S.showTrim; renderMain(true); renderHud(); renderInspector(); hydrate(document); }
   function toggleTheme() { const t = dark() ? 'light' : 'dark'; document.documentElement.dataset.theme = t; save('qs-theme', t); try { localStorage.setItem('qs-theme', t); } catch (e) { } cache.clear(); $('#btnTheme').innerHTML = icon(t === 'dark' ? 'sun' : 'moon'); renderAll(true); }
 
@@ -387,7 +432,7 @@
   addEventListener('dragleave', () => { if (--dragN <= 0) { dragN = 0; $('#dropOverlay').classList.remove('on'); } });
   addEventListener('dragover', (e) => e.preventDefault());
   addEventListener('drop', (e) => { e.preventDefault(); dragN = 0; $('#dropOverlay').classList.remove('on'); if (e.dataTransfer.files.length) runFiles(e.dataTransfer.files); });
-  $('#btnOpen').onclick = () => $('#fileInput').click(); $('#btnReport').onclick = exportReport; $('#btnPalette').onclick = palette;
+  $('#btnOpen').onclick = () => $('#fileInput').click(); $('#btnReport').onclick = (e) => { e.stopPropagation(); closeMenus(); const r = e.currentTarget.getBoundingClientRect(); popMenu([{ l: 'PDF report', f: exportPdf }, { l: 'HTML report', f: exportReport }], r.left, r.bottom + 4); }; $('#btnPalette').onclick = palette;
   $('#btnSb').onclick = () => $('#app').classList.toggle('no-sidebar'); $('#btnIn').onclick = () => $('#app').classList.toggle('no-inspector');
   $('#btnTheme').onclick = toggleTheme; $('#btnHelp').onclick = helpDlg;
   /* menus */

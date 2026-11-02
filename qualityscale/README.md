@@ -34,6 +34,10 @@ FASTQ and FASTA, plain or gzip-compressed (detected from the file content, strea
 | Sequence complexity | entropy and longest homopolymer run |
 | Index / barcode composition | dominant and one-mismatch indexes from the read headers |
 
+## Speed and pairs
+- Files are analysed in **web workers**, up to three at a time, so the interface stays responsive; the demo samples build in parallel too. Without worker support (for example when opened from `file://`) the app falls back to the main thread automatically.
+- **Paired-end detection**: files named `…_R1…` / `…_R2…`, `…_1` / `…_2` or `.R1.` / `.R2.` are linked automatically (shown as R1 ⇄ / R2 ⇄ in the sample list). The Compare view checks matching read counts and read-name order and shows both mates side by side with an overlay of mean quality; the dashboard warns when mates are out of sync.
+
 ## Beyond the checks
 - **Dashboard**: overall score and grade, KPI tiles, a pass / warning / fail strip and plain-language *findings and recommendations* (quality decay, adapter read-through, tile problems, poly-G tails, biased read starts, mixed populations, index hopping).
 - **Trim advisor**: suggests a 5′ trim and a 3′ cut position from quality and adapter onset. Draw the guides on any position chart and drag them; the inspector shows the bases kept, reads that become too short, quality before and after, and adapter content before and after, and gives the settings to copy.

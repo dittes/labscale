@@ -183,6 +183,17 @@
     return { mods: out, score: Math.round(score), grade: g, cnt };
   };
 
+  /* Consistency of two mates (R1 / R2). */
+  QS.pairInfo = function (a, b) {
+    const da = QS.derive(a), db = QS.derive(b), ia = a.ids || [], ib = b.ids || [], m = Math.min(ia.length, ib.length);
+    let same = 0; for (let i = 0; i < m; i++) if (ia[i] === ib[i]) same++;
+    const full = !a.truncated && !b.truncated, countOk = full ? a.n === b.n : null, idPct = m ? (same * 100) / m : null;
+    const st = countOk === false || (idPct !== null && idPct < 99) ? 'fail' : 'pass';
+    const note = countOk === false ? `The files hold ${num(a.n)} and ${num(b.n)} reads. Mates must have identical read counts.` : idPct !== null && idPct < 99 ? `Only ${fx(idPct, 1)}% of the first read names match in order, so the files are probably sorted differently or filtered separately.` : 'Read counts and read names agree.';
+    return { st, note, countOk, idPct, dQ: res2(db.meanQ) - res2(da.meanQ), dQ30: res2(db.q30) - res2(da.q30), qa: da.meanQ, qb: db.meanQ, q30a: da.q30, q30b: db.q30 };
+    function res2(v) { return Number.isFinite(v) ? v : 0; }
+  };
+
   QS.metrics = function (res, ev) {
     const d = QS.derive(res);
     return {

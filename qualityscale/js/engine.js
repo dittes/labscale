@@ -33,7 +33,7 @@
       this.entH = new Uint32Array(41); this.hpH = new Uint32Array(61);
       this.lenMap = new Map(); this.dm = new Map(); this.cal = 0;
       this.tiles = new Map(); this.tileFail = false; this.px = []; this.py = []; this.pq = [];
-      this.kmers = new Map(); this.kTot = new Float64Array(NB); this.bc = new Map(); this.bcTotal = 0;
+      this.ids = []; this.kmers = new Map(); this.kTot = new Float64Array(NB); this.bc = new Map(); this.bcTotal = 0;
       this.eeT = new Float64Array(NQ);
     }
     setFormat(fq) { this.fq = fq; }
@@ -116,6 +116,7 @@
       }
       // header derived data: barcode, filter flag, tile
       const sp = name.indexOf(' ');
+      if (this.ids.length < 2000) { let id = sp > 0 ? name.substring(0, sp) : name; if (id.endsWith('/1') || id.endsWith('/2')) id = id.slice(0, -2); this.ids.push(id); }
       if (sp > 0 && name.charCodeAt(sp + 2) === 58) {
         const m = name.substring(sp + 1).split(':');
         if (m.length >= 4 && (m[1] === 'N' || m[1] === 'Y')) {
@@ -219,7 +220,7 @@
         adNames: this.adNames, ad: this.ad.slice(0, L * na), adTot: this.adTot,
         dup, over, kmer: km, tiles,
         sp: fq && this.px.length ? { x: Float32Array.from(this.px), y: Float32Array.from(this.py), q: Float32Array.from(this.pq), t: Int32Array.from(this.pt || []) } : null,
-        bc, bcTotal: this.bcTotal, made: Date.now(), ver: QS.VERSION,
+        bc, bcTotal: this.bcTotal, ids: this.ids, made: Date.now(), ver: QS.VERSION,
       };
     }
   };
