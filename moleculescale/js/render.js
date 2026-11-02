@@ -500,6 +500,7 @@ void main(){
     }
     drawLabels(ctx) {
       const m = this.mol; const todo = this.layers.filter((l) => l.vis && l.style === 'labels'); if (!todo.length) return;
+      this._stMap = todo.some((l) => l.label === 'stereo') ? MS.bio.stereo(m) : null;
       ctx.save(); ctx.textBaseline = 'middle'; ctx.textAlign = 'center'; ctx.lineJoin = 'round';
       const dark = this.opts.dark || this.opts.bg === 'black';
       todo.forEach((L) => {
@@ -513,6 +514,7 @@ void main(){
           switch (kind) {
             case 'element': t = EL[a.e].sym; break; case 'index': t = String(i + 1); break; case 'name': t = a.nm || EL[a.e].sym; break;
             case 'charge': t = (a.pc >= 0 ? '+' : '') + a.pc.toFixed(2); break; case 'residue': if (!r || (a.nm !== 'CA' && r.aa)) return; t = r.name + r.num; break;
+            case 'stereo': { const sv = (this._stMap || (this._stMap = MS.bio.stereo(m))).get(i); if (!sv) return; t = '(' + sv + ')'; break; }
             case 'label': t = a.e === 1 ? '' : EL[a.e].sym + (i + 1); break; case 'coords': t = a.x.toFixed(1) + ',' + a.y.toFixed(1) + ',' + a.z.toFixed(1); break;
           }
           if (!t) return;

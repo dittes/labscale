@@ -317,7 +317,7 @@
   const SS = { helix: [-57, -47], sheet: [-120, 130], extended: [-150, 150], coil: [-70, 140], ppii: [-75, 145] };
 
   function peptide(seqStr, ss) {
-    const seq = seqStr.toUpperCase().replace(/[^A-Z]/g, '').split('').filter((c) => AA3[c]);
+    const seq = String(seqStr).replace(/^>.*$/gm, '').toUpperCase().replace(/[^A-Z]/g, '').split('').filter((c) => AA3[c]);
     if (!seq.length) throw new Error('No valid residues. Use one-letter codes (ACDEFGHIKLMNPQRSTVWY).');
     if (seq.length > 40) throw new Error('Up to 40 residues are supported.');
     let smi = '', starts = [];

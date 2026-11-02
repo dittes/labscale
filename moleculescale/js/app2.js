@@ -61,6 +61,7 @@
   window.addEventListener('drop', (e) => { e.preventDefault(); dragDepth = 0; $('#dropOverlay').classList.remove('on'); if (e.dataTransfer.files.length) A.openFiles([...e.dataTransfer.files], e.shiftKey); });
   window.addEventListener('paste', (e) => {
     if (/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return; const t = e.clipboardData && e.clipboardData.getData('text'); if (!t || !t.trim()) return;
+    if (MS.bio.looksLikeFasta(t)) { e.preventDefault(); A.openFasta(t); return; }
     if (MS.io.detect('', t)) { e.preventDefault(); A.openText('pasted', t); }
   });
   A.exportAs = (fmt) => {
@@ -105,7 +106,7 @@
   });
   A.peptideDialog = () => A.dlg({
     title: 'Build peptide', width: 520,
-    body: `<p class="muted" style="margin-top:0">One-letter amino-acid codes (up to 40 residues, L-amino acids, neutral termini). Backbone torsions are set for the chosen secondary structure and the geometry is relaxed.</p>
+    body: `<p class="muted" style="margin-top:0">One-letter amino-acid codes or a FASTA record (up to 40 residues, L-amino acids, neutral termini). Backbone torsions are set for the chosen secondary structure and the geometry is relaxed.</p>
       <input class="field mono" id="pepSeq" value="AEAAAKEAAAKA" spellcheck="false"><div class="field-row" style="margin-top:10px"><label>Structure</label><select class="sel" id="pepSS"><option value="helix">α-helix (−57°, −47°)</option><option value="sheet">β-strand (−120°, +130°)</option><option value="ppii">Polyproline II</option><option value="extended">Extended</option><option value="coil">Relaxed coil (no restraint)</option></select></div>`,
     buttons: [{ label: 'Cancel' }, { label: 'Build', primary: true, fn: async () => { const b = $('#dlg .df .primary'); b.textContent = 'Building…'; await new Promise((r) => setTimeout(r, 30)); try { const m = MS.build.peptide($('#pepSeq').value, $('#pepSS').value); A.load(m); S.dismissEmpty = true; } catch (e) { b.textContent = 'Build'; A.toast(e.message, true); return false; } } }],
   });
@@ -221,7 +222,7 @@
   const exportMenu = () => [{ l: 'XYZ (.xyz)', f: () => A.exportAs('xyz') }, { l: 'MDL Molfile (.mol)', f: () => A.exportAs('mol') }, { l: 'SDF (.sdf)', f: () => A.exportAs('sdf') }, { l: 'PDB (.pdb)', f: () => A.exportAs('pdb') }, { l: 'CML (.cml)', f: () => A.exportAs('cml') }, { l: 'CIF (.cif)', f: () => A.exportAs('cif') }, { l: 'SMILES (.smi)', f: () => A.exportAs('smiles') }, '-', { l: 'PDF report (.pdf)', icon: 'pdf', f: () => A.exportPDF('white') }, { l: '3D model (.obj)', f: () => A.download(A.baseName() + '.obj', R.toOBJ()) }];
   const insertMenu = () => [
     { l: 'From SMILES…', icon: 'paste', f: A.smilesDialog }, { l: 'Molecule library', icon: 'flask', f: () => A.showSide('library') },
-    { l: 'Peptide…', f: A.peptideDialog }, '-',
+    { l: 'Peptide…', f: A.peptideDialog }, { l: 'DNA / RNA helix…', f: () => A.nucleicDialog() }, { l: 'Sequence from FASTA…', f: () => A.fastaDialog() }, '-',
     { l: 'Nanostructures', sub: () => [{ l: 'Fullerene C60', f: () => { A.load(MS.build.fullerene()); S.dismissEmpty = true; } }, { l: 'Carbon nanotube…', f: A.nanotubeDialog }, { l: 'Graphene sheet…', f: A.grapheneDialog }] },
     { l: 'Crystals', sub: () => MS.LIB.crystals.map((c) => ({ l: c.name, h: c.note, f: () => { A.load(MS.LIB.buildCrystal(c)); S.dismissEmpty = true; } })) },
     { l: 'Atomic orbitals', sub: () => MS.LIB.orbitals.map((o) => ({ l: o.name, f: () => { A.load(MS.LIB.buildOrbital(o)); S.dismissEmpty = true; } })) },
@@ -264,7 +265,8 @@
     Calculate: () => [
       { l: 'Optimise geometry', icon: 'bolt', h: mod + 'E', f: () => A.optimize() }, { l: 'Auto-optimise while editing', chk: S.auto, f: () => { S.auto = !S.auto; A.mz = null; R.invalidate(false); A.refresh(); } }, { l: 'Conformer search…', f: A.conformerDialog }, '-',
       { l: 'Partial charges (Gasteiger)', f: A.showCharges }, { l: 'Show dipole moment', chk: S.showDip, f: () => { S.showDip = !S.showDip; R.invalidate(false); A.refresh(); } }, { l: 'Force-field energy', f: () => { const e = MS.ff.energy(S.mol); S.energy = e; A.refresh(); A.toast('Energy: ' + fmt(e, 2) + ' kcal/mol (quick force field)'); } }, '-',
-      { l: 'Measure tool', icon: 'measure', h: '5', f: () => A.setTool('measure') }, { l: 'Properties', icon: 'info', f: () => A.showInfo('props') },
+      { l: 'Measure tool', icon: 'measure', h: '5', f: () => A.setTool('measure') }, { l: 'Properties', icon: 'info', f: () => A.showInfo('props') }, '-',
+      { l: 'Check structure…', f: () => A.checkDialog() }, { l: 'R/S and E/Z labels', chk: S.layers.some((x) => x.label === 'stereo'), f: () => A.toggleStereo() }, { l: 'Exact mass and isotope pattern…', f: () => A.isotopeDialog() }, { l: 'Base-pair hydrogen bonds', chk: S.hbonds, f: () => A.toggleHbonds() },
     ],
     Help: () => [{ l: 'Keyboard shortcuts', h: '?', f: A.helpDialog }, { l: 'About MoleculeScale', f: A.aboutDialog }, '-', { l: 'Imprint', f: () => A.legal('imprint') }, { l: 'Privacy', f: () => A.legal('privacy') }],
   };
@@ -368,7 +370,7 @@
       if (['bs', 'stick', 'wire'].includes(l.style)) set += slider('Thickness', 'size', 0.4, 2.5, 0.05, l.size) + (l.style === 'bs' ? slider('Atom size', 'ball', 0.5, 2, 0.05, l.ball || 1) : '');
       if (l.style === 'vdw') set += slider('Radius scale', 'scale', 0.2, 1.4, 0.02, l.scale);
       if (l.style === 'surface') set += `<div class="field-row"><label>Type</label><select class="sel" data-k="surf">${opt([['smooth', 'Smooth (Gaussian)'], ['vdw', 'van der Waals'], ['sas', 'Solvent-accessible']], l.surf)}</select></div>` + slider('Opacity', 'opacity', 0.15, 1, 0.01, l.opacity) + `<div class="field-row"><label>Quality</label><select class="sel" data-k="res">${opt([[0, 'Standard'], [0.45, 'Fast'], [0.2, 'Fine']], l.res || 0)}</select></div><label class="chk"><input type="checkbox" data-k="noH" ${l.noH ? 'checked' : ''}> Ignore hydrogens</label>`;
-      if (l.style === 'labels') set += `<div class="field-row"><label>Show</label><select class="sel" data-k="label">${opt([['element', 'Element'], ['label', 'Element + number'], ['index', 'Atom number'], ['name', 'Atom name'], ['charge', 'Partial charge'], ['residue', 'Residue'], ['coords', 'Coordinates']], l.label)}</select></div>` + slider('Size', 'size', 0.6, 2, 0.05, l.size) + `<label class="chk"><input type="checkbox" data-k="noH" ${l.noH ? 'checked' : ''}> Hide hydrogens</label>`;
+      if (l.style === 'labels') set += `<div class="field-row"><label>Show</label><select class="sel" data-k="label">${opt([['element', 'Element'], ['label', 'Element + number'], ['index', 'Atom number'], ['name', 'Atom name'], ['charge', 'Partial charge'], ['residue', 'Residue'], ['coords', 'Coordinates'], ['stereo', 'Stereo (R/S, E/Z)']], l.label)}</select></div>` + slider('Size', 'size', 0.6, 2, 0.05, l.size) + `<label class="chk"><input type="checkbox" data-k="noH" ${l.noH ? 'checked' : ''}> Hide hydrogens</label>`;
       if (l.style === 'iso') set += slider('Iso value', 'iso', 0.005, 0.9, 0.005, l.iso) + slider('Opacity', 'opacity', 0.15, 1, 0.01, l.opacity == null ? 0.78 : l.opacity);
       if (l.scope === 'sel' || l.scope === 'selnow') set += `<button class="btn sm" data-act="capture" style="margin-top:4px">Use current selection</button>`;
     }
@@ -427,7 +429,7 @@
   const renderLibrary = () => {
     const q = (S.libQ || '').toLowerCase();
     let h = `<div class="search"><span style="position:absolute;left:9px;top:8px;color:var(--muted)">${A.icon('search')}</span><input id="libQ" placeholder="Search molecules" value="${esc(S.libQ || '')}"></div><label class="chk" style="margin-bottom:10px"><input type="checkbox" id="libAdd" ${S.addMode ? 'checked' : ''}> Add to the current scene</label>`;
-    h += `<div class="sec"><h4>Build</h4><div class="lib-grid"><button class="lib-item" data-b="smiles"><b>From SMILES…</b><span>type a formula string</span></button><button class="lib-item" data-b="peptide"><b>Peptide…</b><span>helix, strand, coil</span></button><button class="lib-item" data-b="c60"><b>Fullerene C60</b><span>60 carbons</span></button><button class="lib-item" data-b="nt"><b>Nanotube…</b><span>(n, m) carbon tube</span></button><button class="lib-item" data-b="gr"><b>Graphene…</b><span>flat sheet</span></button></div></div><div class="sec"><h4>Proteins &amp; DNA</h4><div class="lib-grid">${[['Crambin', 'PDB 1CRN · 46 residues'], ['Ubiquitin', 'PDB 1UBQ · 76 residues'], ['Trp-cage', 'PDB 1L2Y · 20 residues'], ['DNA dodecamer', 'PDB 1BNA · B-DNA']].map(([n, d]) => `<button class="lib-item" data-prot="${n}"><b>${n}</b><span>${d}</span></button>`).join('')}</div></div>`;
+    h += `<div class="sec"><h4>Build</h4><div class="lib-grid"><button class="lib-item" data-b="smiles"><b>From SMILES…</b><span>type a formula string</span></button><button class="lib-item" data-b="peptide"><b>Peptide…</b><span>helix, strand, coil</span></button><button class="lib-item" data-b="dna"><b>DNA / RNA…</b><span>all-atom helix from sequence</span></button><button class="lib-item" data-b="fasta"><b>From FASTA…</b><span>protein or nucleic acid</span></button><button class="lib-item" data-b="c60"><b>Fullerene C60</b><span>60 carbons</span></button><button class="lib-item" data-b="nt"><b>Nanotube…</b><span>(n, m) carbon tube</span></button><button class="lib-item" data-b="gr"><b>Graphene…</b><span>flat sheet</span></button></div></div><div class="sec"><h4>Proteins &amp; DNA</h4><div class="lib-grid">${[['Crambin', 'PDB 1CRN · 46 residues'], ['Ubiquitin', 'PDB 1UBQ · 76 residues'], ['Trp-cage', 'PDB 1L2Y · 20 residues'], ['DNA dodecamer', 'PDB 1BNA · B-DNA']].map(([n, d]) => `<button class="lib-item" data-prot="${n}"><b>${n}</b><span>${d}</span></button>`).join('')}</div></div>`;
     const mols = MS.LIB.molecules.filter((x) => !q || (x.name + ' ' + x.cat).toLowerCase().includes(q));
     MS.LIB.cats.forEach((c) => { const l = mols.filter((x) => x.cat === c); if (l.length) h += `<div class="sec"><h4>${esc(c)}</h4><div class="lib-grid">${l.map((x) => `<button class="lib-item" data-smi="${esc(x.smi)}" data-name="${esc(x.name)}"><b>${esc(x.name)}</b><span>${esc(x.note || x.smi)}</span></button>`).join('')}</div></div>`; });
     const cr = MS.LIB.crystals.filter((x) => !q || x.name.toLowerCase().includes(q) || 'crystal'.includes(q)); if (cr.length) h += `<div class="sec"><h4>Crystals</h4><div class="lib-grid">${cr.map((x) => `<button class="lib-item" data-cry="${esc(x.name)}"><b>${esc(x.name)}</b><span>${esc(x.note)}</span></button>`).join('')}</div></div>`;
@@ -440,7 +442,7 @@
     if (b.dataset.smi) { A.insertSmiles(b.dataset.smi, b.dataset.name); return; }
     if (b.dataset.cry) { A.load(MS.LIB.buildCrystal(MS.LIB.crystals.find((c) => c.name === b.dataset.cry))); return; }
     if (b.dataset.orb) { A.load(MS.LIB.buildOrbital(MS.LIB.orbitals.find((c) => c.name === b.dataset.orb))); return; }
-    ({ smiles: A.smilesDialog, peptide: A.peptideDialog, c60: () => A.load(MS.build.fullerene()), nt: A.nanotubeDialog, gr: A.grapheneDialog })[b.dataset.b]();
+    ({ dna: () => A.nucleicDialog(), fasta: () => A.fastaDialog(), smiles: A.smilesDialog, peptide: A.peptideDialog, c60: () => A.load(MS.build.fullerene()), nt: A.nanotubeDialog, gr: A.grapheneDialog })[b.dataset.b]();
   });
   sbPane.addEventListener('input', (e) => { if (e.target.id === 'libQ') { S.libQ = e.target.value; renderLibrary(); } });
   sbPane.addEventListener('change', (e) => { if (e.target.id === 'libAdd') S.addMode = e.target.checked; });
@@ -461,9 +463,10 @@
     if (m.cell) h += `<div class="sec"><h4>Unit cell</h4><div class="kv"><span>a, b, c (Å)</span><span>${fmt(m.cell.a, 3)}, ${fmt(m.cell.b, 3)}, ${fmt(m.cell.c, 3)}</span><span>α, β, γ (°)</span><span>${fmt(m.cell.al, 2)}, ${fmt(m.cell.be, 2)}, ${fmt(m.cell.ga, 2)}</span><span>Volume (Å³)</span><span>${fmt(cellVol(m.cell), 2)}</span></div></div>`;
     if (m.meta.protein) { const helix = m.res.filter((r) => r.ss === 'H').length, sheet = m.res.filter((r) => r.ss === 'E').length, aa = m.res.filter((r) => r.aa).length; h += `<div class="sec"><h4>Protein</h4><div class="kv"><span>Residues</span><span>${aa}</span><span>α-helix</span><span>${helix}</span><span>β-sheet</span><span>${sheet}</span></div></div>`; }
     if (m.vol) h += `<div class="sec"><h4>Volume data</h4><div class="kv"><span>Grid</span><span>${m.vol.nx} × ${m.vol.ny} × ${m.vol.nz}</span><span>Range</span><span>${(() => { if (m.vol.rng === undefined) { let a = 1e9, b = -1e9; for (const v of m.vol.data) { if (v < a) a = v; if (v > b) b = v; } m.vol.rng = [a, b]; } return fmt(m.vol.rng[0], 3) + ' … ' + fmt(m.vol.rng[1], 3); })()}</span></div></div>`;
+    h += A.bioPropsHtml(m);
     h += `<div class="sec"><h4>Tools</h4><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-q="opt">${A.icon('bolt')}Optimise</button><button class="btn sm" data-q="addh">Add H</button><button class="btn sm" data-q="remh">Remove H</button><button class="btn sm" data-q="chg">Charges</button><button class="btn sm" data-q="dip">Dipole</button></div></div>`;
     if (p.atoms > 0 && p.atoms < 150 && m.meta.note) h += `<div class="note-box">${esc(m.meta.note)}</div>`;
-    inPane.innerHTML = h;
+    inPane.innerHTML = h; A.bioBind(inPane);
   };
   const cellVol = (c) => { const d = Math.PI / 180, ca = Math.cos(c.al * d), cb = Math.cos(c.be * d), cg = Math.cos(c.ga * d); return c.a * c.b * c.c * Math.sqrt(Math.max(0, 1 - ca * ca - cb * cb - cg * cg + 2 * ca * cb * cg)); };
   const renderAtoms = () => {
@@ -674,6 +677,7 @@
   try {
     if (q.has('demo') || q.get('load') === 'protein') A.loadDemo();
     else if (q.get('smiles')) A.insertSmiles(q.get('smiles'), null);
+    else if (q.get('dna') || q.get('rna')) A.insertNucleic(q.get('dna') || q.get('rna'), !!q.get('rna'), q.get('strands') !== '1');
     else if (q.get('mol')) { const it = MS.LIB.molecules.find((x) => x.name.toLowerCase() === q.get('mol').toLowerCase()); if (it) A.insertSmiles(it.smi, it.name); }
     else if (q.get('orbital')) { const o = MS.LIB.orbitals.find((x) => x.name === q.get('orbital')); if (o) A.load(MS.LIB.buildOrbital(o)); }
     else if (q.has('sample')) A.insertSmiles('Cn1cnc2c1c(=O)n(C)c(=O)n2C', 'Caffeine');

@@ -40,10 +40,14 @@ In every tool: Alt-drag / Space-drag / middle-drag rotates, right-drag or ⇧-dr
 - **Atoms** tab: spreadsheet of coordinates, element and charge, editable in place.
 - **Properties**: formula, mass, rings, aromatic rings, rotatable bonds, donors / acceptors, SMILES, composition, selection statistics, Gasteiger partial charges and dipole arrow.
 - Trajectory / frame player for multi-frame XYZ, PDB models, SDF series and conformer searches.
+- **Stereochemistry**: CIP descriptors (R/S for tetrahedral centres, E/Z for double bonds) are assigned from the 3D geometry and can be shown as labels (Calculate → R/S and E/Z labels, or Labels → Stereo).
+- **Structure check**: over-valent atoms, overlapping atoms, open valences, fragments and net charge, with a one-click selection of the offending atoms.
+- **Estimates** in the Properties tab: log P (fitted atom-type model, typical error about 0.6), polar surface area (N and O fragment contributions), monoisotopic mass, Lipinski and Veber flags. **Exact mass and isotope pattern** dialog with the peak list.
 
 ## Building molecules
 - **SMILES** (aromatic, branches, rings, charges, `@`/`@@` stereo centres) → 3D by distance geometry plus force-field clean-up.
-- **Peptide builder** (one-letter sequence, α-helix / β-strand / PPII / extended / coil), fullerene C60, carbon nanotubes (n, m), graphene sheets.
+- **Peptide builder** (one-letter sequence or FASTA record, α-helix / β-strand / PPII / extended / coil), fullerene C60, carbon nanotubes (n, m), graphene sheets.
+- **DNA / RNA builder**: type or paste a sequence and get an all-atom helix with hydrogens, the complementary strand and dashed Watson–Crick base-pair hydrogen bonds. Geometry comes from averaged base-pair templates of the embedded B-DNA structure; RNA uses the same template geometry with uracil and a 2′-hydroxyl (not a true A-form). Up to 40 bases. Also reachable by pasting FASTA, or with `?dna=SEQUENCE` / `?rna=SEQUENCE` (`&strands=1` for a single strand) in the URL.
 - Library of about 150 molecules, nine crystal structures (NaCl, diamond, graphite, rutile, …) and hydrogen-like orbitals (s, p, d, f) shown as ± isosurfaces.
 - Embedded public-domain PDB entries (work offline): crambin 1CRN, ubiquitin 1UBQ, Trp-cage 1L2Y and a B-DNA dodecamer 1BNA.
 
@@ -55,7 +59,7 @@ In every tool: Alt-drag / Space-drag / middle-drag rotates, right-drag or ⇧-dr
 Scenes (layers, camera, edits) save as `.moleculescale` JSON, and the last session is kept in local storage so you can resume it.
 
 ## Files
-`index.html`, `css/style.css`, and in `js/`: `elements.js` (periodic table), `mol.js` (model and chemistry), `ff.js` (force field + minimiser), `smiles.js` (SMILES, embedding, builders), `io.js` (formats), `geom3d.js` (ribbons, fields, isosurfaces), `render.js` (WebGL), `library.js`, `legal.js`, `app.js` (state, tools), `app2.js` (menus, panels, dialogs).
+`index.html`, `css/style.css`, and in `js/`: `elements.js` (periodic table), `mol.js` (model and chemistry), `ff.js` (force field + minimiser), `smiles.js` (SMILES, embedding, builders), `bio.js` (stereodescriptors, structure checks, property estimates, isotope pattern, FASTA, DNA/RNA builder), `bio_ui.js` (their dialogs and overlays), `io.js` (formats), `geom3d.js` (ribbons, fields, isosurfaces), `render.js` (WebGL), `library.js`, `legal.js`, `app.js` (state, tools), `app2.js` (menus, panels, dialogs).
 
 ## Limits
-Quick force field and charge model — fine for tidy-up and illustration, not a substitute for quantum chemistry. No double-bond (E/Z) stereo from SMILES, no MOL V3000, no vibrational spectra. Very large structures (> ~20k atoms) are not auto-saved.
+Quick force field and charge model — fine for tidy-up and illustration, not a substitute for quantum chemistry. No E/Z input from SMILES (E/Z is read from the 3D geometry), no MOL V3000, no vibrational spectra, no NMR or pKa prediction, no name-to-structure conversion. Very large structures (> ~20k atoms) are not auto-saved.
