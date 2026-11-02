@@ -2,6 +2,8 @@
 
 **labscale.org** – start page: `index.html` (animated landing page, “Open” button), workbench: `app.html`, legal pages: `imprint.html`. Single-file offline build: `labscale-standalone.html` (run `python3 build.py`).
 
+**DocScale** (`DocScale/`) is a companion editor for lab books, reports and papers (LaTeX / Markdown, live preview, many export formats); see `DocScale/README.md`.
+
 A browser-based data analysis and graphing workbench for scientists and engineers. No build step, no dependencies: open `app.html` in a browser.
 
 ## Features

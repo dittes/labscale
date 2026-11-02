@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoleculeScale — 3D Molecule Editor &amp; Visualizer</title>
+<meta name="description" content="Build, edit, optimise and visualise molecules, proteins and crystals in 3D, entirely in your browser.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+<script>
+  (function () { try { var t = localStorage.getItem('ms-theme'); if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; document.documentElement.dataset.theme = t; } catch (e) { } })();
+</script>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64"><defs><radialGradient id="lg" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity=".7"/></radialGradient></defs><rect width="64" height="64" rx="15" fill="var(--accent)"/><path d="M22 41L32 21M32 21L45 38M22 41L45 38" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".55"/><circle cx="32" cy="21" r="8" fill="url(#lg)"/><circle cx="21" cy="42" r="6.6" fill="url(#lg)" opacity=".92"/><circle cx="46" cy="39" r="5.4" fill="url(#lg)" opacity=".85"/></svg>
+      <b>Molecule<span style="color:var(--accent)">Scale</span></b>
+    </div>
+    <nav class="menubar" id="menubar"></nav>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="btnPalette" title="Command palette"><span data-i="search"></span><span>Search commands</span> <kbd>⌘K</kbd></button>
+    <button class="btn icon ghost" id="btnUndo" title="Undo (⌘Z)"><span data-i="undo"></span></button>
+    <button class="btn icon ghost" id="btnRedo" title="Redo (⇧⌘Z)"><span data-i="redo"></span></button>
+    <button class="btn" id="btnOpen"><span data-i="open"></span>Open</button>
+    <button class="btn primary" id="btnOpt" title="Optimise geometry (⌘E)"><span data-i="bolt"></span>Optimise</button>
+    <button class="btn icon ghost" id="btnSb" title="Toggle left panel"><span data-i="panel-l"></span></button>
+    <button class="btn icon ghost" id="btnIn" title="Toggle right panel"><span data-i="panel-r"></span></button>
+    <button class="btn icon ghost" id="btnTheme" title="Toggle light/dark"><span data-i="moon"></span></button>
+    <button class="btn icon ghost" id="btnHelp" title="Keyboard shortcuts (?)"><span data-i="help"></span></button>
+  </header>
+
+  <div class="body">
+    <aside id="sidebar">
+      <div class="tabs" id="sbTabs">
+        <button data-t="display" class="on"><span data-i="layers"></span>Display</button>
+        <button data-t="structure"><span data-i="tree"></span>Structure</button>
+        <button data-t="library"><span data-i="flask"></span>Library</button>
+      </div>
+      <div class="pane" id="sbPane"></div>
+    </aside>
+
+    <main id="main">
+      <div id="stage" class="t-navigate">
+        <canvas id="gl"></canvas><canvas id="ov"></canvas>
+        <div id="tip" hidden></div>
+      </div>
+      <div id="rail" class="glass"></div>
+      <div id="hudTop" class="glass"></div>
+      <div id="hudRight" class="glass"></div>
+      <div id="traj" class="glass" hidden></div>
+      <div id="cbar" class="glass"></div>
+      <div id="empty" hidden>
+        <div class="empty-card glass">
+          <svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563eb"/><path d="M22 41L32 21M32 21L45 38M22 41L45 38" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".55"/><circle cx="32" cy="21" r="8" fill="#fff" opacity=".95"/><circle cx="21" cy="42" r="6.6" fill="#fff" opacity=".88"/><circle cx="46" cy="39" r="5.4" fill="#fff" opacity=".8"/></svg>
+          <h1>Build it. Bend it. See it.</h1>
+          <p>Draw molecules atom by atom, type a SMILES string, open a structure file, or start from the library. Everything stays in your browser.</p>
+          <div class="actions">
+            <button class="btn primary" id="emDraw"><span data-i="pencil"></span>Start drawing</button>
+            <button class="btn" id="emSmiles"><span data-i="paste"></span>From SMILES</button>
+            <button class="btn" id="emOpen"><span data-i="open"></span>Open file…</button>
+            <button class="btn" id="emDemo"><span data-i="spark"></span>Try the demo</button>
+            <button class="btn" id="emResume" hidden><span data-i="undo"></span>Resume last session</button>
+          </div>
+          <div class="formats"><span class="chip">.xyz</span><span class="chip">.mol / .sdf</span><span class="chip">.pdb</span><span class="chip">.cif</span><span class="chip">.cml</span><span class="chip">.cube</span><span class="chip">SMILES</span></div>
+        </div>
+      </div>
+    </main>
+
+    <aside id="inspector">
+      <div class="tabs" id="inTabs">
+        <button data-t="props" class="on"><span data-i="info"></span>Properties</button>
+        <button data-t="atoms"><span data-i="table"></span>Atoms</button>
+        <button data-t="geom"><span data-i="ruler"></span>Geometry</button>
+      </div>
+      <div class="pane" id="inPane"></div>
+    </aside>
+  </div>
+
+  <footer id="status"></footer>
+</div>
+
+<div id="dropOverlay"><div>Drop to open a structure file</div></div>
+<div id="toasts"></div>
+<input type="file" id="fileInput" multiple hidden accept=".xyz,.mol,.sdf,.sd,.pdb,.ent,.cif,.cml,.cube,.cub,.smi,.smiles,.moleculescale,.json,.txt">
+<dialog id="dlg"></dialog>
+<dialog id="palette"><input id="palInput" placeholder="Type a command…" autocomplete="off" spellcheck="false"><div id="palList"></div></dialog>
+
+<script src="js/elements.js"></script>
+<script src="js/mol.js"></script>
+<script src="js/ff.js"></script>
+<script src="js/smiles.js"></script>
+<script src="js/io.js"></script>
+<script src="js/geom3d.js"></script>
+<script src="js/render.js"></script>
+<script src="js/sample_pdb.js"></script>
+<script src="js/library.js"></script>
+<script src="js/legal.js"></script>
+<script src="js/app.js"></script>
+<script src="js/app2.js"></script>
+</body>
+</html>
