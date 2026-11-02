@@ -338,7 +338,7 @@ void main(){
         const cfn = (i) => G3.atomColor(col, m, i, ctx);
         const st = L.style;
         if (st === 'bs' || st === 'stick' || st === 'wire' || st === 'vdw') {
-          const rbond = st === 'bs' ? 0.11 * sc : st === 'stick' ? 0.17 * sc : 0.035 * sc;
+          const rbond = st === 'bs' ? 0.11 * sc : st === 'stick' ? 0.14 * sc : 0.05 * sc;
           for (let i = 0; i < n; i++) {
             if (!ok(i)) continue; const a = m.atoms[i], c = cfn(i);
             if (st === 'vdw') addSphere(i, EL[a.e].vdw * (L.scale || 1) * 1.0, c, selFlag(i));
@@ -360,8 +360,8 @@ void main(){
               if (b.o === 1 || (b.o >= 4)) draw(null, rbond);
               else {
                 const u = perp(b.a, b.b, dir);
-                if (b.o === 2) { const d = (st === 'wire' ? 0.06 : st === 'stick' ? 0.1 : 0.085) * sc; draw(V.mul(u, d), rbond * 0.72); draw(V.mul(u, -d), rbond * 0.72); }
-                else { const d = (st === 'wire' ? 0.1 : st === 'stick' ? 0.15 : 0.13) * sc; draw(null, rbond * 0.7); draw(V.mul(u, d), rbond * 0.62); draw(V.mul(u, -d), rbond * 0.62); }
+                if (b.o === 2) { const d = (st === 'wire' ? 0.09 : st === 'stick' ? 0.15 : 0.085) * sc; const rr = st === 'bs' ? rbond * 0.72 : rbond * 0.62; draw(V.mul(u, d), rr); draw(V.mul(u, -d), rr); }
+                else { const d = (st === 'wire' ? 0.14 : st === 'stick' ? 0.22 : 0.13) * sc; const rr = st === 'bs' ? rbond * 0.62 : rbond * 0.55; draw(null, rr); draw(V.mul(u, d), rr); draw(V.mul(u, -d), rr); }
               }
               G.bondSeg.push([k, rbond]);
             });
@@ -559,7 +559,7 @@ void main(){
       return out;
     }
     /* ----- export ----- */
-    snapshot(scale, transparent) {
+    snapshot(scale, transparent, type) {
       return new Promise((resolve) => {
         const prev = this.forcedRatio; this.exporting = true;
         const max = Math.min(8192, this.gl.getParameter(this.gl.MAX_RENDERBUFFER_SIZE) || 4096);
@@ -568,7 +568,7 @@ void main(){
         const oc = document.createElement('canvas'); oc.width = this.canvas.width; oc.height = this.canvas.height;
         const x = oc.getContext('2d'); x.drawImage(this.canvas, 0, 0); x.drawImage(this.ov, 0, 0);
         this.forcedRatio = prev; this.exporting = false; this.invalidate(false);
-        oc.toBlob((b) => resolve(b), 'image/png');
+        oc.toBlob((b) => resolve(b), type || 'image/png', 0.93);
       });
     }
     toOBJ() {

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QualityScale — Sequencing Quality Control</title>
+<meta name="description" content="Quality control for high-throughput sequencing data: per-base quality, flow-cell maps, adapters, duplication, trim advisor and multi-sample comparison, entirely in your browser.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+<script>
+  (function () { try { var t = localStorage.getItem('qs-theme'); if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; document.documentElement.dataset.theme = t; } catch (e) { } })();
+</script>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="var(--accent)"/><g stroke="#fff" stroke-linecap="round"><path d="M17 17v26M32 22v24M47 30v18" stroke-width="3" opacity=".6"/></g><g fill="#fff"><rect x="12" y="23" width="10" height="13" rx="3" opacity=".95"/><rect x="27" y="27" width="10" height="14" rx="3" opacity=".88"/><rect x="42" y="34" width="10" height="12" rx="3" opacity=".8"/></g><path d="M12 29h10M27 34h10M42 40h10" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <b>Quality<span style="color:var(--accent)">Scale</span></b>
+    </div>
+    <nav class="menubar" id="menubar"></nav>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="btnPalette" title="Command palette"><span data-i="search"></span><span>Search commands</span> <kbd>⌘K</kbd></button>
+    <button class="btn" id="btnOpen"><span data-i="open"></span>Open</button>
+    <button class="btn primary" id="btnReport" title="Download the HTML report"><span data-i="download"></span>Report</button>
+    <button class="btn icon ghost" id="btnSb" title="Toggle left panel"><span data-i="panel-l"></span></button>
+    <button class="btn icon ghost" id="btnIn" title="Toggle right panel"><span data-i="panel-r"></span></button>
+    <button class="btn icon ghost" id="btnTheme" title="Toggle light/dark"><span data-i="moon"></span></button>
+    <button class="btn icon ghost" id="btnHelp" title="Keyboard shortcuts (?)"><span data-i="help"></span></button>
+  </header>
+  <div class="body">
+    <aside id="sidebar">
+      <div class="tabs" id="sbTabs">
+        <button data-act="side:samples" data-t="samples" class="on"><span data-i="layers"></span>Samples</button>
+        <button data-act="side:modules" data-t="modules"><span data-i="check"></span>Checks</button>
+      </div>
+      <div class="pane" id="sbPane"></div>
+    </aside>
+    <main id="main">
+      <div id="view"></div>
+      <div id="hud" class="glass"></div>
+      <div id="empty" hidden>
+        <div class="empty-card card">
+          <svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#2563eb"/><g stroke="#fff" stroke-linecap="round"><path d="M17 17v26M32 22v24M47 30v18" stroke-width="3" opacity=".6"/></g><g fill="#fff"><rect x="12" y="23" width="10" height="13" rx="3" opacity=".95"/><rect x="27" y="27" width="10" height="14" rx="3" opacity=".88"/><rect x="42" y="34" width="10" height="12" rx="3" opacity=".8"/></g><path d="M12 29h10M27 34h10M42 40h10" stroke="#2563eb" stroke-width="2.4" stroke-linecap="round"/></svg>
+          <h1>Know your reads before you trust them.</h1>
+          <p>Drop FASTQ or FASTA files (plain or .gz) to get quality plots, flow-cell maps, adapter and duplication checks, a trim advisor and side-by-side comparison. Everything stays in your browser.</p>
+          <div class="actions">
+            <button class="btn primary" data-act="open"><span data-i="open"></span>Open files…</button>
+            <button class="btn" data-act="demo"><span data-i="spark"></span>Try the demo</button>
+            <button class="btn" data-act="paste"><span data-i="paste"></span>Paste reads</button>
+          </div>
+          <div class="formats"><span class="chip">.fastq</span><span class="chip">.fq</span><span class="chip">.fastq.gz</span><span class="chip">.fasta</span><span class="chip">.fa</span><span class="chip">.qualityscale</span></div>
+          <div class="feat"><div><b>12 core checks</b>quality, tiles, GC, adapters, duplicates, k-mers and more</div><div><b>Visual first</b>heatmaps, flow-cell map, trim guides you can drag</div><div><b>Compare runs</b>pass/fail matrix and overlays for many samples</div></div>
+        </div>
+      </div>
+    </main>
+    <aside id="inspector">
+      <div class="tabs" id="inTabs">
+        <button data-act="insp:details" data-t="details" class="on"><span data-i="info"></span>Details</button>
+        <button data-act="insp:trim" data-t="trim"><span data-i="scissors"></span>Trim</button>
+        <button data-act="insp:settings" data-t="settings"><span data-i="sliders"></span>Settings</button>
+      </div>
+      <div class="pane" id="inPane"></div>
+    </aside>
+  </div>
+  <footer id="status"></footer>
+</div>
+<div id="dropOverlay"><div>Drop FASTQ / FASTA files to analyse</div></div>
+<div id="toasts"></div>
+<div id="tip" hidden></div>
+<input type="file" id="fileInput" multiple hidden accept=".fastq,.fq,.fasta,.fa,.fna,.gz,.txt,.qualityscale,.json">
+<dialog id="dlg"></dialog>
+<dialog id="palette"><input id="palInput" placeholder="Type a command…" autocomplete="off" spellcheck="false"><div id="palList"></div></dialog>
+
+<script src="js/core.js?v=1"></script>
+<script src="js/engine.js?v=1"></script>
+<script src="js/demo.js?v=1"></script>
+<script src="js/modules.js?v=1"></script>
+<script src="js/charts.js?v=1"></script>
+<script src="js/report.js?v=1"></script>
+<script src="js/legal.js?v=1"></script>
+<script src="js/app.js?v=1"></script>
+</body>
+</html>

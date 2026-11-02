@@ -2,9 +2,10 @@
 
 **labscale.org** – start page: `index.html` (animated landing page, “Open” button), workbench: `app.html`, legal pages: `imprint.html`. Single-file offline build: `labscale-standalone.html` (run `python3 build.py`).
 
-The start page presents the whole family under the headline "Raw data in, usable results out." Three companion apps live in their own folders, each with its own README:
+The start page presents the whole family under the headline "Raw data in, usable results out." Four companion apps live in their own folders, each with its own README:
 
 - **DNAScale** (`dnascale/`): Sanger traces, alignments, contig assembly and sequence analysis.
+- **QualityScale** (`qualityscale/`): quality control for sequencing reads (FASTQ / FASTA), flow-cell maps, trim advisor and sample comparison.
 - **MoleculeScale** (`moleculescale/`): 3D editor and viewer for molecules, proteins and crystals.
 - **DocScale** (`docscale/`): editor for lab books, reports and papers (LaTeX / Markdown, live preview, many export formats).
 

@@ -59,6 +59,7 @@
     document.documentElement.dataset.theme = t; try { localStorage.setItem('ms-theme', t); } catch (e) { }
     R.opts.dark = t === 'dark'; R.invalidate(false); const b = $('#btnTheme'); if (b) { b.innerHTML = A.icon(t === 'dark' ? 'sun' : 'moon'); }
   };
+  Object.defineProperty(R, 'layers', { get: () => S.layers, set: () => { } });
   A.sync = () => { R.setData(S.mol, S.layers); };
 
   /* ------------------------------------------------------------ refresh scheduling */
@@ -91,6 +92,11 @@
   A.fit = (idx) => {
     const m = S.mol; const bb = m.bbox(idx && idx.size ? idx : null); const c = R.cam;
     c.target = bb.c; c.radius = bb.r; c.dist = Math.max(4, bb.r / Math.sin(Math.min(c.fov, 1.2) / 2) * 1.32); R.invalidate(true);
+  };
+  A.centreOn = (p) => {
+    const cam = R.cam, from = cam.target.slice(), t0 = performance.now();
+    const step = () => { const k = Math.min(1, (performance.now() - t0) / 260), e = 1 - Math.pow(1 - k, 3); cam.target = [0, 1, 2].map((i) => from[i] + (p[i] - from[i]) * e); R.invalidate(false); if (k < 1) requestAnimationFrame(step); };
+    step();
   };
   A.setMol = (m, opts) => {
     opts = opts || {};
@@ -265,7 +271,7 @@
 
   TOOLS.navigate = {
     down(d) { d.mode = d.shift ? 'pan' : d.meta ? 'zoom' : 'rotate'; },
-    dbl(d) { if (d.pick.atom >= 0) { R.cam.target = S.mol.pos(d.pick.atom); R.invalidate(true); } else A.fit(); },
+    dbl(d) { if (d.pick.atom >= 0) A.centreOn(S.mol.pos(d.pick.atom)); else A.fit(); },
   };
   TOOLS.select = {
     down(d) { d.mode = 'tool'; },
@@ -395,7 +401,8 @@
     else if (e.button === 2) drag.mode = 'pan';
     else if (e.button === 0) { if (T.down) T.down(drag); else drag.mode = 'rotate'; }
     if (drag.mode === 'rotate' || drag.mode === 'pan' || drag.mode === 'zoom') stage.classList.add('grabbing');
-    if (e.detail === 2 && e.button === 0 && T.dbl) T.dbl(drag);
+    const nowT = performance.now(), L = A.lastDown;
+    if (e.button === 0 && L && nowT - L.t < 400 && Math.hypot(x - L.x, y - L.y) < 8 && T.dbl) { T.dbl(drag); A.lastDown = null; } else A.lastDown = { t: nowT, x, y };
     e.preventDefault();
   }
   function onMove(e) {

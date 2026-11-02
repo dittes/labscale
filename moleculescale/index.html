@@ -58,11 +58,12 @@
           <p>Draw molecules atom by atom, type a SMILES string, open a structure file, or start from the library. Everything stays in your browser.</p>
           <div class="actions">
             <button class="btn primary" id="emDraw"><span data-i="pencil"></span>Start drawing</button>
+            <button class="btn" id="emLib"><span data-i="flask"></span>Browse library</button>
             <button class="btn" id="emSmiles"><span data-i="paste"></span>From SMILES</button>
             <button class="btn" id="emOpen"><span data-i="open"></span>Open file…</button>
-            <button class="btn" id="emDemo"><span data-i="spark"></span>Try the demo</button>
-            <button class="btn" id="emResume" hidden><span data-i="undo"></span>Resume last session</button>
+                        <button class="btn" id="emResume" hidden><span data-i="undo"></span>Resume last session</button>
           </div>
+          <div class="ex-title">Start from an example</div><div class="ex-grid" id="exGrid"></div>
           <div class="formats"><span class="chip">.xyz</span><span class="chip">.mol / .sdf</span><span class="chip">.pdb</span><span class="chip">.cif</span><span class="chip">.cml</span><span class="chip">.cube</span><span class="chip">SMILES</span></div>
         </div>
       </div>
@@ -87,17 +88,17 @@
 <dialog id="dlg"></dialog>
 <dialog id="palette"><input id="palInput" placeholder="Type a command…" autocomplete="off" spellcheck="false"><div id="palList"></div></dialog>
 
-<script src="js/elements.js?v=2"></script>
-<script src="js/mol.js?v=2"></script>
-<script src="js/ff.js?v=2"></script>
-<script src="js/smiles.js?v=2"></script>
-<script src="js/io.js?v=2"></script>
-<script src="js/geom3d.js?v=2"></script>
-<script src="js/render.js?v=2"></script>
-<script src="js/sample_pdb.js?v=2"></script>
-<script src="js/library.js?v=2"></script>
-<script src="js/legal.js?v=2"></script>
-<script src="js/app.js?v=2"></script>
-<script src="js/app2.js?v=2"></script>
+<script src="js/elements.js?v=4"></script>
+<script src="js/mol.js?v=4"></script>
+<script src="js/ff.js?v=4"></script>
+<script src="js/smiles.js?v=4"></script>
+<script src="js/io.js?v=4"></script>
+<script src="js/geom3d.js?v=4"></script>
+<script src="js/render.js?v=4"></script>
+<script src="js/sample_pdb.js?v=4"></script>
+<script src="js/library.js?v=4"></script>
+<script src="js/legal.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
+<script src="js/app2.js?v=4"></script>
 </body>
 </html>

@@ -234,7 +234,7 @@
   function embed(m, tries) {
     const N = m.atoms.length, chiral = m.meta.chiral || [];
     if (N === 1) { m.atoms[0].x = m.atoms[0].y = m.atoms[0].z = 0; return; }
-    if (N === 2) { const b = m.bonds[0]; m.atoms[1].x = EL[m.atoms[0].e].cov + EL[m.atoms[1].e].cov; return; }
+    if (N === 2) { const b = m.bonds[0]; m.atoms[1].x = EL[m.atoms[0].e].cov + EL[m.atoms[1].e].cov - (b && b.o === 3 ? 0.3 : b && b.o === 2 ? 0.17 : 0); return; }
     const ff = MS.ff.build(m, { chiral });
     const bd = boundsFor(m, ff);
     let best = null, bestE = Infinity; tries = tries || (N > 150 ? 2 : 5);

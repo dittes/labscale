@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LabScale – Raw data in, usable results out</title>
-<meta name="description" content="Four free workbenches that run entirely in your browser: LabScale for data analysis and graphing, DNAScale for sequences and Sanger traces, MoleculeScale for 3D molecules and proteins, DocScale for lab books and papers. No install, no upload.">
+<meta name="description" content="Five free workbenches that run entirely in your browser: LabScale for data analysis and graphing, DNAScale for sequences and Sanger traces, QualityScale for sequencing quality control, MoleculeScale for 3D molecules and proteins, DocScale for lab books and papers. No install, no upload.">
 <link rel="canonical" href="https://labscale.org/">
 <meta property="og:title" content="LabScale – raw data in, usable results out">
 <meta property="og:description" content="Free workbenches for data, DNA sequences, molecules and documents. They run in your browser: no install, no upload.">
@@ -86,23 +86,23 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--mut);fon
 <a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="wrap">
   <a class="logo" href="./" aria-label="LabScale home"><img src="favicon.svg" width="32" height="32" alt=""><span>Lab<b>Scale</b></span></a>
-  <nav class="main" aria-label="Main"><a href="#tools">Tools</a><a href="#how">LabScale</a><a href="#dna">DNAScale</a><a href="#molecules">MoleculeScale</a><a href="#docs">DocScale</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a></nav>
+  <nav class="main" aria-label="Main"><a href="#tools">Tools</a><a href="#how">LabScale</a><a href="#dna">DNAScale</a><a href="#quality">QualityScale</a><a href="#molecules">MoleculeScale</a><a href="#docs">DocScale</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a></nav>
   <span class="sp"></span><a class="btn pri sm" href="app.html">Open</a>
 </div></header>
 <main id="main">
 <section class="hero" aria-labelledby="h1">
   <canvas id="heroCv" aria-hidden="true"></canvas>
   <div class="wrap">
-    <p class="eyebrow">LabScale · DNAScale · MoleculeScale · DocScale</p>
+    <p class="eyebrow">LabScale · DNAScale · QualityScale · MoleculeScale · DocScale</p>
     <h1 id="h1">Raw data in,<br>usable results out.</h1>
     <p class="lead">Free workbenches for measurements, sequencer traces, molecular structures and lab reports. Drop in a file and get a graph, a consensus sequence, a 3D model or a finished paper. Nothing to install and nothing leaves your device.</p>
-    <div class="cta"><a class="btn pri lg" href="app.html">Open LabScale</a><a class="btn lg" href="#tools">See all four tools</a></div>
+    <div class="cta"><a class="btn pri lg" href="app.html">Open LabScale</a><a class="btn lg" href="#tools">See all five tools</a></div>
     <p class="sr">Animation: streams of zeros and ones move from the left and are transformed into line charts, bar charts, scatter plots with a regression line, heat maps, spectra with fitted peaks, sequencer chromatograms, a rotating molecule and a report page.</p>
   </div>
 </section>
 
 <section id="tools"><div class="wrap">
-  <h2>Four workbenches, one idea</h2>
+  <h2>Five workbenches, one idea</h2>
   <p class="sub">Each tool takes a kind of raw input and turns it into something you can read, publish or build on. They share one look, run offline once loaded, and keep your files on your device.</p>
   <div class="grid g2">
     <article class="card tool"><div class="hd"><img src="favicon.svg" width="48" height="48" alt=""><div><h3>LabScale</h3><p class="tag">Data analysis and graphing</p></div></div>
@@ -113,6 +113,10 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--mut);fon
       <p>View chromatograms, trim and edit base calls, assemble reads into contigs or map them to a reference, align sequences and inspect ORFs, restriction sites and a 3D helix.</p>
       <div class="io"><div><b>IN</b><span>.ab1, .scf, FASTA, FASTQ, GenBank, Clustal</span></div><div><b>OUT</b><span>Consensus, alignments, trees, PDF lab report</span></div></div>
       <div class="cta"><a class="btn pri sm" href="dnascale/">Open</a><a class="btn sm" href="dnascale/?demo">Try the demo</a></div></article>
+    <article class="card tool"><div class="hd"><img src="qualityscale/favicon.svg" width="48" height="48" alt=""><div><h3>QualityScale</h3><p class="tag">Sequencing quality control</p></div></div>
+      <p>Check FASTQ and FASTA files before you analyse them: per-base quality, flow-cell maps, adapters, duplication and k-mers, with a trim advisor and side-by-side comparison of many runs.</p>
+      <div class="io"><div><b>IN</b><span>FASTQ, FASTA, gzip-compressed files</span></div><div><b>OUT</b><span>Score, findings, HTML report, SVG, PNG, CSV</span></div></div>
+      <div class="cta"><a class="btn pri sm" href="qualityscale/">Open</a><a class="btn sm" href="qualityscale/?demo">Try the demo</a></div></article>
     <article class="card tool"><div class="hd"><img src="moleculescale/favicon.svg" width="48" height="48" alt=""><div><h3>MoleculeScale</h3><p class="tag">3D molecules, proteins and crystals</p></div></div>
       <p>Draw or type a SMILES string, optimise the geometry, search conformers and render proteins as cartoons or surfaces. Measure distances, angles and dihedrals in the view.</p>
       <div class="io"><div><b>IN</b><span>SMILES, PDB, MOL/SDF, XYZ, CIF, cube</span></div><div><b>OUT</b><span>3D models, properties, PNG up to 4×, OBJ, structure files</span></div></div>
@@ -122,7 +126,7 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--mut);fon
       <div class="io"><div><b>IN</b><span>LaTeX, Markdown, BibTeX, images</span></div><div><b>OUT</b><span>PDF, Word, HTML, EPUB, Markdown, ZIP</span></div></div>
       <div class="cta"><a class="btn pri sm" href="docscale/">Open</a></div></article>
   </div>
-  <div class="stats" style="margin-top:56px"><div><b>4</b><span>workbenches</span></div><div><b>110+</b><span>chart types</span></div><div><b>110+</b><span>analyses and tests</span></div><div><b>0</b><span>bytes uploaded</span></div></div>
+  <div class="stats" style="margin-top:56px"><div><b>5</b><span>workbenches</span></div><div><b>110+</b><span>chart types</span></div><div><b>110+</b><span>analyses and tests</span></div><div><b>0</b><span>bytes uploaded</span></div></div>
 </div></section>
 
 <section class="alt" id="how"><div class="wrap">
@@ -178,7 +182,24 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--mut);fon
   </div>
 </div></section>
 
-<section class="alt" id="molecules"><div class="wrap">
+<section class="alt" id="quality"><div class="wrap">
+  <h2>QualityScale: trust your reads</h2>
+  <p class="sub">A sequencing run can fail in many quiet ways. QualityScale reads your files in the browser and shows what went wrong, where, and what to do about it.</p>
+  <div class="stage">
+    <div class="txt"><h3>Twelve checks, one score, a clear next step</h3><p>Open one file or twenty. Every sample gets a score, a pass/warning/fail strip and plain-language findings; the flow-cell layout shows failing tiles at a glance.</p>
+      <ul><li>Quality box plots and heatmaps, tile and flow-cell maps, GC, N, length, duplication, adapter and k-mer checks</li><li>Trim advisor with guides you drag over the chart and a live preview of what you keep</li><li>Compare samples with a check matrix, ranked metrics and overlaid curves</li><li>Adjustable thresholds and presets for genomes, RNA-seq and amplicons</li><li>Export an HTML report, SVG, PNG or CSV for any figure</li></ul>
+      <div class="cta"><a class="btn pri" href="qualityscale/">Open QualityScale</a><a class="btn" href="qualityscale/?demo">Try the demo</a></div></div>
+    <div class="panel"><div class="bar"><i></i><i></i><i></i><span>Library B · R2</span></div><pre><span class="b">score 46  ·  grade F</span>
+<span class="m">✕</span> quality decays along the read
+<span class="m">✕</span> tile 1208 below average
+<span class="m">✕</span> adapter read-through 13%
+<span class="m">!</span> GC: extra population at 60–73%
+
+<span class="b">→ trim at position 60 keeps 98% Q30</span></pre></div>
+  </div>
+</div></section>
+
+<section id="molecules"><div class="wrap">
   <h2>MoleculeScale: from formula to model</h2>
   <p class="sub">Build a molecule, relax it, and see it from every side. The same viewer handles a small ligand, a protein or a crystal.</p>
   <div class="stage rev">
@@ -196,7 +217,7 @@ rings     2   <span class="m">(1 aromatic)</span>
   </div>
 </div></section>
 
-<section id="docs"><div class="wrap">
+<section class="alt" id="docs"><div class="wrap">
   <h2>DocScale: from results to paper</h2>
   <p class="sub">Your graphs and tables need a home. Write the lab book, report or manuscript next to a live preview, then export it in the format your reader wants.</p>
   <div class="stage">
@@ -215,9 +236,9 @@ as reported by <span class="b">\cite</span>{beer1852}.
   </div>
 </div></section>
 
-<section class="alt" id="privacy"><div class="wrap">
+<section id="privacy"><div class="wrap">
   <div class="grid g2" style="align-items:center">
-    <div><h2>Your data stays on your device</h2><p class="sub" style="margin-bottom:22px">All four tools are static web apps. Calculations, alignments, 3D rendering and typesetting run in your browser, projects are saved in local storage, and there are no accounts, trackers or cookies.</p>
+    <div><h2>Your data stays on your device</h2><p class="sub" style="margin-bottom:22px">All five tools are static web apps. Calculations, alignments, 3D rendering and typesetting run in your browser, projects are saved in local storage, and there are no accounts, trackers or cookies.</p>
       <ul style="color:var(--mut);padding-left:20px;margin:0 0 26px"><li>Works offline once loaded</li><li>Open formats throughout: CSV, FASTA, PDB, LaTeX and Markdown in; PDF, SVG, PNG, DOCX, PPTX and structure files out</li><li>Optional components such as the Excel reader load only after you agree</li></ul><a class="btn pri" href="#tools">Choose a tool</a></div>
     <div class="panel"><div class="bar"><i></i><i></i><i></i><span>network activity</span></div><pre><span class="m">// while you analyse</span>
 uploads         <span class="b">0 bytes</span>
@@ -231,11 +252,11 @@ data location   <span class="b">your browser</span></pre></div>
 <section id="faq"><div class="wrap" style="max-width:860px">
   <h2>Questions</h2>
   <details><summary>Is it really free?</summary><p>Yes. There is no sign-up and no paywall. Open a tool and start working.</p></details>
-  <details><summary>How are LabScale, DNAScale, MoleculeScale and DocScale related?</summary><p>They are separate browser apps with the same look and the same privacy approach. They exchange work through ordinary files: export a figure from LabScale as SVG or PNG and place it in a DocScale report, or save a molecule image and use it in a presentation.</p></details>
+  <details><summary>How are LabScale, DNAScale, QualityScale, MoleculeScale and DocScale related?</summary><p>They are separate browser apps with the same look and the same privacy approach. They exchange work through ordinary files: export a figure from LabScale as SVG or PNG and place it in a DocScale report, or save a molecule image and use it in a presentation.</p></details>
   <details><summary>Does my data get uploaded?</summary><p>No. Files you open, sequences you align, structures you draw and results you compute stay in your browser. Only optional helpers, such as the Excel reader, are downloaded, and only after you confirm.</p></details>
   <details><summary>Which files can I import?</summary><p>CSV, TXT and TSV with an import wizard that detects separators, decimal commas, headers, units and dates; Excel workbooks; JSON; HTML tables and XML. You can also paste straight from a spreadsheet.</p></details>
   <details><summary>Can I use my figures in a paper or presentation?</summary><p>Yes. Graphs export as vector PDF, SVG and EPS or as PNG, JPG, TIFF and WebP; reports export as PDF, Word, HTML and Markdown, and all graphs can go into a PowerPoint file.</p></details>
-  <details><summary>Which sequencing and structure files can I open?</summary><p>DNAScale reads ABIF (.ab1) and SCF chromatograms plus FASTA, FASTQ, GenBank, EMBL and Clustal files. MoleculeScale reads PDB, MOL/SDF, XYZ, CML, CIF, Gaussian cube files and SMILES strings.</p></details>
+  <details><summary>Which sequencing and structure files can I open?</summary><p>DNAScale reads ABIF (.ab1) and SCF chromatograms plus FASTA, FASTQ, GenBank, EMBL and Clustal files. QualityScale reads FASTQ and FASTA, also gzip-compressed. MoleculeScale reads PDB, MOL/SDF, XYZ, CML, CIF, Gaussian cube files and SMILES strings.</p></details>
   <details><summary>How do I choose the right statistical test?</summary><p>The Stats Advisor looks at your columns, checks assumptions such as normality and equal variances, and recommends tests. Every result shows the numbers behind it.</p></details>
   
 </div></section>

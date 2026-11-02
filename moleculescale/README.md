@@ -29,7 +29,7 @@ In every tool: Alt-drag / Space-drag / middle-drag rotates, right-drag or ⇧-dr
   Colour by element, chain, residue type, secondary structure, rainbow, B-factor, partial charge, uniform colour; surfaces can also be coloured by an approximate electrostatic potential.
   Scopes: all, protein, ligands, water, backbone, side chains, the live selection or a captured selection.
 - Own WebGL 2 renderer with MSAA, screen-space ambient occlusion, depth outlines, depth cueing, light / dark / custom backgrounds, perspective or orthographic camera, spin, unit-cell box, orientation axes.
-- Save PNG at up to 4×, with transparent background if wanted, or copy the image; export a 3D model as `.obj`.
+- Save a one-page PDF report (image plus formula, mass, SMILES), PNG at up to 4×, with transparent background if wanted, or copy the image; export a 3D model as `.obj`.
 - **Structure** tab: sequence view per chain with secondary structure, hetero groups, fragments and elements, all click-to-select.
 
 ## Editing and calculation
@@ -44,8 +44,8 @@ In every tool: Alt-drag / Space-drag / middle-drag rotates, right-drag or ⇧-dr
 ## Building molecules
 - **SMILES** (aromatic, branches, rings, charges, `@`/`@@` stereo centres) → 3D by distance geometry plus force-field clean-up.
 - **Peptide builder** (one-letter sequence, α-helix / β-strand / PPII / extended / coil), fullerene C60, carbon nanotubes (n, m), graphene sheets.
-- Library of about 50 molecules, nine crystal structures (NaCl, diamond, graphite, rutile, …) and hydrogen-like orbitals (s, p, d, f) shown as ± isosurfaces.
-- The demo protein is crambin (PDB 1CRN, public domain), embedded so it works offline.
+- Library of about 150 molecules, nine crystal structures (NaCl, diamond, graphite, rutile, …) and hydrogen-like orbitals (s, p, d, f) shown as ± isosurfaces.
+- Embedded public-domain PDB entries (work offline): crambin 1CRN, ubiquitin 1UBQ, Trp-cage 1L2Y and a B-DNA dodecamer 1BNA.
 
 ## Formats
 | Read | Write |

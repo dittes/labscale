@@ -87,7 +87,7 @@
     A.dlg({
       title: 'Save image', width: 420, body: `<div class="field-row"><label>Resolution</label><select class="sel" id="ssScale"><option value="1">1× (screen)</option><option value="2" selected>2×</option><option value="3">3×</option><option value="4">4× (print)</option></select></div>
       <div class="field-row"><label>Background</label><label class="chk"><input type="checkbox" id="ssTrans"> Transparent</label></div><p class="muted" style="margin:6px 0 0">Ambient occlusion, outlines and labels are included.</p>`,
-      buttons: [{ label: 'Copy to clipboard', fn: async () => { const b = await R.snapshot(+$('#ssScale').value, $('#ssTrans').checked); try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': b })]); A.toast('Image copied.'); } catch (e) { A.toast('Clipboard unavailable — use Save PNG.', true); } } }, { label: 'Save PNG', primary: true, fn: async () => { const b = await R.snapshot(+$('#ssScale').value, $('#ssTrans').checked); A.download(A.baseName() + '.png', b); } }],
+      buttons: [{ label: 'Copy to clipboard', fn: async () => { const b = await R.snapshot(+$('#ssScale').value, $('#ssTrans').checked); try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': b })]); A.toast('Image copied.'); } catch (e) { A.toast('Clipboard unavailable — use Save PNG.', true); } } }, { label: 'Save PDF', fn: async () => { await A.exportPDF('white'); } }, { label: 'Save PNG', primary: true, fn: async () => { const b = await R.snapshot(+$('#ssScale').value, $('#ssTrans').checked); A.download(A.baseName() + '.png', b); } }],
     });
   };
 
@@ -170,8 +170,8 @@
   A.addH = () => { A.snap('Add hydrogens'); const n = C.addHydrogens(S.mol); A.changed(); A.toast(n ? `Added ${n} hydrogens.` : 'Nothing to add.'); };
   A.removeH = () => { A.snap('Remove hydrogens'); const m = S.mol; const rm = []; m.atoms.forEach((a, i) => { if (a.e === 1 && m.nb()[i].length <= 1) rm.push(i); }); A.removeAtoms(rm); A.changed(); A.toast(`Removed ${rm.length} hydrogens.`); };
   A.showCharges = () => { C.gasteiger(S.mol); let l = S.layers.find((x) => x.style === 'labels' && x.label === 'charge'); if (!l) { S.layers.push(A.mkLayer('labels', { label: 'charge', name: 'Partial charges', noH: false })); } S.layers.filter((x) => ['bs', 'stick', 'vdw', 'wire'].includes(x.style)).forEach((x) => { x.color = 'charge'; }); R.invalidate(true); A.refresh(); A.toast('Gasteiger partial charges computed (red = negative, blue = positive).'); };
-  A.principalAxes = () => {
-    const m = S.mol; if (m.atoms.length < 2) return; const c = m.centroid(); const cov = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+  A.pcaMatrix = (m) => {
+    const c = m.centroid(); const cov = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
     m.atoms.forEach((a) => { const d = [a.x - c[0], a.y - c[1], a.z - c[2]]; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) cov[i][j] += d[i] * d[j]; });
     // Jacobi eigen decomposition
     let Vm = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]; const Mx = cov.map((r) => r.slice());
@@ -183,7 +183,11 @@
     }
     const ev = [0, 1, 2].map((i) => ({ l: Mx[i][i], v: [Vm[0][i], Vm[1][i], Vm[2][i]] })).sort((a, b) => b.l - a.l);
     const x = ev[0].v, y = ev[1].v, z = V.cross(x, y); // rows of rotation world->view: largest variance along screen x
-    const Rm = [x, y, z]; const tr = Rm[0][0] + Rm[1][1] + Rm[2][2]; let q;
+    return [x, y, z];
+  };
+  A.principalAxes = () => {
+    const m = S.mol; if (m.atoms.length < 2) return;
+    const Rm = A.pcaMatrix(m); const tr = Rm[0][0] + Rm[1][1] + Rm[2][2]; let q;
     if (tr > 0) { const s = Math.sqrt(tr + 1) * 2; q = [(Rm[2][1] - Rm[1][2]) / s, (Rm[0][2] - Rm[2][0]) / s, (Rm[1][0] - Rm[0][1]) / s, s / 4]; }
     else if (Rm[0][0] > Rm[1][1] && Rm[0][0] > Rm[2][2]) { const s = Math.sqrt(1 + Rm[0][0] - Rm[1][1] - Rm[2][2]) * 2; q = [s / 4, (Rm[0][1] + Rm[1][0]) / s, (Rm[0][2] + Rm[2][0]) / s, (Rm[2][1] - Rm[1][2]) / s]; }
     else if (Rm[1][1] > Rm[2][2]) { const s = Math.sqrt(1 + Rm[1][1] - Rm[0][0] - Rm[2][2]) * 2; q = [(Rm[0][1] + Rm[1][0]) / s, s / 4, (Rm[1][2] + Rm[2][1]) / s, (Rm[0][2] - Rm[2][0]) / s]; }
@@ -194,6 +198,8 @@
   A.freeze = (on) => { const m = S.mol; if (!m.sel.size) return A.toast('Select atoms first.', true); m.sel.forEach((i) => { m.atoms[i].fx = on ? 1 : 0; }); A.mz = null; A.toast(on ? `${m.sel.size} atoms frozen for optimisation.` : 'Atoms released.'); A.changed(true); };
 
   /* ------------------------------------------------------------ view / layer commands */
+  A.isPlaying = () => S.spin || (S.play && S.mol.frames.length > 1);
+  A.togglePlay = () => { const on = !A.isPlaying(); S.spin = on; S.play = on && S.mol.frames.length > 1; R.invalidate(false); A.refresh(); };
   A.setBaseStyle = (style) => {
     const m = S.mol;
     if (style === 'cartoon') {
@@ -206,20 +212,20 @@
   };
   A.baseStyle = () => { const l = S.layers.find((x) => ['bs', 'stick', 'wire', 'vdw', 'cartoon'].includes(x.style)); return l ? l.style : null; };
   A.toggleLayerStyle = (style, props) => { const i = S.layers.findIndex((l) => l.style === style); if (i >= 0) S.layers.splice(i, 1); else { S.layers.push(A.mkLayer(style, props)); S.layerSel = S.layers.length - 1; } R.invalidate(true); A.refresh(); };
-  A.addLayerMenu = (x, y) => A.popMenu(['bs', 'stick', 'wire', 'vdw', 'cartoon', 'surface', 'labels'].concat(S.mol.vol ? ['iso'] : []).map((s) => ({ l: A.STYLE_NAMES[s], f: () => { S.layers.push(A.mkLayer(s, s === 'cartoon' ? { scope: 'protein', color: 'ss' } : s === 'labels' ? { color: 'element', noH: true } : {})); S.layerSel = S.layers.length - 1; R.invalidate(true); A.refresh(); } })), x, y);
+  A.addLayerMenu = (x, y) => A.popMenu(['bs', 'stick', 'wire', 'vdw', 'cartoon', 'surface', 'labels'].concat(S.mol.vol ? ['iso'] : []).map((s) => ({ l: A.STYLE_NAMES[s], f: () => { S.layers.push(A.mkLayer(s, s === 'cartoon' ? { scope: 'protein', color: 'ss' } : s === 'labels' ? { color: 'element', noH: S.mol.atoms.length > 120 } : {})); S.layerSel = S.layers.length - 1; R.invalidate(true); A.refresh(); } })), x, y);
   A.selectBy = (fn) => { const m = S.mol; A.setSel(m.atoms.map((a, i) => (fn(a, i) ? i : -1)).filter((i) => i >= 0), []); };
   A.grow = (shrink) => { const m = S.mol, ns = new Set(m.sel); if (shrink) { m.sel.forEach((i) => { if (m.nb()[i].some((x) => !m.sel.has(x.j))) ns.delete(i); }); } else m.sel.forEach((i) => m.nb()[i].forEach((x) => ns.add(x.j))); A.setSel(ns, []); };
 
   /* ------------------------------------------------------------ menus */
   const mod = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+';
-  const exportMenu = () => [{ l: 'XYZ (.xyz)', f: () => A.exportAs('xyz') }, { l: 'MDL Molfile (.mol)', f: () => A.exportAs('mol') }, { l: 'SDF (.sdf)', f: () => A.exportAs('sdf') }, { l: 'PDB (.pdb)', f: () => A.exportAs('pdb') }, { l: 'CML (.cml)', f: () => A.exportAs('cml') }, { l: 'CIF (.cif)', f: () => A.exportAs('cif') }, { l: 'SMILES (.smi)', f: () => A.exportAs('smiles') }, '-', { l: '3D model (.obj)', f: () => A.download(A.baseName() + '.obj', R.toOBJ()) }];
+  const exportMenu = () => [{ l: 'XYZ (.xyz)', f: () => A.exportAs('xyz') }, { l: 'MDL Molfile (.mol)', f: () => A.exportAs('mol') }, { l: 'SDF (.sdf)', f: () => A.exportAs('sdf') }, { l: 'PDB (.pdb)', f: () => A.exportAs('pdb') }, { l: 'CML (.cml)', f: () => A.exportAs('cml') }, { l: 'CIF (.cif)', f: () => A.exportAs('cif') }, { l: 'SMILES (.smi)', f: () => A.exportAs('smiles') }, '-', { l: 'PDF report (.pdf)', icon: 'pdf', f: () => A.exportPDF('white') }, { l: '3D model (.obj)', f: () => A.download(A.baseName() + '.obj', R.toOBJ()) }];
   const insertMenu = () => [
     { l: 'From SMILES…', icon: 'paste', f: A.smilesDialog }, { l: 'Molecule library', icon: 'flask', f: () => A.showSide('library') },
     { l: 'Peptide…', f: A.peptideDialog }, '-',
     { l: 'Nanostructures', sub: () => [{ l: 'Fullerene C60', f: () => { A.load(MS.build.fullerene()); S.dismissEmpty = true; } }, { l: 'Carbon nanotube…', f: A.nanotubeDialog }, { l: 'Graphene sheet…', f: A.grapheneDialog }] },
     { l: 'Crystals', sub: () => MS.LIB.crystals.map((c) => ({ l: c.name, h: c.note, f: () => { A.load(MS.LIB.buildCrystal(c)); S.dismissEmpty = true; } })) },
     { l: 'Atomic orbitals', sub: () => MS.LIB.orbitals.map((o) => ({ l: o.name, f: () => { A.load(MS.LIB.buildOrbital(o)); S.dismissEmpty = true; } })) },
-    '-', { l: 'Demo protein (crambin, 1CRN)', f: A.loadDemo },
+    '-', { l: 'Proteins & DNA', sub: () => ['Crambin', 'Ubiquitin', 'Trp-cage', 'DNA dodecamer'].map((n) => ({ l: n, f: () => A.loadSample(n) })) },
   ];
   const MENUS = {
     File: () => [
@@ -253,7 +259,7 @@
       { l: 'Background', sub: () => [['auto', 'Automatic'], ['white', 'White'], ['black', 'Black']].map(([k, n]) => ({ l: n, chk: R.opts.bg === k, f: () => { R.opts.bg = k; R.invalidate(false); A.refresh(); } })) },
       { l: 'Orthographic projection', chk: R.cam.ortho, f: () => { R.cam.ortho = !R.cam.ortho; R.invalidate(false); A.refresh(); } }, { l: 'Ambient occlusion', chk: R.opts.ao > 0, f: () => { R.opts.ao = R.opts.ao > 0 ? 0 : 0.8; R.invalidate(false); A.refresh(); } }, { l: 'Outlines', chk: R.opts.outline > 0, f: () => { R.opts.outline = R.opts.outline > 0 ? 0 : 0.6; R.invalidate(false); A.refresh(); } }, { l: 'Depth cueing (fog)', chk: R.opts.fog > 0, f: () => { R.opts.fog = R.opts.fog > 0 ? 0 : 0.8; R.invalidate(false); A.refresh(); } },
       { l: 'Classic CPK colours', chk: R.opts.classic, f: () => { R.opts.classic = !R.opts.classic; R.invalidate(true); A.refresh(); } }, { l: 'Unit cell', chk: R.opts.cell, f: () => { R.opts.cell = !R.opts.cell; R.invalidate(true); A.refresh(); }, dis: !S.mol.cell }, { l: 'Axes indicator', chk: R.opts.axes, f: () => { R.opts.axes = !R.opts.axes; R.invalidate(false); } }, '-',
-      { l: 'Fit to window', h: 'F', f: () => A.fit() }, { l: 'Reset orientation', h: '0', f: A.resetView }, { l: 'View along', sub: () => [{ l: 'X axis', f: () => A.viewAlong('x') }, { l: 'Y axis', f: () => A.viewAlong('y') }, { l: 'Z axis', f: () => A.viewAlong('z') }, { l: 'Principal axes', f: A.principalAxes }] }, { l: 'Spin', chk: S.spin, f: () => { S.spin = !S.spin; R.invalidate(false); A.refresh(); } },
+      { l: 'Full screen', icon: 'full', h: '⇧F', chk: !!document.fullscreenElement, f: A.toggleFullscreen }, { l: 'Fit to window', h: 'F', f: () => A.fit() }, { l: 'Reset orientation', h: '0', f: A.resetView }, { l: 'View along', sub: () => [{ l: 'X axis', f: () => A.viewAlong('x') }, { l: 'Y axis', f: () => A.viewAlong('y') }, { l: 'Z axis', f: () => A.viewAlong('z') }, { l: 'Principal axes', f: A.principalAxes }] }, { l: 'Spin', chk: S.spin, f: () => { S.spin = !S.spin; R.invalidate(false); A.refresh(); } },
     ],
     Calculate: () => [
       { l: 'Optimise geometry', icon: 'bolt', h: mod + 'E', f: () => A.optimize() }, { l: 'Auto-optimise while editing', chk: S.auto, f: () => { S.auto = !S.auto; A.mz = null; R.invalidate(false); A.refresh(); } }, { l: 'Conformer search…', f: A.conformerDialog }, '-',
@@ -300,19 +306,20 @@
   rail.innerHTML = TOOLDEF.map(([id, n, ic, k, tip]) => `<button class="tool" data-tool="${id}" title="${n} — ${tip} (${k})">${A.icon(ic)}<kbd>${k}</kbd></button>`).join('');
   rail.onclick = (e) => { const b = e.target.closest('[data-tool]'); if (b) A.setTool(b.dataset.tool); };
   const hudTop = $('#hudTop'), hudRight = $('#hudRight');
-  hudTop.innerHTML = `<div class="seg" id="styleSeg">${['bs', 'stick', 'wire', 'vdw', 'cartoon'].map((s) => `<button data-s="${s}">${A.STYLE_NAMES[s]}</button>`).join('')}</div><span class="sepv"></span><button class="btn sm ghost" id="hSurf">${A.icon('surface')}Surface</button><button class="btn sm ghost" id="hLab">${A.icon('tag')}Labels</button>`;
-  hudTop.onclick = (e) => { const s = e.target.closest('[data-s]'); if (s) A.setBaseStyle(s.dataset.s); if (e.target.closest('#hSurf')) A.toggleLayerStyle('surface', {}); if (e.target.closest('#hLab')) A.toggleLayerStyle('labels', { noH: true, name: 'Labels' }); };
-  hudRight.innerHTML = [['fit', 'fit', 'Fit to window (F)'], ['ortho', 'ortho', 'Perspective / orthographic'], ['spin', 'spin', 'Spin'], ['cell', 'cell', 'Unit cell'], ['dipole', 'dipole', 'Dipole moment'], ['cam', 'camera', 'Save image']].map(([id, ic, t]) => `<button class="hbtn" data-h="${id}" title="${t}">${A.icon(ic)}</button>`).join('');
+  hudTop.innerHTML = `<div class="seg" id="styleSeg">${['bs', 'stick', 'wire', 'vdw', 'cartoon'].map((s) => `<button data-s="${s}">${A.STYLE_NAMES[s]}</button>`).join('')}</div><span class="sepv"></span><button class="btn sm ghost" id="hSurf">${A.icon('surface')}Surface</button><button class="btn sm ghost" id="hLab">${A.icon('tag')}Labels</button><span class="sepv"></span><button class="btn sm ghost play" id="hPlay" title="Rotate the molecule, or play the frames of a trajectory"></button>`;
+  hudTop.onclick = (e) => { const s = e.target.closest('[data-s]'); if (s) A.setBaseStyle(s.dataset.s); if (e.target.closest('#hPlay')) A.togglePlay();
+    if (e.target.closest('#hSurf')) A.toggleLayerStyle('surface', {}); if (e.target.closest('#hLab')) A.toggleLayerStyle('labels', { noH: S.mol.atoms.length > 120, name: 'Labels' }); };
+  hudRight.innerHTML = [['fit', 'fit', 'Fit to window (F)'], ['ortho', 'ortho', 'Perspective / orthographic'], ['spin', 'spin', 'Spin'], ['cell', 'cell', 'Unit cell'], ['dipole', 'dipole', 'Dipole moment'], ['cam', 'camera', 'Save image'], ['full', 'full', 'Full screen (⇧F)']].map(([id, ic, t]) => `<button class="hbtn" data-h="${id}" title="${t}">${A.icon(ic)}</button>`).join('');
   hudRight.onclick = (e) => {
     const b = e.target.closest('[data-h]'); if (!b) return; const k = b.dataset.h;
-    if (k === 'fit') A.fit(); else if (k === 'ortho') { R.cam.ortho = !R.cam.ortho; R.invalidate(false); } else if (k === 'spin') { S.spin = !S.spin; R.invalidate(false); } else if (k === 'cell') { R.opts.cell = !R.opts.cell; R.invalidate(true); } else if (k === 'dipole') { S.showDip = !S.showDip; R.invalidate(false); } else if (k === 'cam') A.screenshotDialog();
+    if (k === 'fit') A.fit(); else if (k === 'ortho') { R.cam.ortho = !R.cam.ortho; R.invalidate(false); } else if (k === 'spin') { S.spin = !S.spin; R.invalidate(false); } else if (k === 'cell') { R.opts.cell = !R.opts.cell; R.invalidate(true); } else if (k === 'dipole') { S.showDip = !S.showDip; R.invalidate(false); } else if (k === 'cam') A.screenshotDialog(); else if (k === 'full') A.toggleFullscreen();
     A.refresh();
   };
   const COMMON_EL = [1, 6, 7, 8, 9, 15, 16, 17, 35, 53];
   const hexOf = (c) => '#' + ((1 << 24) + (Math.round(c[0] * 255) << 16) + (Math.round(c[1] * 255) << 8) + Math.round(c[2] * 255)).toString(16).slice(1);
   const renderCbar = () => {
     const cb = $('#cbar'), t = S.tool, m = S.mol; let h = '';
-    if (t === 'navigate') h = `<span class="hint">Drag to rotate · right-drag or ⇧-drag to pan · scroll to zoom · double-click an atom to centre</span>`;
+    if (t === 'navigate') h = `<span class="hint">Drag to rotate · right-drag or ⇧-drag to pan · scroll to zoom · double-click an atom to centre · ⇧F full screen</span>`;
     else if (t === 'select') h = `<div class="seg" id="cbMode">${['atom', 'residue', 'chain', 'fragment'].map((k) => `<button data-k="${k}" class="${S.selMode === k ? 'on' : ''}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div><button class="btn sm" data-a="all">All</button><button class="btn sm" data-a="none">None</button><button class="btn sm" data-a="inv">Invert</button><span class="hint">${m.sel.size ? m.sel.size + ' selected' : 'Click or drag a box · ⇧ adds · double-click selects a fragment'}</span>`;
     else if (t === 'draw') h = COMMON_EL.map((z) => `<div class="el-chip ${S.el === z ? 'on' : ''}" data-z="${z}" title="${EL[z].name}">${EL[z].sym}<i style="background:${hexOf(EL[z].col)}"></i></div>`).join('') + (COMMON_EL.includes(S.el) ? '' : `<div class="el-chip on" data-z="${S.el}">${EL[S.el].sym}<i style="background:${hexOf(EL[S.el].col)}"></i></div>`) + `<button class="btn sm" data-a="pt">More…</button><div class="seg" id="cbBo">${[1, 2, 3].map((o) => `<button data-o="${o}" class="${S.bo === o ? 'on' : ''}">${['Single', 'Double', 'Triple'][o - 1]}</button>`).join('')}</div><label class="chk"><input type="checkbox" id="cbAutoH" ${S.autoH ? 'checked' : ''}> Auto-H</label>`;
     else if (t === 'move') h = `<label class="chk"><input type="checkbox" id="cbAuto" ${S.auto ? 'checked' : ''}> Auto-optimise</label><span class="hint">Drag atoms · drag empty space to rotate the selection · ⇧ moves in depth</span>`;
@@ -420,7 +427,7 @@
   const renderLibrary = () => {
     const q = (S.libQ || '').toLowerCase();
     let h = `<div class="search"><span style="position:absolute;left:9px;top:8px;color:var(--muted)">${A.icon('search')}</span><input id="libQ" placeholder="Search molecules" value="${esc(S.libQ || '')}"></div><label class="chk" style="margin-bottom:10px"><input type="checkbox" id="libAdd" ${S.addMode ? 'checked' : ''}> Add to the current scene</label>`;
-    h += `<div class="sec"><h4>Build</h4><div class="lib-grid"><button class="lib-item" data-b="smiles"><b>From SMILES…</b><span>type a formula string</span></button><button class="lib-item" data-b="peptide"><b>Peptide…</b><span>helix, strand, coil</span></button><button class="lib-item" data-b="c60"><b>Fullerene C60</b><span>60 carbons</span></button><button class="lib-item" data-b="nt"><b>Nanotube…</b><span>(n, m) carbon tube</span></button><button class="lib-item" data-b="gr"><b>Graphene…</b><span>flat sheet</span></button><button class="lib-item" data-b="demo"><b>Crambin protein</b><span>PDB 1CRN · cartoon</span></button></div></div>`;
+    h += `<div class="sec"><h4>Build</h4><div class="lib-grid"><button class="lib-item" data-b="smiles"><b>From SMILES…</b><span>type a formula string</span></button><button class="lib-item" data-b="peptide"><b>Peptide…</b><span>helix, strand, coil</span></button><button class="lib-item" data-b="c60"><b>Fullerene C60</b><span>60 carbons</span></button><button class="lib-item" data-b="nt"><b>Nanotube…</b><span>(n, m) carbon tube</span></button><button class="lib-item" data-b="gr"><b>Graphene…</b><span>flat sheet</span></button></div></div><div class="sec"><h4>Proteins &amp; DNA</h4><div class="lib-grid">${[['Crambin', 'PDB 1CRN · 46 residues'], ['Ubiquitin', 'PDB 1UBQ · 76 residues'], ['Trp-cage', 'PDB 1L2Y · 20 residues'], ['DNA dodecamer', 'PDB 1BNA · B-DNA']].map(([n, d]) => `<button class="lib-item" data-prot="${n}"><b>${n}</b><span>${d}</span></button>`).join('')}</div></div>`;
     const mols = MS.LIB.molecules.filter((x) => !q || (x.name + ' ' + x.cat).toLowerCase().includes(q));
     MS.LIB.cats.forEach((c) => { const l = mols.filter((x) => x.cat === c); if (l.length) h += `<div class="sec"><h4>${esc(c)}</h4><div class="lib-grid">${l.map((x) => `<button class="lib-item" data-smi="${esc(x.smi)}" data-name="${esc(x.name)}"><b>${esc(x.name)}</b><span>${esc(x.note || x.smi)}</span></button>`).join('')}</div></div>`; });
     const cr = MS.LIB.crystals.filter((x) => !q || x.name.toLowerCase().includes(q) || 'crystal'.includes(q)); if (cr.length) h += `<div class="sec"><h4>Crystals</h4><div class="lib-grid">${cr.map((x) => `<button class="lib-item" data-cry="${esc(x.name)}"><b>${esc(x.name)}</b><span>${esc(x.note)}</span></button>`).join('')}</div></div>`;
@@ -429,10 +436,11 @@
   };
   sbPane.addEventListener('click', (e) => {
     if (S.side !== 'library') return; const b = e.target.closest('button.lib-item'); if (!b) return; S.dismissEmpty = true;
+    if (b.dataset.prot) { A.loadSample(b.dataset.prot); return; }
     if (b.dataset.smi) { A.insertSmiles(b.dataset.smi, b.dataset.name); return; }
     if (b.dataset.cry) { A.load(MS.LIB.buildCrystal(MS.LIB.crystals.find((c) => c.name === b.dataset.cry))); return; }
     if (b.dataset.orb) { A.load(MS.LIB.buildOrbital(MS.LIB.orbitals.find((c) => c.name === b.dataset.orb))); return; }
-    ({ smiles: A.smilesDialog, peptide: A.peptideDialog, c60: () => A.load(MS.build.fullerene()), nt: A.nanotubeDialog, gr: A.grapheneDialog, demo: A.loadDemo })[b.dataset.b]();
+    ({ smiles: A.smilesDialog, peptide: A.peptideDialog, c60: () => A.load(MS.build.fullerene()), nt: A.nanotubeDialog, gr: A.grapheneDialog })[b.dataset.b]();
   });
   sbPane.addEventListener('input', (e) => { if (e.target.id === 'libQ') { S.libQ = e.target.value; renderLibrary(); } });
   sbPane.addEventListener('change', (e) => { if (e.target.id === 'libAdd') S.addMode = e.target.checked; });
@@ -510,7 +518,7 @@
   A.legal = (tab) => A.dlg({ title: tab === 'imprint' ? 'Imprint' : 'Privacy', width: 640, body: `<div class="legal">${MS.legalHtml(tab === 'imprint' ? MS.LEGAL_IMPRINT : MS.LEGAL_PRIVACY)}</div>` });
   document.addEventListener('click', (e) => { const a = e.target.closest('[data-legal]'); if (a) { e.preventDefault(); A.legal(a.dataset.legal); } });
   A.helpDialog = () => A.dlg({
-    title: 'Keyboard shortcuts', width: 620, body: `<div class="kv" style="grid-template-columns:1fr auto;gap:5px 18px">${[['1 – 7', 'Navigate, Select, Draw, Manipulate, Measure, Rotate bond, Erase'], ['Draw tool + C N O H F P S L R I', 'Choose element (L = Cl, R = Br)'], ['Click atom / bond', 'Draw: change element, extend, set bond order'], ['Right-click in Draw / Erase', 'Delete atom or bond'], ['Space + drag, Alt + drag, middle-drag', 'Rotate the view in any tool'], ['Right-drag, ⇧ + drag', 'Pan'], ['Scroll, pinch', 'Zoom'], ['F', 'Fit to window'], ['0', 'Reset orientation'], [mod + 'Z / ⇧' + mod + 'Z', 'Undo / redo'], [mod + 'A', 'Select all'], ['Esc', 'Clear selection'], ['⌫', 'Delete selection'], ['⇧H', 'Add hydrogens'], [mod + 'E', 'Optimise geometry'], [mod + 'O / ' + mod + 'S', 'Open / save scene'], [mod + 'K', 'Command palette'], ['[ ] and P', 'Previous / next frame, play']].map(([k, d]) => `<span><kbd>${esc(k)}</kbd></span><span style="text-align:left">${esc(d)}</span>`).join('')}</div>`,
+    title: 'Keyboard shortcuts', width: 620, body: `<div class="kv" style="grid-template-columns:1fr auto;gap:5px 18px">${[['1 – 7', 'Navigate, Select, Draw, Manipulate, Measure, Rotate bond, Erase'], ['Draw tool + C N O H F P S L R I', 'Choose element (L = Cl, R = Br)'], ['Click atom / bond', 'Draw: change element, extend, set bond order'], ['Right-click in Draw / Erase', 'Delete atom or bond'], ['Space + drag, Alt + drag, middle-drag', 'Rotate the view in any tool'], ['Right-drag, ⇧ + drag', 'Pan'], ['Scroll, pinch', 'Zoom'], ['F', 'Fit to window'], ['⇧F', 'Full screen'], ['0', 'Reset orientation'], [mod + 'Z / ⇧' + mod + 'Z', 'Undo / redo'], [mod + 'A', 'Select all'], ['Esc', 'Clear selection'], ['⌫', 'Delete selection'], ['⇧H', 'Add hydrogens'], [mod + 'E', 'Optimise geometry'], [mod + 'O / ' + mod + 'S', 'Open / save scene'], [mod + 'K', 'Command palette'], ['[ ] and P', 'Previous / next frame, play']].map(([k, d]) => `<span><kbd>${esc(k)}</kbd></span><span style="text-align:left">${esc(d)}</span>`).join('')}</div>`,
   });
   A.aboutDialog = () => A.dlg({ title: 'About MoleculeScale', width: 520, body: `<p>MoleculeScale is a 3D molecule editor and visualiser that runs entirely in your browser — a sibling of LabScale and DNAScale. It has its own WebGL renderer (no libraries), a quick general-purpose force field, a SMILES reader with 3D embedding, and readers and writers for the common structure formats.</p><p class="muted">Energies and charges are approximate. Use a quantum-chemistry package for publication-grade numbers.</p>` });
   A.pasteDialog = () => A.dlg({
@@ -518,7 +526,8 @@
     buttons: [{ label: 'Cancel' }, { label: 'Open', primary: true, fn: () => { const t = $('#pasteTxt').value; if (!t.trim()) return false; A.openText('pasted', t); } }], onOpen: (d) => $('#pasteTxt', d).focus(),
   });
   A.newScene = (keepUndo) => { const m = new MS.Mol(); const u = S.undo; A.setMol(m); if (keepUndo === true) S.undo = u; S.dismissEmpty = false; A.persistSoon(); };
-  A.loadDemo = () => { try { const r = MS.io.read('1crn.pdb', window.MS_SAMPLE_PDB); r.mol.title = 'Crambin (PDB 1CRN)'; A.load(r.mol); S.dismissEmpty = true; } catch (e) { A.toast(e.message, true); } };
+  A.loadSample = (name) => { try { const txt = name === 'Crambin' ? window.MS_SAMPLE_PDB : window.MS_SAMPLES[name]; const r = MS.io.read('x.pdb', txt); r.mol.title = { Crambin: 'Crambin (PDB 1CRN)', Ubiquitin: 'Ubiquitin (PDB 1UBQ)', 'Trp-cage': 'Trp-cage miniprotein (PDB 1L2Y)', 'DNA dodecamer': 'B-DNA dodecamer (PDB 1BNA)' }[name] || name; A.load(r.mol); S.dismissEmpty = true; } catch (e) { A.toast(e.message, true); } };
+  A.loadDemo = () => A.loadSample('Crambin');
 
   const renderStatus = () => {
     const m = S.mol; const p = m.atoms.length;
@@ -527,8 +536,8 @@
   const renderChrome = () => {
     $$('#rail [data-tool]').forEach((b) => b.classList.toggle('on', b.dataset.tool === S.tool));
     $$('#styleSeg [data-s]').forEach((b) => b.classList.toggle('on', b.dataset.s === A.baseStyle()));
-    $('#hSurf').classList.toggle('on', S.layers.some((l) => l.style === 'surface')); $('#hLab').classList.toggle('on', S.layers.some((l) => l.style === 'labels'));
-    $$('#hudRight [data-h]').forEach((b) => { const k = b.dataset.h; b.classList.toggle('on', (k === 'ortho' && R.cam.ortho) || (k === 'spin' && S.spin) || (k === 'cell' && R.opts.cell) || (k === 'dipole' && S.showDip)); });
+    $('#hSurf').classList.toggle('on', S.layers.some((l) => l.style === 'surface')); { const pb = $('#hPlay'), pl = A.isPlaying(); const h = A.icon(pl ? 'pause' : 'play') + (pl ? 'Pause' : 'Play'); if (pb.dataset.h !== h) { pb.innerHTML = h; pb.dataset.h = h; } pb.classList.toggle('on', pl); } $('#hLab').classList.toggle('on', S.layers.some((l) => l.style === 'labels'));
+    $$('#hudRight [data-h]').forEach((b) => { const k = b.dataset.h; b.classList.toggle('on', (k === 'ortho' && R.cam.ortho) || (k === 'spin' && S.spin) || (k === 'cell' && R.opts.cell) || (k === 'dipole' && S.showDip) || (k === 'full' && !!document.fullscreenElement)); });
     $('#hudRight [data-h=cell]').style.display = S.mol.cell ? '' : 'none';
     $$('#hudTop [data-s=cartoon]').forEach((b) => { b.style.display = S.mol.meta.protein ? '' : 'none'; });
     $('#btnUndo').disabled = !S.undo.length; $('#btnRedo').disabled = !S.redo.length;
@@ -542,7 +551,7 @@
   $('#btnOpen').onclick = A.openDialog; $('#btnOpt').onclick = () => A.optimize(); $('#btnUndo').onclick = A.undo; $('#btnRedo').onclick = A.redo; $('#btnPalette').onclick = A.palette; $('#btnHelp').onclick = A.helpDialog;
   $('#btnSb').onclick = () => $('#app').classList.toggle('no-sidebar'); $('#btnIn').onclick = () => $('#app').classList.toggle('no-inspector');
   $('#btnTheme').onclick = () => A.setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
-  $('#emDraw').onclick = () => { S.dismissEmpty = true; A.setTool('draw'); }; $('#emSmiles').onclick = A.smilesDialog; $('#emOpen').onclick = A.openDialog; $('#emDemo').onclick = () => A.insertSmiles('Cn1cnc2c1c(=O)n(C)c(=O)n2C', 'Caffeine');
+  $('#emDraw').onclick = () => { S.dismissEmpty = true; A.setTool('draw'); }; $('#emSmiles').onclick = A.smilesDialog; $('#emOpen').onclick = A.openDialog; $('#emLib').onclick = () => { S.dismissEmpty = true; A.showSide('library'); };
   $('#emResume').onclick = () => { try { A.loadScene(JSON.parse(localStorage.getItem('ms-last'))); } catch (e) { A.toast('Could not restore the last session.', true); } };
   const ELKEYS = { h: 1, c: 6, n: 7, o: 8, f: 9, p: 15, s: 16, l: 17, r: 35, i: 53, b: 5 };
   window.addEventListener('keydown', (e) => {
@@ -562,11 +571,100 @@
     if (k === '?') { A.helpDialog(); return; }
     if (S.tool === 'draw' && ELKEYS[k.toLowerCase()] && !e.shiftKey) { S.el = ELKEYS[k.toLowerCase()]; A.refresh(); return; }
     if (k === 'H' && e.shiftKey) { A.addH(); return; }
+    if (k === 'F' && e.shiftKey) { A.toggleFullscreen(); return; }
     if (k.toLowerCase() === 'f') { A.fit(S.mol.sel.size ? S.mol.sel : null); return; }
     if (k === '0') { A.resetView(); return; }
     if (k === '[') A.setFrame(S.mol.frame - 1); if (k === ']') A.setFrame(S.mol.frame + 1);
     if (k.toLowerCase() === 'p' && S.mol.frames.length > 1) { S.play = !S.play; R.invalidate(false); A.refresh(); }
   });
+
+
+
+  /* ------------------------------------------------------------ PDF export & fullscreen */
+  A.buildPDF = (jpeg, iw, ih, title, lines) => {
+    const enc = new TextEncoder(), parts = []; let len = 0; const offs = [];
+    const push = (u) => { parts.push(u); len += u.length; };
+    const latin = (t) => { const o = new Uint8Array(t.length); for (let i = 0; i < t.length; i++) { const c = t.charCodeAt(i); o[i] = c < 256 ? c : 63; } return o; };
+    const txt = (t) => push(enc.encode(t));
+    const esc2 = (t) => String(t).replace(/[\\()]/g, '\\$&').replace(/[\u2080-\u2089]/g, (c) => String(c.charCodeAt(0) - 0x2080)).replace(/[−–]/g, '-').replace(/\r?\n/g, ' ');
+    const PW = 595, PH = 842, M = 42, W = PW - 2 * M;
+    let imgH = W * ih / iw, imgW = W; if (imgH > 470) { imgH = 470; imgW = imgH * iw / ih; }
+    const imgX = M + (W - imgW) / 2, imgY = PH - 120 - imgH;
+    let c = `0.145 0.388 0.922 rg ${M} ${PH - 62} 4 30 re f\nBT /F2 20 Tf 0.11 0.13 0.19 rg ${M + 14} ${PH - 52} Td (${esc2(title)}) Tj ET\nBT /F1 9.5 Tf 0.4 0.44 0.52 rg ${M + 14} ${PH - 66} Td (${esc2(lines[0] || '')}) Tj ET\n`;
+    c += `q ${imgW.toFixed(2)} 0 0 ${imgH.toFixed(2)} ${imgX.toFixed(2)} ${imgY.toFixed(2)} cm /Im1 Do Q\n0.85 0.87 0.9 RG 0.6 w ${imgX.toFixed(2)} ${imgY.toFixed(2)} ${imgW.toFixed(2)} ${imgH.toFixed(2)} re S\n`;
+    let y = imgY - 28;
+    lines.slice(1).forEach((l) => {
+      const wrapW = 98; const chunks = []; for (let i = 0; i < l.length; i += wrapW) chunks.push(l.slice(i, i + wrapW));
+      const isKV = /^[A-Za-z ]+:/.test(l) && l.length < 110; const k = isKV ? l.slice(0, l.indexOf(':') + 1) : '', v = isKV ? l.slice(k.length).trim() : '';
+      if (isKV) c += `BT /F2 9.5 Tf 0.11 0.13 0.19 rg ${M} ${y} Td (${esc2(k)}) Tj ET\nBT /F1 9.5 Tf 0.2 0.23 0.3 rg ${M + 92} ${y} Td (${esc2(v)}) Tj ET\n`, y -= 14;
+      else chunks.forEach((ch) => { c += `BT /F3 8.5 Tf 0.2 0.23 0.3 rg ${M} ${y} Td (${esc2(ch)}) Tj ET\n`; y -= 12; });
+    });
+    c += `BT /F1 8 Tf 0.55 0.58 0.65 rg ${M} 28 Td (Created with MoleculeScale - runs in your browser, nothing is uploaded) Tj ET\n`;
+    const objs = [];
+    objs[1] = '<< /Type /Catalog /Pages 2 0 R >>'; objs[2] = '<< /Type /Pages /Kids [3 0 R] /Count 1 >>';
+    objs[3] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im1 5 0 R >> /Font << /F1 6 0 R /F2 7 0 R /F3 8 0 R >> >> /Contents 4 0 R >>`;
+    txt('%PDF-1.4\n');
+    const wr = (n, body, stream) => { offs[n] = len; txt(n + ' 0 obj\n'); if (stream) { txt(body.replace('LEN', stream.length) + '\nstream\n'); push(stream); txt('\nendstream\n'); } else txt(body + '\n'); txt('endobj\n'); };
+    wr(1, objs[1]); wr(2, objs[2]); wr(3, objs[3]);
+    wr(4, '<< /Length LEN >>', latin(c));
+    wr(5, `<< /Type /XObject /Subtype /Image /Width ${iw} /Height ${ih} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length LEN >>`, jpeg);
+    wr(6, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'); wr(7, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'); wr(8, '<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>');
+    const xr = len; txt(`xref\n0 9\n0000000000 65535 f \n`); for (let i = 1; i <= 8; i++) txt(String(offs[i]).padStart(10, '0') + ' 00000 n \n');
+    txt(`trailer\n<< /Size 9 /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF\n`);
+    const out = new Uint8Array(len); let o = 0; parts.forEach((u) => { out.set(u, o); o += u.length; });
+    return new Blob([out], { type: 'application/pdf' });
+  };
+  A.exportPDF = async (bg) => {
+    const m = S.mol; if (!m.atoms.length) return A.toast('Nothing to export.', true);
+    const keep = { bg: R.opts.bg, dark: R.opts.dark, tr: R.opts.transparent }; try {
+      if (bg !== 'current') { R.opts.bg = 'white'; R.opts.dark = false; }
+      const blob = await R.snapshot(2, false, 'image/jpeg'); R.opts.bg = keep.bg; R.opts.dark = keep.dark; R.invalidate(false);
+      const bmp = await createImageBitmap(blob), jpeg = new Uint8Array(await blob.arrayBuffer());
+      const p = S.cache && S.cache.ver === m.ver ? S.cache.p : C.props(m); const smi = m.atoms.length < 600 && !m.meta.protein ? MS.smiles.toSmiles(m) : '';
+      const lines = [`${C.formula(m)}  -  ${p.atoms} atoms, ${p.bonds} bonds`, `Formula: ${C.formula(m)}`, `Molar mass: ${p.mass.toFixed(3)} g/mol`, `Atoms: ${p.atoms} (${p.heavy} heavy)`, `Bonds: ${p.bonds}`, `Rings: ${p.rings}`, `Net charge: ${p.charge}`];
+      if (S.energy != null) lines.push(`FF energy: ${S.energy.toFixed(2)} kcal/mol (approximate)`);
+      if (m.cell) lines.push(`Cell: ${m.cell.a.toFixed(3)} ${m.cell.b.toFixed(3)} ${m.cell.c.toFixed(3)} A; ${m.cell.al.toFixed(1)} ${m.cell.be.toFixed(1)} ${m.cell.ga.toFixed(1)} deg`);
+      lines.push(`Date: ${new Date().toISOString().slice(0, 10)}`); if (smi) { lines.push('SMILES:'); lines.push(smi); }
+      A.download(A.baseName() + '.pdf', A.buildPDF(jpeg, bmp.width, bmp.height, m.title || 'Molecule', lines));
+    } catch (e) { console.error(e); R.opts.bg = keep.bg; R.opts.dark = keep.dark; A.toast('PDF export failed: ' + e.message, true); }
+  };
+  let panelsBefore = null;
+  A.toggleFullscreen = () => { if (document.fullscreenElement) document.exitFullscreen(); else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => A.toast('Full screen is not available here.', true)); else A.toast('Full screen is not supported by this browser.', true); };
+  document.addEventListener('fullscreenchange', () => {
+    const app = $('#app');
+    if (document.fullscreenElement) { panelsBefore = [app.classList.contains('no-sidebar'), app.classList.contains('no-inspector')]; app.classList.add('no-sidebar', 'no-inspector'); }
+    else if (panelsBefore) { app.classList.toggle('no-sidebar', panelsBefore[0]); app.classList.toggle('no-inspector', panelsBefore[1]); panelsBefore = null; }
+    A.refresh(); R.invalidate(false);
+  });
+
+  /* ------------------------------------------------------------ example thumbnails */
+  A.thumb = (m, canvas) => {
+    const ratio = 2, W = canvas.clientWidth || 120, H = canvas.clientHeight || 66; canvas.width = W * ratio; canvas.height = H * ratio;
+    const ctx = canvas.getContext('2d'); ctx.scale(ratio, ratio); ctx.clearRect(0, 0, W, H);
+    const Rm = m.atoms.length > 1 ? A.pcaMatrix(m) : [[1, 0, 0], [0, 1, 0], [0, 0, 1]], c = m.centroid();
+    const P = m.atoms.map((a) => { const d = [a.x - c[0], a.y - c[1], a.z - c[2]]; return [V.dot(Rm[0], d), -V.dot(Rm[1], d), V.dot(Rm[2], d)]; });
+    let mnx = 1e9, mxx = -1e9, mny = 1e9, mxy = -1e9; P.forEach((p) => { mnx = Math.min(mnx, p[0]); mxx = Math.max(mxx, p[0]); mny = Math.min(mny, p[1]); mxy = Math.max(mxy, p[1]); });
+    const sc = Math.min((W - 20) / Math.max(mxx - mnx, 1), (H - 16) / Math.max(mxy - mny, 1), 22), ox = W / 2 - (mnx + mxx) / 2 * sc, oy = H / 2 - (mny + mxy) / 2 * sc;
+    const dark = document.documentElement.dataset.theme === 'dark', big = m.atoms.length > 150;
+    const col = (z) => { const k = EL[z].modern; return k; };
+    ctx.lineCap = 'round';
+    if (big) { m.bonds.forEach((b) => { const p = P[b.a], q = P[b.b]; ctx.strokeStyle = dark ? 'rgba(160,185,230,.55)' : 'rgba(70,90,140,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ox + p[0] * sc, oy + p[1] * sc); ctx.lineTo(ox + q[0] * sc, oy + q[1] * sc); ctx.stroke(); }); return; }
+    m.bonds.forEach((b) => { const p = P[b.a], q = P[b.b]; ctx.strokeStyle = dark ? 'rgba(190,200,220,.65)' : 'rgba(80,90,110,.6)'; ctx.lineWidth = Math.max(1.4, sc * 0.16); ctx.beginPath(); ctx.moveTo(ox + p[0] * sc, oy + p[1] * sc); ctx.lineTo(ox + q[0] * sc, oy + q[1] * sc); ctx.stroke(); });
+    P.map((p, i) => [p, i]).sort((a, b) => a[0][2] - b[0][2]).forEach(([p, i]) => {
+      const a = m.atoms[i], r = Math.max(2.2, (a.e === 1 ? 0.26 : 0.36) * sc), x = ox + p[0] * sc, y = oy + p[1] * sc, k = col(a.e);
+      const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r); const rgb = (f) => `rgb(${Math.min(255, Math.round(k[0] * 255 * f))},${Math.min(255, Math.round(k[1] * 255 * f))},${Math.min(255, Math.round(k[2] * 255 * f))})`;
+      g.addColorStop(0, rgb(1.35)); g.addColorStop(1, rgb(0.72)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    });
+  };
+  const EXAMPLES = [['Caffeine', () => MS.smiles.fromSmiles('Cn1cnc2c1c(=O)n(C)c(=O)n2C')], ['Aspirin', () => MS.smiles.fromSmiles('CC(=O)Oc1ccccc1C(=O)O')], ['Glucose', () => MS.smiles.fromSmiles('OC[C@H]1O[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O')], ['Cholesterol', () => MS.smiles.fromSmiles('C[C@H](CCCC(C)C)[C@H]1CC[C@@H]2[C@@]1(CC[C@H]3[C@H]2CC=C4[C@@]3(CC[C@@H](C4)O)C)C')], ['Fullerene C60', () => MS.build.fullerene()], ['Crambin', () => MS.io.read('x.pdb', window.MS_SAMPLE_PDB).mol], ['DNA dodecamer', () => MS.io.read('x.pdb', window.MS_SAMPLES['DNA dodecamer']).mol], ['Penicillin G', () => MS.smiles.fromSmiles('CC1(C)SC2C(NC(=O)Cc3ccccc3)C(=O)N2C1C(=O)O')]];
+  const exGrid = $('#exGrid');
+  exGrid.innerHTML = EXAMPLES.map(([n], i) => `<button class="ex" data-ex="${i}"><canvas></canvas><b>${n}</b></button>`).join('');
+  exGrid.onclick = (e) => { const b = e.target.closest('[data-ex]'); if (!b) return; const [n, f] = EXAMPLES[+b.dataset.ex]; try { const m = f(); if (!m.title) m.title = n; if (n === 'Crambin') m.title = 'Crambin (PDB 1CRN)'; A.load(m); S.dismissEmpty = true; } catch (er) { A.toast(er.message, true); } };
+  let thumbsDone = false;
+  A.drawThumbs = () => {
+    if (thumbsDone) return; thumbsDone = true; const cvs = $$('#exGrid canvas');
+    EXAMPLES.forEach(([n, f], i) => setTimeout(() => { try { A.thumb(f(), cvs[i]); } catch (e) { console.error(e); } }, 60 + i * 90));
+  };
 
   /* ------------------------------------------------------------ boot */
   A.setTheme(document.documentElement.dataset.theme || 'light');
@@ -583,4 +681,5 @@
   if (q.get('tool')) A.setTool(q.get('tool'));
   S.dismissEmpty = S.dismissEmpty || false;
   A.refresh(); R.invalidate(true);
+  if (!S.mol.atoms.length) A.drawThumbs();
 })();
