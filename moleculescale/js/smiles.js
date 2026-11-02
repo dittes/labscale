@@ -331,7 +331,7 @@
     starts.forEach((s, ri) => {
       const N = off, CA = s.c === 'P' ? off + 4 : off + 1, Cc = off + s.n - 2, O = off + s.n - 1;
       bb.push({ N, CA, C: Cc, O });
-      const ridx = m.res.length; m.res.push({ name: AA3[s.c], num: ri + 1, chain: 'A', ss: 'C' });
+      const ridx = m.res.length; m.res.push({ name: AA3[s.c], num: ri + 1, chain: 'A', ss: 'C', aa: true, water: false });
       for (let k = off; k < off + s.n; k++) m.atoms[k].r = ridx;
       m.atoms[N].nm = 'N'; m.atoms[CA].nm = 'CA'; m.atoms[Cc].nm = 'C'; m.atoms[O].nm = 'O';
       let cnt = {}; for (let k = off; k < off + s.n; k++) { if (!m.atoms[k].nm) { const e = EL[m.atoms[k].e].sym; cnt[e] = (cnt[e] || 0) + 1; m.atoms[k].nm = e + cnt[e]; } }
@@ -347,7 +347,9 @@
         if (r > 0) C.setDihedral(m, bb[r - 1].C, bb[r].N, bb[r].CA, bb[r].C, phi);
         if (r < bb.length - 1) { C.setDihedral(m, bb[r].N, bb[r].CA, bb[r].C, bb[r + 1].N, psi); C.setDihedral(m, bb[r].CA, bb[r].C, bb[r + 1].N, bb[r + 1].CA, 180); }
       }
-      MS.ff.minimize(m, 250);
+      bb.forEach((b) => [b.N, b.CA, b.C, b.O].forEach((i) => { m.atoms[i].fx = 1; }));
+      MS.ff.minimize(m, 300);
+      m.atoms.forEach((a) => { a.fx = 0; });
       m.res.forEach((r) => { r.ss = ss === 'helix' ? 'H' : ss === 'coil' ? 'C' : 'E'; });
     }
     const c = m.centroid(); m.translate(null, [-c[0], -c[1], -c[2]]);

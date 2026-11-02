@@ -148,7 +148,7 @@ main { position: relative; min-width: 0; min-height: 0; background: var(--bg); o
 #hudRight { position: absolute; right: 12px; top: 12px; display: flex; flex-direction: column; gap: 3px; padding: 5px; z-index: 5; }
 .hbtn { width: 34px; height: 34px; display: grid; place-items: center; border: 0; background: transparent; border-radius: 9px; color: var(--text-2); cursor: pointer; }
 .hbtn:hover { background: var(--panel-2); color: var(--text); } .hbtn.on { background: var(--accent-soft); color: var(--accent); }
-#cbar { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 7px 10px; z-index: 5; max-width: calc(100% - 140px); flex-wrap: wrap; justify-content: center; }
+#cbar { width: max-content; position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 7px 10px; z-index: 5; max-width: calc(100% - 140px); flex-wrap: wrap; justify-content: center; }
 #cbar .hint { color: var(--muted); font-size: 12px; }
 .el-chip { width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--line-2); display: grid; place-items: center; font-weight: 700; cursor: pointer; background: var(--panel); position: relative; font-size: 13px; }
 .el-chip:hover { transform: translateY(-1px); border-color: var(--accent-line); }
@@ -171,7 +171,7 @@ main { position: relative; min-width: 0; min-height: 0; background: var(--bg); o
 .kv span:nth-child(odd) { color: var(--text-2); } .kv span:nth-child(even) { text-align: right; font-variant-numeric: tabular-nums; font-weight: 550; }
 .big-formula { font-size: 22px; font-weight: 700; letter-spacing: -.01em; margin: 2px 0 2px; }
 .smiles-box { font-family: var(--mono); font-size: 11.5px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; word-break: break-all; position: relative; }
-.comp-bar { display: flex; height: 8px; border-radius: 5px; overflow: hidden; margin: 6px 0 4px; }
+.comp-bar { display: flex; height: 8px; border-radius: 5px; overflow: hidden; margin: 6px 0 4px; box-shadow: inset 0 0 0 1px var(--line-2); }
 table.atoms { width: 100%; border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; }
 table.atoms th { text-align: right; font-weight: 600; color: var(--muted); padding: 3px 4px; position: sticky; top: 0; background: var(--panel); z-index: 1; }
 table.atoms th:first-child, table.atoms td:first-child { text-align: left; }

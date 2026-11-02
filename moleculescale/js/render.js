@@ -66,7 +66,7 @@
       const t = V.dot(V.sub(p, r.o), n) / dn; return V.add(r.o, V.mul(r.d, t));
     }
     forward() { const R = this.R(); return [-R[2][0], -R[2][1], -R[2][2]]; }
-    fit(center, radius) { this.target = center.slice(); this.radius = radius; this.dist = Math.max(3, radius / Math.sin(Math.min(this.fov, 1.2) / 2) * 1.02); }
+    fit(center, radius) { this.target = center.slice(); this.radius = radius; this.dist = Math.max(4, radius / Math.sin(Math.min(this.fov, 1.2) / 2) * 1.32); }
     set(o) { Object.assign(this, o); }
   }
   MS.Camera = Camera;
@@ -105,7 +105,7 @@ vec3 shade(vec3 base, vec3 N, vec3 P, float flag){
   float spec = pow(max(dot(N, H), 0.), 56.) * 0.5;
   float fres = pow(1.0 - max(dot(N, Vv), 0.), 3.0);
   vec3 c = base * (amb * 0.60 + vec3(diff) * 0.66) + vec3(spec) + fres * (0.10 + 0.18 * base);
-  if (flag > 0.5 && flag < 1.5) c = mix(c, uAccent, 0.48) + uAccent * 0.08;
+  if (flag > 0.5 && flag < 1.5) c = mix(c, uAccent, 0.36) + uAccent * 0.14;
   else if (flag > 1.5) c = mix(c, vec3(1.), 0.3);
   return c;
 }`;
@@ -528,6 +528,7 @@ void main(){
     /* ----- picking ----- */
     pxRadius(r, depth) { const cam = this.cam, t = Math.tan(cam.fov / 2); return cam.ortho ? (r * cam.H) / (2 * cam.dist * t) : (r * cam.H) / (2 * depth * t); }
     pick(sx, sy, tol) {
+      if (this.geoDirty && this.mol) { try { this.buildGeometry(); } catch (e) { console.error(e); } this.geoDirty = false; }
       const m = this.mol, G = this.geo; if (!m || !G || !G.pickR) return { atom: -1, bond: -1 };
       tol = tol == null ? 4 : tol; let best = -1, bd = 1e9;
       for (let i = 0; i < m.atoms.length; i++) {

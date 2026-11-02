@@ -90,12 +90,12 @@
   A.resetView = () => { const bb = S.mol.bbox(); R.cam.q = [0, 0, 0, 1]; R.cam.fit(bb.c, bb.r); R.invalidate(false); };
   A.fit = (idx) => {
     const m = S.mol; const bb = m.bbox(idx && idx.size ? idx : null); const c = R.cam;
-    c.target = bb.c; c.radius = bb.r; c.dist = Math.max(3, bb.r / Math.sin(Math.min(c.fov, 1.2) / 2) * 1.02); R.invalidate(true);
+    c.target = bb.c; c.radius = bb.r; c.dist = Math.max(4, bb.r / Math.sin(Math.min(c.fov, 1.2) / 2) * 1.32); R.invalidate(true);
   };
   A.setMol = (m, opts) => {
     opts = opts || {};
     S.mol = m; S.layers = opts.layers || A.defaultLayers(m); S.layerSel = 0; S.selOrder = []; S.measure = []; S.energy = null; S.cache = null; A.mz = null;
-    S.undo = []; S.redo = []; R.opts.cell = !!m.cell; S.play = false;
+    S.undo = []; S.redo = []; R.opts.cell = !!m.cell && !m.meta.protein; S.play = false;
     A.sync(); if (!opts.keepView) { A.resetView(); } A.refresh();
   };
   A.merge = (src, shift) => {
@@ -164,13 +164,13 @@
       if (hn) { const p = m.pos(hn.j); d = V.norm(V.sub(p, m.pos(i))); }
       else d = C.missingDirs(m, i, 1, geom)[0];
     }
-    const L = bondLen(a.e, z, order), j = m.addAtom(z, a.x + d[0] * L, a.y + d[1] * L, a.z + d[2] * L, { r: a.r });
-    m.addBond(i, j, order);
+    const L = bondLen(a.e, z, order), j0 = m.addAtom(z, a.x + d[0] * L, a.y + d[1] * L, a.z + d[2] * L, { r: a.r });
+    const newAtom = m.atoms[j0], j = j0; m.addBond(i, j, order);
     // drop one hydrogen that was in that slot
     const hs = m.nb()[i].filter((x) => m.atoms[x.j].e === 1 && x.j !== j);
     const over = m.nb()[i].reduce((s, x) => s + m.bonds[x.b].o, 0) - (MS.valList(a.e, a.q) || [99]).slice(-1)[0];
     if (over > 0 && hs.length) A.removeAtoms(hs.slice(0, Math.min(over, hs.length)).map((x) => x.j));
-    return m.atoms.indexOf ? j : j;
+    return m.atoms.indexOf(newAtom);
   };
   A.setElement = (i, z) => { const m = S.mol; m.atoms[i].e = z; m.atoms[i].q = 0; m.touch(); };
   A.deleteAtoms = (list) => {

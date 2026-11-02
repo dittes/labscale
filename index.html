@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LabScale – Analyse, fit and plot your data in the browser</title>
-<meta name="description" content="LabScale is a free analysis and graphing workbench that runs entirely in your browser: worksheets, 110+ chart types, 110+ statistical and signal analyses, curve fitting, SPC and DOE, publication-ready PDF, SVG and PowerPoint export. Your data never leaves your device.">
+<title>LabScale – Raw data in, usable results out</title>
+<meta name="description" content="Four free workbenches that run entirely in your browser: LabScale for data analysis and graphing, DNAScale for sequences and Sanger traces, MoleculeScale for 3D molecules and proteins, DocScale for lab books and papers. No install, no upload.">
 <link rel="canonical" href="https://labscale.org/">
-<meta property="og:title" content="LabScale – raw data in, clean charts out">
-<meta property="og:description" content="Free data analysis and graphing workbench in your browser. No install, no upload.">
+<meta property="og:title" content="LabScale – raw data in, usable results out">
+<meta property="og:description" content="Free workbenches for data, DNA sequences, molecules and documents. They run in your browser: no install, no upload.">
 <meta property="og:url" content="https://labscale.org/">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#2563eb">
@@ -58,6 +58,11 @@ h2{font-size:clamp(28px,3.6vw,42px);letter-spacing:-.025em;line-height:1.12;marg
 .card .ic{width:40px;height:40px;border-radius:10px;background:var(--cob2);color:var(--cob);display:grid;place-items:center;font:600 18px var(--mono);margin-bottom:16px}
 .card h3{margin:0 0 6px;font-size:18px;letter-spacing:-.01em}.card p{margin:0;color:var(--mut);font-size:15px}
 .card ul{margin:10px 0 0;padding-left:18px;color:var(--mut);font-size:14.5px}
+.tool{display:flex;flex-direction:column;padding:28px}.tool .hd{display:flex;align-items:center;gap:14px;margin-bottom:14px}.tool .hd img{display:block;border-radius:11px}.tool h3{margin:0;font-size:22px;letter-spacing:-.02em}.tool .tag{color:var(--mut);font-size:14px;margin:2px 0 0}.tool>p{font-size:15.5px}
+.io{margin:18px 0 4px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);font:13px/1.5 var(--mono)}.io div{display:flex;gap:14px;padding:9px 14px}.io div+div{border-top:1px solid var(--line)}.io b{color:var(--cob);font-weight:600;min-width:30px}.io span{color:var(--mut)}
+.tool .cta{margin-top:auto;padding-top:22px}
+.stage.rev .panel{order:-1}@media (max-width:860px){.stage.rev .panel{order:0}}
+.stage .txt .cta{margin-top:22px}
 /* pipeline tabs */
 .tabs{display:flex;gap:6px;border:1px solid var(--line);border-radius:12px;padding:5px;background:var(--card);width:max-content;max-width:100%;overflow:auto;margin-bottom:22px}
 .tabs button{border:0;background:none;padding:9px 20px;border-radius:8px;font:600 15px var(--sans);color:var(--mut);cursor:pointer;white-space:nowrap}.tabs button[aria-selected=true]{background:var(--cob);color:#fff}@media (prefers-color-scheme:dark){.tabs button[aria-selected=true]{color:#0a0e1a}}
@@ -81,28 +86,53 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--mut);fon
 <a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="wrap">
   <a class="logo" href="./" aria-label="LabScale home"><img src="favicon.svg" width="32" height="32" alt=""><span>Lab<b>Scale</b></span></a>
-  <nav class="main" aria-label="Main"><a href="#how">How it works</a><a href="#inside">What’s inside</a><a href="#charts">Charts</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a></nav>
+  <nav class="main" aria-label="Main"><a href="#tools">Tools</a><a href="#how">LabScale</a><a href="#dna">DNAScale</a><a href="#molecules">MoleculeScale</a><a href="#docs">DocScale</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a></nav>
   <span class="sp"></span><a class="btn pri sm" href="app.html">Open</a>
 </div></header>
 <main id="main">
 <section class="hero" aria-labelledby="h1">
   <canvas id="heroCv" aria-hidden="true"></canvas>
   <div class="wrap">
-    <h1 id="h1">Raw data in,<br>clean charts out.</h1>
-    <p class="lead">LabScale is a free workbench for analysing, fitting and plotting measurement data. Paste a column, get a graph. Run a test, get a report. Nothing to install and nothing leaves your device.</p>
-    <div class="cta"><a class="btn pri lg" href="app.html">Open</a></div>
-    <p class="sr">Animation: streams of zeros and ones move from the left and are transformed into line charts, bar charts, scatter plots with a regression line, heat maps and spectra with fitted peaks.</p>
+    <p class="eyebrow">LabScale · DNAScale · MoleculeScale · DocScale</p>
+    <h1 id="h1">Raw data in,<br>usable results out.</h1>
+    <p class="lead">Free workbenches for measurements, sequencer traces, molecular structures and lab reports. Drop in a file and get a graph, a consensus sequence, a 3D model or a finished paper. Nothing to install and nothing leaves your device.</p>
+    <div class="cta"><a class="btn pri lg" href="app.html">Open LabScale</a><a class="btn lg" href="#tools">See all four tools</a></div>
+    <p class="sr">Animation: streams of zeros and ones move from the left and are transformed into line charts, bar charts, scatter plots with a regression line, heat maps, spectra with fitted peaks, sequencer chromatograms, a rotating molecule and a report page.</p>
   </div>
 </section>
 
-<section id="how"><div class="wrap">
-  <h2>Four steps from file to figure</h2>
-  <p class="sub">The same workspace carries your data from import to a finished, publication-ready result.</p>
+<section id="tools"><div class="wrap">
+  <h2>Four workbenches, one idea</h2>
+  <p class="sub">Each tool takes a kind of raw input and turns it into something you can read, publish or build on. They share one look, run offline once loaded, and keep your files on your device.</p>
+  <div class="grid g2">
+    <article class="card tool"><div class="hd"><img src="favicon.svg" width="48" height="48" alt=""><div><h3>LabScale</h3><p class="tag">Data analysis and graphing</p></div></div>
+      <p>Worksheets, 110+ chart types, 110+ statistical and signal analyses and curve fitting with confidence bands. Paste a column, get a graph; run a test, get a report.</p>
+      <div class="io"><div><b>IN</b><span>CSV, Excel, JSON, HTML tables, pasted columns</span></div><div><b>OUT</b><span>Graphs, test results, fits, PDF, SVG, PPTX, DOCX</span></div></div>
+      <div class="cta"><a class="btn pri sm" href="app.html">Open</a><a class="btn sm" href="app.html?sample=1">Try sample data</a></div></article>
+    <article class="card tool"><div class="hd"><img src="dnascale/favicon.svg" width="48" height="48" alt=""><div><h3>DNAScale</h3><p class="tag">Sequences and Sanger traces</p></div></div>
+      <p>View chromatograms, trim and edit base calls, assemble reads into contigs or map them to a reference, align sequences and inspect ORFs, restriction sites and a 3D helix.</p>
+      <div class="io"><div><b>IN</b><span>.ab1, .scf, FASTA, FASTQ, GenBank, Clustal</span></div><div><b>OUT</b><span>Consensus, alignments, trees, PDF lab report</span></div></div>
+      <div class="cta"><a class="btn pri sm" href="dnascale/">Open</a><a class="btn sm" href="dnascale/?demo">Try the demo</a></div></article>
+    <article class="card tool"><div class="hd"><img src="moleculescale/favicon.svg" width="48" height="48" alt=""><div><h3>MoleculeScale</h3><p class="tag">3D molecules, proteins and crystals</p></div></div>
+      <p>Draw or type a SMILES string, optimise the geometry, search conformers and render proteins as cartoons or surfaces. Measure distances, angles and dihedrals in the view.</p>
+      <div class="io"><div><b>IN</b><span>SMILES, PDB, MOL/SDF, XYZ, CIF, cube</span></div><div><b>OUT</b><span>3D models, properties, PNG up to 4×, OBJ, structure files</span></div></div>
+      <div class="cta"><a class="btn pri sm" href="moleculescale/">Open</a><a class="btn sm" href="moleculescale/?demo">Try the demo</a></div></article>
+    <article class="card tool"><div class="hd"><img src="docscale/favicon.svg" width="48" height="48" alt=""><div><h3>DocScale</h3><p class="tag">Lab books, reports and papers</p></div></div>
+      <p>Write in LaTeX or Markdown and watch a paginated A4 or Letter preview update as you type, with equations, citations, cross-references and a bundled maths renderer.</p>
+      <div class="io"><div><b>IN</b><span>LaTeX, Markdown, BibTeX, images</span></div><div><b>OUT</b><span>PDF, Word, HTML, EPUB, Markdown, ZIP</span></div></div>
+      <div class="cta"><a class="btn pri sm" href="docscale/">Open</a></div></article>
+  </div>
+  <div class="stats" style="margin-top:56px"><div><b>4</b><span>workbenches</span></div><div><b>110+</b><span>chart types</span></div><div><b>110+</b><span>analyses and tests</span></div><div><b>0</b><span>bytes uploaded</span></div></div>
+</div></section>
+
+<section class="alt" id="how"><div class="wrap">
+  <h2>LabScale: four steps from file to figure</h2>
+  <p class="sub">The same workspace carries your measurements from import to a finished, publication-ready result.</p>
   <div class="tabs" role="tablist" aria-label="Workflow"><button role="tab" aria-selected="true" data-t="0">1 · Import</button><button role="tab" aria-selected="false" data-t="1">2 · Analyse</button><button role="tab" aria-selected="false" data-t="2">3 · Plot</button><button role="tab" aria-selected="false" data-t="3">4 · Publish</button></div>
   <div class="stage" id="stage" aria-live="polite"></div>
 </div></section>
 
-<section class="alt" id="inside"><div class="wrap">
+<section id="inside"><div class="wrap">
   <h2>Everything a lab notebook needs</h2>
   <p class="sub">One tool instead of a spreadsheet, a statistics package, a curve fitter and a plotting program.</p>
   <div class="grid g4">
@@ -117,7 +147,7 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--mut);fon
   </div>
 </div></section>
 
-<section id="charts"><div class="wrap">
+<section class="alt" id="charts"><div class="wrap">
   <h2>See the data before you decide</h2>
   <p class="sub">Select columns and preview them as dozens of chart types at once, then keep the one that tells the story.</p>
   <div class="grid g3">
@@ -128,13 +158,67 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--mut);fon
     <div class="chipgroup"><h3>Flows and networks</h3><div class="chips"><span class="chip">Sankey</span><span class="chip">alluvial</span><span class="chip">chord</span><span class="chip">network</span><span class="chip">sunburst</span><span class="chip">treemap</span><span class="chip">circle packing</span></div></div>
     <div class="chipgroup"><h3>Maps and diagrams</h3><div class="chips"><span class="chip">world map</span><span class="chip">tile-grid map</span><span class="chip">Venn</span><span class="chip">Voronoi</span><span class="chip">fishbone</span><span class="chip">Manhattan</span></div></div>
   </div>
-  <div class="stats" style="margin-top:56px"><div><b>110+</b><span>chart types</span></div><div><b>110+</b><span>analyses and tests</span></div><div><b>49</b><span>fitting models</span></div><div><b>0</b><span>bytes uploaded</span></div></div>
+</div></section>
+
+<section id="dna"><div class="wrap">
+  <h2>DNAScale: from trace to consensus</h2>
+  <p class="sub">Open the files straight from the sequencer. Check the peaks, fix the calls and let the contig tell you what the clone really contains.</p>
+  <div class="stage">
+    <div class="txt"><h3>Chromatograms, alignments and contigs in one view</h3><p>The trace sits under the alignment, so every doubtful base is one click from the evidence. Mixed peaks get IUPAC codes instead of silent guesses.</p>
+      <ul><li>Phred quality, auto-trim, mixed-peak flags and base editing</li><li>Assemble reads or map them to a reference; reverse reads are flipped with their traces</li><li>Six-frame ORF map, restriction map, translation and neighbour-joining trees</li><li>Rotating 3D helix, dot plot, DNA walks and sequence logos</li></ul>
+      <div class="cta"><a class="btn pri" href="dnascale/">Open DNAScale</a><a class="btn" href="dnascale/?demo">Try the demo</a></div></div>
+    <div class="panel"><div class="bar"><i></i><i></i><i></i><span>Clone12 · assembled against GENE1</span></div><pre><span class="m">reference</span>  ATGGCTAAGCTGACCGGTTACGAGCTGAAA
+<span class="m">T7 fwd   </span>  ATGGCTAAGCTGACCGGTTACGAGCTGAAA
+<span class="m">pRev     </span>  ·········CTGACC<span class="b">A</span>GTTACGAGCTGAAA
+<span class="m">consensus</span>  ATGGCTAAGCTGACC<span class="b">R</span>GTTACGAGCTGAAA
+<span class="m">coverage </span>  111111111222222222222222222222
+
+<span class="b">▲ mixed peak</span> → written as IUPAC R (A/G)
+<span class="b">→ report.pdf</span>  traces, alignment, consensus</pre></div>
+  </div>
+</div></section>
+
+<section class="alt" id="molecules"><div class="wrap">
+  <h2>MoleculeScale: from formula to model</h2>
+  <p class="sub">Build a molecule, relax it, and see it from every side. The same viewer handles a small ligand, a protein or a crystal.</p>
+  <div class="stage rev">
+    <div class="txt"><h3>Draw, optimise, measure, render</h3><p>Click to place atoms, or type a SMILES string and get a 3D structure. A built-in force field tidies the geometry while you drag.</p>
+      <ul><li>Ball and stick, sticks, space-filling, cartoon ribbons and molecular surfaces, each on its own layer</li><li>Geometry optimisation, conformer search and hydrogen handling</li><li>Peptide, nanotube, graphene and fullerene builders, crystal cells and hydrogen-like orbitals</li><li>Read PDB, SDF, XYZ, CIF and more; save images up to 4× with transparent background</li></ul>
+      <div class="cta"><a class="btn pri" href="moleculescale/">Open MoleculeScale</a><a class="btn" href="moleculescale/?sample">Try caffeine</a></div></div>
+    <div class="panel"><div class="bar"><i></i><i></i><i></i><span>From SMILES</span></div><pre><span class="m">input</span>     CN1C=NC2=C1C(=O)N(C(=O)N2C)C
+<span class="m">build</span>     <span class="b">3D coordinates + force-field clean-up</span>
+
+formula   C8H10N4O2
+mass      194.19 g/mol
+rings     2   <span class="m">(1 aromatic)</span>
+
+<span class="b">→ .png  .mol  .pdb  .xyz  .obj</span></pre></div>
+  </div>
+</div></section>
+
+<section id="docs"><div class="wrap">
+  <h2>DocScale: from results to paper</h2>
+  <p class="sub">Your graphs and tables need a home. Write the lab book, report or manuscript next to a live preview, then export it in the format your reader wants.</p>
+  <div class="stage">
+    <div class="txt"><h3>LaTeX or Markdown, with the page in sight</h3><p>Start from a template and keep writing. The preview is paginated, clicking a block jumps to its source line, and projects stay in your browser.</p>
+      <ul><li>Equations, theorems, figures, tables with captions, BibTeX citations and cross-references</li><li>Templates for papers, lab reports, lab notebooks and plain Markdown</li><li>Import your exported figures as images and place them in the text</li><li>Export to PDF, Word, HTML, EPUB, Markdown, plain text or a project ZIP</li></ul>
+      <div class="cta"><a class="btn pri" href="docscale/">Open DocScale</a></div></div>
+    <div class="panel"><div class="bar"><i></i><i></i><i></i><span>report.tex</span></div><pre><span class="b">\section</span>{Results}
+Absorbance rises linearly with
+concentration (Figure~<span class="b">\ref</span>{fig:cal}),
+<span class="b">\begin</span>{equation}
+  A = \varepsilon\, l\, c
+<span class="b">\end</span>{equation}
+as reported by <span class="b">\cite</span>{beer1852}.
+
+<span class="b">→ paginated preview · PDF · DOCX · EPUB</span></pre></div>
+  </div>
 </div></section>
 
 <section class="alt" id="privacy"><div class="wrap">
   <div class="grid g2" style="align-items:center">
-    <div><h2>Your data stays on your device</h2><p class="sub" style="margin-bottom:22px">LabScale is a static web app. All calculations run in your browser, projects are saved in local storage, and there are no accounts, trackers or cookies.</p>
-      <ul style="color:var(--mut);padding-left:20px;margin:0 0 26px"><li>Works offline once loaded</li><li>Open formats: CSV, Excel, JSON, HTML tables, XML in; PDF, SVG, EPS, PNG, XLSX, DOCX, PPTX out</li><li>Optional components such as the Excel reader load only after you agree</li></ul><a class="btn pri" href="app.html">Open</a></div>
+    <div><h2>Your data stays on your device</h2><p class="sub" style="margin-bottom:22px">All four tools are static web apps. Calculations, alignments, 3D rendering and typesetting run in your browser, projects are saved in local storage, and there are no accounts, trackers or cookies.</p>
+      <ul style="color:var(--mut);padding-left:20px;margin:0 0 26px"><li>Works offline once loaded</li><li>Open formats throughout: CSV, FASTA, PDB, LaTeX and Markdown in; PDF, SVG, PNG, DOCX, PPTX and structure files out</li><li>Optional components such as the Excel reader load only after you agree</li></ul><a class="btn pri" href="#tools">Choose a tool</a></div>
     <div class="panel"><div class="bar"><i></i><i></i><i></i><span>network activity</span></div><pre><span class="m">// while you analyse</span>
 uploads         <span class="b">0 bytes</span>
 tracking        <span class="b">none</span>
@@ -146,15 +230,17 @@ data location   <span class="b">your browser</span></pre></div>
 
 <section id="faq"><div class="wrap" style="max-width:860px">
   <h2>Questions</h2>
-  <details><summary>Is LabScale really free?</summary><p>Yes. There is no sign-up and no paywall. Open the app and start working.</p></details>
-  <details><summary>Does my data get uploaded?</summary><p>No. Files you open, tables you type and results you compute stay in your browser. Only optional helpers, such as the Excel reader, are downloaded, and only after you confirm.</p></details>
+  <details><summary>Is it really free?</summary><p>Yes. There is no sign-up and no paywall. Open a tool and start working.</p></details>
+  <details><summary>How are LabScale, DNAScale, MoleculeScale and DocScale related?</summary><p>They are separate browser apps with the same look and the same privacy approach. They exchange work through ordinary files: export a figure from LabScale as SVG or PNG and place it in a DocScale report, or save a molecule image and use it in a presentation.</p></details>
+  <details><summary>Does my data get uploaded?</summary><p>No. Files you open, sequences you align, structures you draw and results you compute stay in your browser. Only optional helpers, such as the Excel reader, are downloaded, and only after you confirm.</p></details>
   <details><summary>Which files can I import?</summary><p>CSV, TXT and TSV with an import wizard that detects separators, decimal commas, headers, units and dates; Excel workbooks; JSON; HTML tables and XML. You can also paste straight from a spreadsheet.</p></details>
   <details><summary>Can I use my figures in a paper or presentation?</summary><p>Yes. Graphs export as vector PDF, SVG and EPS or as PNG, JPG, TIFF and WebP; reports export as PDF, Word, HTML and Markdown, and all graphs can go into a PowerPoint file.</p></details>
+  <details><summary>Which sequencing and structure files can I open?</summary><p>DNAScale reads ABIF (.ab1) and SCF chromatograms plus FASTA, FASTQ, GenBank, EMBL and Clustal files. MoleculeScale reads PDB, MOL/SDF, XYZ, CML, CIF, Gaussian cube files and SMILES strings.</p></details>
   <details><summary>How do I choose the right statistical test?</summary><p>The Stats Advisor looks at your columns, checks assumptions such as normality and equal variances, and recommends tests. Every result shows the numbers behind it.</p></details>
   
 </div></section>
 
-<section class="alt band"><div class="wrap"><h2>Ready when your data is.</h2><p>Open the workbench and drop in a file.</p><a class="btn pri lg" href="app.html">Open</a></div></section>
+<section class="alt band"><div class="wrap"><h2>Ready when your data is.</h2><p>Open a workbench and drop in a file.</p><div class="cta" style="justify-content:center"><a class="btn pri lg" href="app.html">Open LabScale</a><a class="btn lg" href="#tools">Other tools</a></div></div></section>
 </main>
 <footer><div class="wrap"><a href="imprint.html#imprint">Imprint</a><a href="imprint.html#privacy">Privacy</a></div></footer>
 
@@ -200,7 +286,7 @@ data location   <span class="b">your browser</span></pre></div>
  function setup(){const r=cv.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);fs=W<700?10.5:12;ctx.font=`${fs}px ui-monospace,Menlo,Consolas,monospace`;cw=ctx.measureText('0').width;lh=fs*1.34;cols=Math.floor(W/cw);rows=Math.floor(H/lh);gc=Math.floor(cols*(W<860?.3:.5))+Math.floor(cols*.075);
   spd=[];pha=[];for(let r=0;r<rows;r++){spd.push(5+hash(r,7)*17);pha.push(hash(r,11)*500)}colors()}
  /* chart scenes: intensity 0..1 at normalised chart coords (u,v), v=0 bottom; cell sizes for line thickness */
- const NS=5,names=['line chart  ·  y = f(x)','bar chart  ·  mean ± SD','scatter  ·  linear fit  R² = 0.98','heat map  ·  2-D density','spectrum  ·  3 peaks fitted'];
+ const NS=8,ORD=[0,2,5,4,6,3,7,1],names=['line chart  ·  y = f(x)','bar chart  ·  mean ± SD','scatter  ·  linear fit  R² = 0.98','heat map  ·  2-D density','spectrum  ·  3 peaks fitted','chromatogram  ·  base calls','molecule  ·  ball and stick','report  ·  paginated preview'];
  const pts=Array.from({length:46},(_,i)=>{const u=.06+.88*hash(i,3);return[u,.15+.62*u+(hash(i,5)-.5)*.2]});
  const peaks=[[.22,.28,.035],[.5,.62,.04],[.76,.4,.03]];
  function field(k,u,v,cx,cy,t){const px=1/Math.max(1,bw),py=1/Math.max(1,bh);let a=0;
@@ -209,12 +295,25 @@ data location   <span class="b">your browser</span></pre></div>
   else if(k===1){const n=12,i=Math.floor(u*n),f=u*n-i;if(f<.14||f>.86||u>.98)a=0;else{const hgt=.16+.7*(.5+.5*Math.sin(i*1.7+t*.4)*Math.cos(i*.6))*(.5+.5*hash(i,2));a=v<hgt?(((cx+cy)&1)?.95:.8):0;const cap=Math.abs(v-hgt-.07)/py;if(f>.4&&f<.6&&Math.abs(v-hgt)<.07)a=.7;if(cap<.7&&f>.3&&f<.7)a=Math.max(a,.8)}}
   else if(k===2){let s=0;for(const p of pts){const dx=(u-p[0])/px,dy=(v-(p[1]+.04*Math.sin(t*.7+p[0]*9)))/py;s=Math.max(s,Math.exp(-(dx*dx+dy*dy)/1.1))}const ly=.13+.64*u,d=(v-ly)/py;a=Math.max(s,.75*Math.exp(-d*d/.8))}
   else if(k===3){const z=Math.sin(5*u+t*.5)*Math.cos(4*v-t*.4)+.7*Math.exp(-((u-.6)**2+(v-.45)**2)*14)*Math.sin(t*.8+2);a=.5+.5*z;a=Math.max(0,Math.min(1,a));const q=Math.abs((a*7)%1-.5);if(q<.12)a=Math.min(1,a+.35)}
-  else{let y=.06;for(const p of peaks)y+=p[1]*Math.exp(-((u-p[0])**2)/(2*p[2]*p[2]));y+=.02*Math.sin(60*u+t);const d=(v-y)/py;a=Math.exp(-d*d/.9)+(v<y?.14*(((cx+cy)&1)?1:.3):0)}
-  return Math.max(a,axis*(k===3?0:1))}
- let bw=60,bh=20,bx=0,by=0;
- function frame(now){const t=fixed!=null?4+fixed*6.5:Math.max(0,(now-t0)/1000),sceneT=fixed!=null?fixed+.5:t/6.5,si=Math.floor(sceneT)%NS,sn=(si+1)%NS,mixw=smooth((sceneT%1-.82)/.18);
+  else if(k===4){let y=.06;for(const p of peaks)y+=p[1]*Math.exp(-((u-p[0])**2)/(2*p[2]*p[2]));y+=.02*Math.sin(60*u+t);const d=(v-y)/py;a=Math.exp(-d*d/.9)+(v<y?.14*(((cx+cy)&1)?1:.3):0)}
+  else if(k===5){const N=10,i0=Math.floor(u*N);for(let j=0;j<4;j++){let y=.05;for(let i=Math.max(0,i0-1);i<=Math.min(N-1,i0+1);i++){const pc=(i+.5)/N,own=(hash(i,9)*4|0)===j,h=(own?.5+.4*hash(i,j+20):.05+.1*hash(i,j+30))*(1+.07*Math.sin(t*1.3+i+j));y+=h*Math.exp(-(((u-pc)/(.36/N))**2)/2)}y=Math.min(.95,y);const d=(v-y)/py;a=Math.max(a,(j===0?1:.75-.1*j)*Math.exp(-d*d/.9),(j<2&&v<y)?.13*(((cx+cy)&1)?1:.3):0)}}
+  else if(k===6){const X=u*bw*cw,Y=v*bh*lh;for(const q of MOL.b){const dx=q[2]-q[0],dy=q[3]-q[1],l2=dx*dx+dy*dy||1,tt=Math.max(0,Math.min(1,((X-q[0])*dx+(Y-q[1])*dy)/l2)),ex=X-q[0]-tt*dx,ey=Y-q[1]-tt*dy;a=Math.max(a,.55*Math.exp(-(ex*ex+ey*ey)/(2*bondW)))}for(const m of MOL.a){const d=Math.hypot(X-m.x,Y-m.y)/m.r;if(d<1)a=Math.max(a,(.55+.45*(1-d*d))*m.l);else if(d<1.25)a=Math.max(a,.2*m.l)}}
+  else if(k===7){const pu=(u-.28)/.44;if(pu<0||pu>1||v>.97)return 0;if(pu<.02||pu>.98||v<.03)return .55;
+   const sc=(t*.14)%1.1,boost=Math.abs(v-sc)<.05?.3:0;
+   if(v>.86&&v<.93){if(pu>.1&&pu<.72)a=.9}
+   else if(v>.5&&v<.74){const bu=(pu-.12)/.76,bv=(v-.5)/.24;if(bu>=0&&bu<=1){if(bu<.015||bu>.985||bv<.04||bv>.96)a=.55;const yy=.15+.7*bu+.12*Math.sin(bu*14+t*.5),d=(bv-yy)/(py*4);a=Math.max(a,Math.exp(-d*d/.9)*.9)}}
+   else if(v>.33&&v<.42){if(pu>.3&&pu<.7)a=.75}
+   else if(v>.06&&v<.84&&(cy&1)===0){const L=.5+.46*hash(cy,4);if(pu>.1&&pu<.1+.8*L)a=.4+.25*hash(cx,cy+(t*2|0))}
+   a=Math.min(1,a+(a>0?boost:0))}
+  return Math.max(a,axis*(k===3||k>=6?0:1))}
+ let bw=60,bh=20,bx=0,by=0,bondW=4,MOL={a:[],b:[]};
+ const MATOM=(()=>{const A=[],B=[];for(let k=0;k<6;k++){const a=k*Math.PI/3,up=k%2?.22:-.22;A.push([Math.cos(a),up,Math.sin(a),.2]);A.push([1.75*Math.cos(a),up*3.4,1.75*Math.sin(a),.12]);B.push([k,(k+1)%6],[k,6+k])}return{A,B}})();
+ function molPose(t){const W2=bw*cw,H2=bh*lh,sc=Math.min(W2,H2)*.3,ox=W2*.5,oy=H2*.5,cs=Math.cos(t*.5),sn=Math.sin(t*.5),ct=Math.cos(.55),st=Math.sin(.55);
+  const P=[];MATOM.A.forEach((p,i)=>{const x=p[0]*cs+p[2]*sn,z0=-p[0]*sn+p[2]*cs,y=p[1]*ct-z0*st,z=p[1]*st+z0*ct;const hy=i&1,pr=1+z*.1;P.push({x:ox+x*sc*pr,y:oy+y*sc*pr,r:(hy?.12:.2)*sc*pr*1.5,l:.75+.25*Math.max(-1,Math.min(1,z/1.6))})});
+  MOL={a:P,b:MATOM.B.map(e=>{const A2=P[e[0]*2],B2=P[e[1]<6?e[1]*2:e[0]*2+1];return[A2.x,A2.y,B2.x,B2.y]})};bondW=cw*lh*.45}
+ function frame(now){const t=fixed!=null?4+fixed*6.5:Math.max(0,(now-t0)/1000),sceneT=fixed!=null?fixed+.5:t/6.5,idx=Math.floor(sceneT)%NS,si=fixed!=null?idx:ORD[idx],sn=ORD[(idx+1)%NS],mixw=smooth((sceneT%1-.82)/.18);
   ctx.clearRect(0,0,W,H);ctx.font=`${fs}px ui-monospace,Menlo,Consolas,monospace`;ctx.textBaseline='alphabetic';
-  bx=gc+1;bw=Math.max(10,cols-bx-Math.floor(cols*.04));by=Math.floor(rows*.2);bh=Math.max(8,rows-by-Math.floor(rows*.12));
+  bx=gc+1;bw=Math.max(10,cols-bx-Math.floor(cols*.04));by=Math.floor(rows*.2);bh=Math.max(8,rows-by-Math.floor(rows*.12));molPose(t);
   const morphW=Math.max(6,Math.floor(cols*.1));let lastA=-1;
   for(let r=0;r<rows;r++){const y=(r+1)*lh-3,sp=spd[r],ph=pha[r],pk=((t*sp*.9+ph*3)%(cols+40))-14,en=pk>gc&&pk<gc+26?1-(pk-gc)/26:0;
    for(let c=0;c<cols;c++){if(c===gc)continue;let ch,al,cobalt=false;

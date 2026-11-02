@@ -2,7 +2,11 @@
 
 **labscale.org** – start page: `index.html` (animated landing page, “Open” button), workbench: `app.html`, legal pages: `imprint.html`. Single-file offline build: `labscale-standalone.html` (run `python3 build.py`).
 
-**DocScale** (`DocScale/`) is a companion editor for lab books, reports and papers (LaTeX / Markdown, live preview, many export formats); see `DocScale/README.md`.
+The start page presents the whole family under the headline "Raw data in, usable results out." Three companion apps live in their own folders, each with its own README:
+
+- **DNAScale** (`dnascale/`): Sanger traces, alignments, contig assembly and sequence analysis.
+- **MoleculeScale** (`moleculescale/`): 3D editor and viewer for molecules, proteins and crystals.
+- **DocScale** (`docscale/`): editor for lab books, reports and papers (LaTeX / Markdown, live preview, many export formats).
 
 A browser-based data analysis and graphing workbench for scientists and engineers. No build step, no dependencies: open `app.html` in a browser.
 

@@ -138,12 +138,13 @@
   A.chargeDialog = () => { if (S.mol.sel.size !== 1) return A.toast('Select one atom to set its formal charge.', true); const i = [...S.mol.sel][0]; A.dlg({ title: 'Formal charge', width: 340, body: `<div class="field-row"><label>Charge of ${EL[S.mol.atoms[i].e].sym}${i + 1}</label><input class="field" id="fqIn" type="number" value="${S.mol.atoms[i].q || 0}" min="-4" max="4"></div>`, buttons: [{ label: 'Cancel' }, { label: 'Apply', primary: true, fn: () => { A.snap('Charge'); S.mol.atoms[i].q = +$('#fqIn').value; if (S.autoH) A.adjustH([i]); A.changed(); } }] }); };
 
   /* ------------------------------------------------------------ calculations */
+  A.tick = () => new Promise((r) => { const t = setTimeout(r, 40); requestAnimationFrame(() => { clearTimeout(t); r(); }); });
   A.optimize = async (maxSteps) => {
     const m = S.mol; if (!m.atoms.length || S.busy) return; S.busy = true; A.snap('Optimise');
     try {
       const e0 = MS.ff.energy(m); const mz = new MS.ff.Minimizer(m, { tol: 0.04, dt: 0.02 }); const per = m.atoms.length > 1500 ? 10 : 30; const limit = maxSteps || (m.atoms.length > 1500 ? 400 : 2500);
-      while (!mz.done && mz.iter < limit) { mz.step(per); m.setCoords(mz.x); A.changed(true); S.energy = mz.E; await new Promise((r) => requestAnimationFrame(r)); }
-      S.energy = mz.E; A.changed(true);
+      while (!mz.done && mz.iter < limit) { mz.step(per); m.setCoords(mz.x); A.changed(true); S.energy = mz.E; await A.tick(); }
+      A.changed(true); S.energy = mz.E; A.refresh();
       A.toast(`Optimised · ${fmt(e0, 1)} → ${fmt(mz.E, 1)} kcal/mol · ${mz.iter} steps${mz.done ? '' : ' (not converged)'}`);
     } catch (e) { console.error(e); A.toast('Optimisation failed: ' + e.message, true); } finally { S.busy = false; }
   };
@@ -160,7 +161,7 @@
         if (!found.some((f) => Math.abs(f.E - mz.E) < 0.02)) found.push({ E: mz.E, x: Float32Array.from(mz.x) });
         prog(t / count); await new Promise((r) => setTimeout(r, 0));
       }
-      prog(1); found.sort((a, b) => a.E - b.E); m.frames = found.map((f) => f.x); m.meta.frameE = found.map((f) => f.E); A.setFrame(0); S.energy = found[0].E; A.changed(true);
+      prog(1); found.sort((a, b) => a.E - b.E); m.frames = found.map((f) => f.x); m.meta.frameE = found.map((f) => f.E); A.setFrame(0); A.changed(true); S.energy = found[0].E; A.refresh();
       A.toast(`${found.length} distinct conformers · lowest ${fmt(found[0].E, 1)} kcal/mol, highest +${fmt(found[found.length - 1].E - found[0].E, 1)}. Use the frame slider to browse.`);
     } catch (e) { console.error(e); A.toast('Search failed: ' + e.message, true); } finally { S.busy = false; }
   };
@@ -447,11 +448,11 @@
     let h = `<div class="sec"><div class="big-formula">${p.formula.replace(/(\d+)/g, '<sub>$1</sub>')}</div><div class="muted">${esc(m.title || 'Untitled')}</div></div>
       <div class="sec"><div class="kv"><span>Molar mass</span><span>${fmt(p.mass, 3)} g/mol</span><span>Atoms</span><span>${p.atoms} (${p.heavy} heavy)</span><span>Bonds</span><span>${p.bonds}</span><span>Rings</span><span>${p.rings}${p.aromatic ? ` (${p.aromatic} aromatic)` : ''}</span><span>Rotatable bonds</span><span>${p.rotatable}</span><span>H-bond donors / acceptors</span><span>${p.hbd} / ${p.hba}</span><span>Net charge</span><span>${p.charge > 0 ? '+' : ''}${p.charge}</span><span>Fragments</span><span>${p.frags}</span>${S.energy != null ? `<span>Force-field energy</span><span>${fmt(S.energy, 1)} kcal/mol</span>` : ''}</div>
       <div class="comp-bar">${zs.map((z) => `<i style="flex:${counts[z]};background:${hexOf(EL[z].col)}" title="${EL[z].name} ${counts[z]}"></i>`).join('')}</div><div class="muted" style="font-size:11.5px">${zs.slice(0, 8).map((z) => `${EL[z].sym} ${counts[z]}`).join(' · ')}</div></div>`;
-    if (S.cache.smi) h += `<div class="sec"><h4>SMILES<span class="spacer"></span><button class="btn sm" id="copySmi">${A.icon('copy')}Copy</button></h4><div class="smiles-box">${esc(S.cache.smi)}</div></div>`;
+    if (S.cache.smi && !m.meta.protein) h += `<div class="sec"><h4>SMILES<span class="spacer"></span><button class="btn sm" id="copySmi">${A.icon('copy')}Copy</button></h4><div class="smiles-box">${esc(S.cache.smi)}</div></div>`;
     if (selN) h += `<div class="sec"><h4>Selection</h4><div class="kv"><span>Atoms</span><span>${selN}</span><span>Formula</span><span>${selF}</span><span>Mass</span><span>${fmt(C.mass(m, m.sel), 2)} g/mol</span><span>Centroid</span><span>${m.centroid(m.sel).map((v) => fmt(v, 2)).join(', ')}</span></div></div>`;
     if (m.cell) h += `<div class="sec"><h4>Unit cell</h4><div class="kv"><span>a, b, c (Å)</span><span>${fmt(m.cell.a, 3)}, ${fmt(m.cell.b, 3)}, ${fmt(m.cell.c, 3)}</span><span>α, β, γ (°)</span><span>${fmt(m.cell.al, 2)}, ${fmt(m.cell.be, 2)}, ${fmt(m.cell.ga, 2)}</span><span>Volume (Å³)</span><span>${fmt(cellVol(m.cell), 2)}</span></div></div>`;
     if (m.meta.protein) { const helix = m.res.filter((r) => r.ss === 'H').length, sheet = m.res.filter((r) => r.ss === 'E').length, aa = m.res.filter((r) => r.aa).length; h += `<div class="sec"><h4>Protein</h4><div class="kv"><span>Residues</span><span>${aa}</span><span>α-helix</span><span>${helix}</span><span>β-sheet</span><span>${sheet}</span></div></div>`; }
-    if (m.vol) h += `<div class="sec"><h4>Volume data</h4><div class="kv"><span>Grid</span><span>${m.vol.nx} × ${m.vol.ny} × ${m.vol.nz}</span><span>Range</span><span>${fmt(Math.min(...m.vol.data.slice(0, 20000)), 3)} … ${fmt(Math.max(...m.vol.data.slice(0, 20000)), 3)}</span></div></div>`;
+    if (m.vol) h += `<div class="sec"><h4>Volume data</h4><div class="kv"><span>Grid</span><span>${m.vol.nx} × ${m.vol.ny} × ${m.vol.nz}</span><span>Range</span><span>${(() => { if (m.vol.rng === undefined) { let a = 1e9, b = -1e9; for (const v of m.vol.data) { if (v < a) a = v; if (v > b) b = v; } m.vol.rng = [a, b]; } return fmt(m.vol.rng[0], 3) + ' … ' + fmt(m.vol.rng[1], 3); })()}</span></div></div>`;
     h += `<div class="sec"><h4>Tools</h4><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-q="opt">${A.icon('bolt')}Optimise</button><button class="btn sm" data-q="addh">Add H</button><button class="btn sm" data-q="remh">Remove H</button><button class="btn sm" data-q="chg">Charges</button><button class="btn sm" data-q="dip">Dipole</button></div></div>`;
     if (p.atoms > 0 && p.atoms < 150 && m.meta.note) h += `<div class="note-box">${esc(m.meta.note)}</div>`;
     inPane.innerHTML = h;
@@ -571,6 +572,7 @@
   A.setTheme(document.documentElement.dataset.theme || 'light');
   try { if (localStorage.getItem('ms-last')) $('#emResume').hidden = false; } catch (e) { }
   const q = new URLSearchParams(location.search);
+  A.setMol(S.mol);
   try {
     if (q.has('demo') || q.get('load') === 'protein') A.loadDemo();
     else if (q.get('smiles')) A.insertSmiles(q.get('smiles'), null);

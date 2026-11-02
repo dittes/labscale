@@ -243,7 +243,7 @@
       pot = (p) => { let s = 0; for (const q of pos) { const d = Math.max(1.2, Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2])); s += q[3] / d; } return s; };
     }
     const colorFn = (p) => {
-      if (pot) { const c = RDBU(-pot(p) * 3.2); return [c[0], c[1], c[2], alpha]; }
+      if (pot) { const c = RDBU(-pot(p) * 6); return [c[0], c[1], c[2], alpha]; }
       if (scheme === 'uniform') return [ctx.uniform[0], ctx.uniform[1], ctx.uniform[2], alpha];
       const i = near(p); const c = i < 0 ? [0.7, 0.7, 0.7] : atomColor(scheme === 'esp' ? 'element' : scheme, m, i, ctx);
       return [c[0], c[1], c[2], alpha];
@@ -264,7 +264,7 @@
 
   /** analytic hydrogen-like orbital on a grid (real spherical harmonics) */
   function orbitalVolume(n, l, mIdx, zeff) {
-    const N = 60, L = n * n * 1.6 + 5, h = (2 * L) / (N - 1); zeff = zeff || 1;
+    const N = 64, L = n * n * 1.15 + 4, h = (2 * L) / (N - 1); zeff = zeff || 1;
     const data = new Float32Array(N * N * N);
     const a0 = 1; // Angstrom-scaled; looks identical in shape
     for (let ix = 0; ix < N; ix++) for (let iy = 0; iy < N; iy++) for (let iz = 0; iz < N; iz++) {

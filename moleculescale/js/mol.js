@@ -76,10 +76,17 @@
       let mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9], n = 0;
       const each = (a) => { if (a.hid) return; n++; mn = [Math.min(mn[0], a.x), Math.min(mn[1], a.y), Math.min(mn[2], a.z)]; mx = [Math.max(mx[0], a.x), Math.max(mx[1], a.y), Math.max(mx[2], a.z)]; };
       if (onlyIdx) onlyIdx.forEach((i) => each(this.atoms[i])); else this.atoms.forEach(each);
+      if (this.vol && !onlyIdx) {
+        const v = this.vol, o = v.origin; [[0, 0, 0], [1, 1, 1]].forEach((t) => {
+          const p = [0, 1, 2].map((c) => o[c] + t[0] * (v.nx - 1) * v.axes[0][c] + t[1] * (v.ny - 1) * v.axes[1][c] + t[2] * (v.nz - 1) * v.axes[2][c]);
+          n++; mn = [Math.min(mn[0], p[0]), Math.min(mn[1], p[1]), Math.min(mn[2], p[2])]; mx = [Math.max(mx[0], p[0]), Math.max(mx[1], p[1]), Math.max(mx[2], p[2])];
+        });
+      }
       if (!n) return { c: [0, 0, 0], r: 5, n: 0 };
       const c = [(mn[0] + mx[0]) / 2, (mn[1] + mx[1]) / 2, (mn[2] + mx[2]) / 2];
       let r = 0; const f = (a) => { if (!a.hid) r = Math.max(r, Math.hypot(a.x - c[0], a.y - c[1], a.z - c[2]) + EL[a.e].vdw * 0.6); };
       if (onlyIdx) onlyIdx.forEach((i) => f(this.atoms[i])); else this.atoms.forEach(f);
+      if (this.vol && !onlyIdx) r = Math.max(r, Math.hypot(mx[0] - mn[0], mx[1] - mn[1], mx[2] - mn[2]) / 2);
       return { c, r: Math.max(r, 1.5), n };
     }
     centroid(idx) {
